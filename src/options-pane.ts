@@ -37,11 +37,15 @@ const els = {
   logClear: () => document.getElementById('log-clear') as HTMLButtonElement,
   logExport: () => document.getElementById('log-export') as HTMLButtonElement,
   enableHoverPanel: () => document.getElementById('enable-hover-panel') as HTMLInputElement,
-  aboutVersion: () => document.getElementById('about-version') as HTMLElement
+  aboutVersion: () => document.getElementById('about-version') as HTMLElement,
+  importModal: () => els.importModal() as HTMLDivElement,
+  importPreview: () => els.importPreview() as HTMLDivElement,
+  importUrlModal: () => els.importUrlModal() as HTMLDivElement,
+  importUrlInput: () => els.importUrlInput() as HTMLInputElement
 };
 
 // Initialize logging infrastructure
-const logging = initLogging({
+const logging = initLogging('options', {
   statusBar: els.statusBar(),
   statusMsg: els.statusMsg(),
   logViewer: els.logViewer()
@@ -90,12 +94,12 @@ function loadSettings() {
       els.enableHoverPanel().checked = (config as Config).enableHoverPanel ?? false;
       renderList();
       if (endpoints.length === 0) {
-        logger.info('storage', 'No API endpoints configured yet. Add your first endpoint below.');
+        logger.info('No API endpoints configured yet. Add your first endpoint below.');
       }
     })
     .catch((error) => {
       // Actual storage errors (not empty storage on first run)
-      logger.error('storage', 'Failed to access browser storage', error);
+      logger.error('Failed to access browser storage', error);
     });
 }
 
@@ -205,7 +209,7 @@ function toggleEndpointActive(index: number) {
   endpoints[index].active = !currentState;
   const validated = validateEndpoints(JSON.stringify(endpoints));
   if (!validated.valid) {
-    logger.error('endpoint', 'Failed to update endpoint state');
+    logger.error('Failed to update endpoint state');
     return;
   }
   browser.storage.sync
@@ -216,7 +220,7 @@ function toggleEndpointActive(index: number) {
       logger.infoFlash(1400, 'endpoint', `${status}: ${endpoints[index].name}`);
     })
     .catch((error) => {
-      logger.error('storage', 'Failed to save endpoint state', error);
+      logger.error('Failed to save endpoint state', error);
     });
 }
 
@@ -281,7 +285,7 @@ function buildEndpointFromForm(): ApiEndpoint | null {
   const includePageHeaders = els.includeHeaders().checked;
 
   if (!endpoint) {
-    logger.error('endpoint', 'Endpoint URL is required');
+    logger.error('Endpoint URL is required');
     return null;
   }
 
@@ -338,7 +342,7 @@ function saveEndpoint() {
     .set({ apiEndpoints: validated.formatted })
     .then(() => {
       renderList();
-      logger.info('endpoint', `Endpoint saved: ${endpoints[editingIndex!].name}`);
+      logger.info(`Endpoint saved: ${endpoints[editingIndex!].name}`);
     })
     .catch((error) => {
       logger.error( 'storage', 'Failed to save API endpoint', error);
@@ -381,7 +385,7 @@ function saveAsNew() {
     .set({ apiEndpoints: validated.formatted })
     .then(() => {
       renderList();
-      logger.info('endpoint', `Endpoint saved: ${newName}`);
+      logger.info(`Endpoint saved: ${newName}`);
     })
     .catch((error) => {
       logger.error( 'storage', 'Failed to save API endpoint', error);
@@ -410,7 +414,7 @@ function deleteEndpoint(index: number) {
     .then(() => {
       renderList();
       closeEditor();
-      logger.info('endpoint', `Endpoint deleted: ${endpoint.name}`);
+      logger.info(`Endpoint deleted: ${endpoint.name}`);
     })
     .catch((error) => {
       logger.error( 'storage', 'Failed to delete API endpoint', error);
@@ -448,7 +452,7 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab') {
 
   const action = mode === 'fetch' ? 'Validating endpoint' : 'Opening in tab';
   logger.info( 'apicall', `${action}: ${candidate.name} → ${testUrl}`);
-  logger.info('apicall', `${action}: ${candidate.name}`, { endpoint: candidate });
+  logger.info(`${action}: ${candidate.name}`, { endpoint: candidate });
 
   // Direct call (options runs in extension context)
   const response = await callEndpoint({
@@ -465,15 +469,15 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab') {
     const successMsg = mode === 'fetch'
       ? `✅ ${candidate.name}: ${response.status || 'OK'}`
       : `✅ Opened in new tab: ${response.details || testUrl}`;
-    logger.info('apicall', successMsg);
+    logger.info(successMsg);
 
     // Log response body separately in debug (keep it out of status bar)
     if (mode === 'fetch' && response.response) {
       const formatted = formatResponseBody(response.response);
-      logger.info('apicall', `Response body: ${formatted}`);
+      logger.info(`Response body: ${formatted}`);
     }
   } else {
-    logger.error('apicall', `${action} failed: ${candidate.name} - ${response.error}`, { error: response.error });
+    logger.error(`${action} failed: ${candidate.name} - ${response.error}`, { error: response.error });
   }
 }
 
@@ -496,7 +500,7 @@ function resetBuiltIns() {
     .then(() => {
       loadSettings();
       closeEditor();
-      logger.info('endpoint', `Built-ins restored: ${builtIns.length} built-in, ${userEndpoints.length} user`);
+      logger.info(`Built-ins restored: ${builtIns.length} built-in, ${userEndpoints.length} user`);
     })
     .catch((error) => {
       logger.error( 'endpoint', 'Failed to reset built-ins', error);
@@ -511,7 +515,7 @@ function clearAllEndpoints() {
     .then(() => {
       loadSettings();
       closeEditor();
-      logger.info('endpoint', 'All endpoints cleared');
+      logger.info('All endpoints cleared');
     })
     .catch((error) => {
       logger.error( 'endpoint', 'Failed to clear endpoints', error);
@@ -534,7 +538,7 @@ function exportEndpoints() {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
-  logger.info('storage', `Exported ${endpoints.length} endpoint(s)`);
+  logger.info(`Exported ${endpoints.length} endpoint(s)`);
 }
 
 function handleFileSelect(e: Event) {
@@ -567,15 +571,15 @@ function handleFileSelect(e: Event) {
 }
 
 function showImportUrlModal() {
-  const modal = document.getElementById('import-url-modal') as HTMLDivElement;
-  const input = document.getElementById('import-url-input') as HTMLInputElement;
+  const modal = els.importUrlModal() as HTMLDivElement;
+  const input = els.importUrlInput() as HTMLInputElement;
   input.value = '';
   modal.style.display = 'flex';
   input.focus();
 }
 
 function hideImportUrlModal() {
-  const modal = document.getElementById('import-url-modal') as HTMLDivElement;
+  const modal = els.importUrlModal() as HTMLDivElement;
   modal.style.display = 'none';
 }
 
@@ -594,11 +598,11 @@ function convertGistUrl(url: string): string {
 }
 
 async function fetchFromUrl() {
-  const input = document.getElementById('import-url-input') as HTMLInputElement;
+  const input = els.importUrlInput() as HTMLInputElement;
   const url = input.value.trim();
 
   if (!url) {
-    logger.error('storage', 'URL is required');
+    logger.error('URL is required');
     return;
   }
 
@@ -606,7 +610,7 @@ async function fetchFromUrl() {
   try {
     new URL(url);
   } catch {
-    logger.error('storage', 'Invalid URL format');
+    logger.error('Invalid URL format');
     return;
   }
 
@@ -616,7 +620,7 @@ async function fetchFromUrl() {
   try {
     const response = await fetch(fetchUrl);
     if (!response.ok) {
-      logger.error('storage', `Failed to fetch: ${response.status} ${response.statusText}`);
+      logger.error(`Failed to fetch: ${response.status} ${response.statusText}`);
       return;
     }
 
@@ -625,22 +629,22 @@ async function fetchFromUrl() {
     const validated = validateEndpoints(JSON.stringify(parsed));
 
     if (!validated.valid) {
-      logger.error('storage', `Invalid JSON: ${validated.errorMessage}`);
+      logger.error(`Invalid JSON: ${validated.errorMessage}`);
       return;
     }
 
     pendingImportEndpoints = validated.parsed;
     hideImportUrlModal();
     showImportModal();
-    logger.info('storage', `Fetched ${validated.parsed.length} endpoint(s) from URL`);
+    logger.info(`Fetched ${validated.parsed.length} endpoint(s) from URL`);
   } catch (error: any) {
-    logger.error('storage', `Failed to fetch: ${error?.message ?? 'Unknown error'}`, error);
+    logger.error(`Failed to fetch: ${error?.message ?? 'Unknown error'}`, error);
   }
 }
 
 function showImportModal() {
-  const modal = document.getElementById('import-modal') as HTMLDivElement;
-  const preview = document.getElementById('import-preview') as HTMLDivElement;
+  const modal = els.importModal() as HTMLDivElement;
+  const preview = els.importPreview() as HTMLDivElement;
 
   const dupes = pendingImportEndpoints.filter((p) => endpoints.some((existing) => existing.name === p.name));
   const newEndpoints = pendingImportEndpoints.filter((p) => !endpoints.some((existing) => existing.name === p.name));
@@ -658,7 +662,7 @@ function showImportModal() {
 }
 
 function closeImportModal() {
-  const modal = document.getElementById('import-modal') as HTMLDivElement;
+  const modal = els.importModal() as HTMLDivElement;
   modal.style.display = 'none';
   pendingImportEndpoints = [];
 }
@@ -685,7 +689,7 @@ function performImport(merge: boolean) {
       renderList();
       closeImportModal();
       const action = merge ? 'merged' : 'replaced';
-      logger.info('storage', `${validated.parsed.length} endpoint(s) ${action}`);
+      logger.info(`${validated.parsed.length} endpoint(s) ${action}`);
     })
     .catch((error) => {
       logger.error( 'storage', 'Failed to import endpoints', error);
@@ -763,7 +767,7 @@ function initialize() {
         logger.info( 'storage', `Hover panel ${status}`);
       })
       .catch((err) => {
-        logger.error('storage', 'Failed to save hover panel setting:', err);
+        logger.error('Failed to save hover panel setting:', err);
       });
   });
 

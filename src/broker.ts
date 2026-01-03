@@ -10,7 +10,7 @@ import { callEndpoint, DEFAULT_CONFIG } from './endpoint';
 import { Logger, LogLevel } from './logger';
 import { type StreamInfo, type RuntimeMessage } from './types';
 
-const logger = new Logger();
+const logger = new Logger('broker');
 
 // Limit streams per tab to prevent unbounded memory growth
 const MAX_STREAMS_PER_TAB = 200;
@@ -22,7 +22,7 @@ browser.runtime.onInstalled.addListener(async (details) => {
     const stored = await browser.storage.sync.get('apiEndpoints');
     if (!stored.apiEndpoints) {
       await browser.storage.sync.set({ apiEndpoints: DEFAULT_CONFIG.apiEndpoints });
-      logger.info('storage', 'Initialized storage with 3 demo endpoints');
+      logger.info('Initialized storage with 3 demo endpoints');
     }
   }
 });
@@ -78,9 +78,9 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
       // Enforce cap: remove oldest entry if limit exceeded
       if (streams.length > MAX_STREAMS_PER_TAB) {
         streams.shift();
-        logger.debug('broker', `Tab ${tabId}: stream cap reached, removed oldest`);
+        logger.debug(`Tab ${tabId}: stream cap reached, removed oldest`);
       }
-      logger.info('broker', `Stream detected: ${streamInfo.url} (${streamInfo.type})`);
+      logger.info(`Stream detected: ${streamInfo.url} (${streamInfo.type})`);
       updateBadge(tabId, streams.length);
     }
 
@@ -91,17 +91,17 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
       // Use provided tabId, or fall back to sender.tab.id (for hover-ui iframe)
       const tabId = message.tabId ?? sender.tab?.id;
       if (tabId === undefined) {
-        logger.warn('messaging', 'GET_STREAMS: No tab ID available');
+        logger.warn('GET_STREAMS: No tab ID available');
         return { streams: [] };
       }
       const streams = tabStreams.get(tabId) || [];
-      logger.debug('messaging', `GET_STREAMS for tab ${tabId}: ${streams.length} streams`);
+      logger.debug(`GET_STREAMS for tab ${tabId}: ${streams.length} streams`);
       return { streams };
     }
 
     if (message.type === 'OPEN_IN_TAB') {
       // Message handler for page/hover-panel contexts (popup/options call directly)
-      logger.info('messaging', `OPEN_IN_TAB: endpoint=${message.endpointName || 'default'}, url=${message.streamUrl}`);
+      logger.info(`OPEN_IN_TAB: endpoint=${message.endpointName || 'default'}, url=${message.streamUrl}`);
       return callEndpoint({
         mode: 'tab',
         streamUrl: message.streamUrl,
@@ -118,7 +118,7 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
       const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
       const pageHeaders = activeTab?.id !== undefined ? tabHeaders.get(activeTab.id) : undefined;
 
-      logger.info('messaging', `CALL_API: endpoint=${message.endpointName || 'default'}, url=${message.streamUrl}`);
+      logger.info(`CALL_API: endpoint=${message.endpointName || 'default'}, url=${message.streamUrl}`);
       return callEndpoint({
         mode: 'fetch',
         streamUrl: message.streamUrl,
@@ -133,7 +133,7 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
   if (message.type === 'PING') {
     // Test integration: respond with current detection state
     const totalDetected = Array.from(tabStreams.values()).reduce((sum, streams) => sum + streams.length, 0);
-    logger.debug('messaging', `PING: ${totalDetected} streams across ${tabStreams.size} tabs`);
+    logger.debug(`PING: ${totalDetected} streams across ${tabStreams.size} tabs`);
     return {
       pong: true,
       totalDetected,
@@ -147,10 +147,10 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
     const { parseEndpoints } = await import('./endpoint');
     try {
       const endpoints = parseEndpoints(stored.apiEndpoints || '[]');
-      logger.debug('messaging', `GET_ENDPOINTS: ${endpoints.length} endpoints`);
+      logger.debug(`GET_ENDPOINTS: ${endpoints.length} endpoints`);
       return { endpoints };
     } catch (error: any) {
-      logger.error('messaging', 'GET_ENDPOINTS: Failed to parse endpoints', error);
+      logger.error('GET_ENDPOINTS: Failed to parse endpoints', error);
       return { endpoints: [], error: error.message };
     }
   }
@@ -164,7 +164,7 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
     } else {
       await browser.tabs.create({ url: optionsUrl, active: true });
     }
-    logger.debug('messaging', 'OPEN_OPTIONS: Switched to options tab');
+    logger.debug('OPEN_OPTIONS: Switched to options tab');
     return { success: true };
   }
 
@@ -178,7 +178,7 @@ browser.tabs.onRemoved.addListener((tabId) => {
   tabStreams.delete(tabId);
   tabHeaders.delete(tabId);
   if (count > 0) {
-    logger.debug('broker', `Tab ${tabId} closed: cleaned ${count} streams`);
+    logger.debug(`Tab ${tabId} closed: cleaned ${count} streams`);
   }
 });
 
@@ -190,7 +190,7 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
     tabHeaders.delete(tabId);
     updateBadge(tabId, 0);
     if (count > 0) {
-      logger.debug('broker', `Tab ${tabId} navigated: cleared ${count} streams`);
+      logger.debug(`Tab ${tabId} navigated: cleared ${count} streams`);
     }
   }
 });
@@ -216,4 +216,4 @@ function updateBadge(tabId: number, count: number) {
   }
 }
 
-logger.info('broker', 'Broker service worker loaded');
+logger.info('Broker service worker loaded');

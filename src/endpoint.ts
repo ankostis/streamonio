@@ -146,13 +146,13 @@ export function generatePreview(
 export function previewCall(
   endpoint: ApiEndpoint,
   context: Record<string, unknown>,
-  logger: { info: (slot: string, message: string, ...args: unknown[]) => void }
+  logger: { info: (message: string, ...args: unknown[]) => void }
 ): void {
   try {
     const preview = generatePreview(endpoint, context, applyTemplate);
-    logger.info('endpoint', preview, { endpoint, context });
+    logger.info(preview, { endpoint, context });
   } catch (error: any) {
-    logger.info('endpoint', `Interpolation error: ${error?.message ?? 'Invalid placeholder'}`, error);
+    logger.info(`Interpolation error: ${error?.message ?? 'Invalid placeholder'}`, error);
   }
 }
 
@@ -361,7 +361,7 @@ export async function callEndpoint({
       try {
         new URL(finalUrl);
       } catch (urlError: any) {
-        logger.warn('apicall', `Invalid URL after interpolation: ${finalUrl}`, {
+        logger.warn(`Invalid URL after interpolation: ${finalUrl}`, {
           endpoint: selectedEndpoint.name,
           url: finalUrl,
           error: urlError
@@ -374,7 +374,7 @@ export async function callEndpoint({
 
       const method = (selectedEndpoint.method || 'GET').toUpperCase();
 
-      logger.info('apicall', `Opening URL in tab (${method}): ${selectedEndpoint.name}`, {
+      logger.info(`Opening URL in tab (${method}): ${selectedEndpoint.name}`, {
         endpoint: selectedEndpoint.name,
         url: finalUrl,
         method
@@ -400,7 +400,7 @@ export async function callEndpoint({
               };
             }
           } catch (tabError: any) {
-            logger.warn('apicall', `Stored tab ${storedTabId} no longer exists, creating new tab: ${tabError.message}`);
+            logger.warn(`Stored tab ${storedTabId} no longer exists, creating new tab: ${tabError.message}`);
           }
         }
 
@@ -441,7 +441,7 @@ export async function callEndpoint({
             });
           }
         } catch (parseError: any) {
-          logger.warn('apicall', `Could not parse body as JSON for form submission: ${parseError.message}. Sending as raw field.`);
+          logger.warn(`Could not parse body as JSON for form submission: ${parseError.message}. Sending as raw field.`);
           const input = document.createElement('input');
           input.type = 'hidden';
           input.name = 'data';
@@ -494,7 +494,7 @@ export async function callEndpoint({
           headers['Cookie'] = cookieHeader;
         }
       } catch (cookieError: any) {
-        logger.warn('apicall', `Failed to get cookies: ${cookieError}`, { pageUrl, cookieError });
+        logger.warn(`Failed to get cookies: ${cookieError}`, { pageUrl, cookieError });
       }
     }
 
@@ -516,7 +516,7 @@ export async function callEndpoint({
       fetchOptions.body = bodyJson;
     }
 
-    logger.info('apicall', `API Request: ${method} ${selectedEndpoint.name}`, {
+    logger.info(`API Request: ${method} ${selectedEndpoint.name}`, {
       endpoint: selectedEndpoint.name,
       method,
       url: finalUrl,
@@ -537,7 +537,7 @@ export async function callEndpoint({
       } catch {
         // Ignore if we can't read error body
       }
-      logger.error('apicall', `API Error Response: ${response.status} ${response.statusText}`, {
+      logger.error(`API Error Response: ${response.status} ${response.statusText}`, {
         status: response.status,
         statusText: response.statusText,
         headers: Object.fromEntries(response.headers.entries()),
@@ -547,7 +547,7 @@ export async function callEndpoint({
     }
 
     const result = await response.text();
-    logger.info('apicall', `API Success Response: ${response.status} ${response.statusText}`, {
+    logger.info(`API Success Response: ${response.status} ${response.statusText}`, {
       status: response.status,
       statusText: response.statusText,
       headers: Object.fromEntries(response.headers.entries()),
@@ -562,7 +562,7 @@ export async function callEndpoint({
     };
   } catch (error: any) {
     const action = mode === 'tab' ? 'open URL' : 'API call';
-    logger.error('apicall', `${action} failed: ${error?.message ?? 'Unknown error'}`, {
+    logger.error(`${action} failed: ${error?.message ?? 'Unknown error'}`, {
       endpoint: selectedEndpoint?.name,
       url: finalUrl,
       method,

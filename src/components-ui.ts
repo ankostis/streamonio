@@ -34,15 +34,18 @@ export function createButton(config: ButtonConfig): HTMLButtonElement {
  * @param elements - DOM elements for status bar and log viewer
  * @returns Configured logger, statusBar, and appendLog function
  */
-export function initLogging(elements: {
-  statusBar: HTMLElement;
-  statusMsg: HTMLElement;
-  logViewer: HTMLElement;
-}): {
+export function initLogging(
+  category: string,
+  elements: {
+    statusBar: HTMLElement;
+    statusMsg: HTMLElement;
+    logViewer: HTMLElement;
+  }
+): {
   logger: Logger;
   appendLog: ReturnType<typeof createLogAppender>;
 } {
-  const logger = new Logger();
+  const logger = new Logger(category);
 
   const renderStatus = createStatusRenderer({
     bar: elements.statusBar,

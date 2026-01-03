@@ -17,8 +17,16 @@ let endpointsCached = false;
 
 // Logging utilities (initialized in initialize() after DOM ready)
 let logger: ReturnType<typeof initLogging>['logger'];
-
 let appendLog: ReturnType<typeof initLogging>['appendLog'];
+
+// Cached DOM elements (initialized in initialize())
+let els: {
+  loading: HTMLElement | null;
+  status: HTMLElement | null;
+  emptyState: HTMLElement | null;
+  streamCount: HTMLElement | null;
+  streamsContainer: HTMLElement | null;
+};
 
 /**
  * Open URL in tab, reusing existing tab if found
@@ -42,13 +50,22 @@ async function initialize() {
   currentTabId = tabs[0].id ?? null;
 
   // Initialize logging infrastructure
-  const logging = initLogging({
+  const logging = initLogging('popup', {
     statusBar: document.getElementById('status-bar') as HTMLDivElement,
     statusMsg: document.getElementById('status-message') as HTMLSpanElement,
     logViewer: document.getElementById('log-viewer') as HTMLDivElement
   });
   logger = logging.logger;
   appendLog = logging.appendLog;
+
+  // Cache DOM elements
+  els = {
+    loading: document.getElementById('loading'),
+    status: document.getElementById('status'),
+    emptyState: document.getElementById('empty-state'),
+    streamCount: document.getElementById('stream-count'),
+    streamsContainer: document.getElementById('streams-container'),
+  };
 
   // Wire log filtering (always visible)
   const levelCheckboxes = document.querySelectorAll('.log-level-filter') as NodeListOf<HTMLInputElement>;
@@ -62,7 +79,7 @@ async function initialize() {
   document.getElementById('refresh-btn')?.addEventListener('click', handleRefresh);
   document.getElementById('options-btn')?.addEventListener('click', handleOptions);
 
-  logger.debug('popup', 'Popup initialized successfully');
+  logger.debug('Popup initialized successfully');
 }
 
 async function loadEndpoints() {
@@ -76,7 +93,7 @@ async function loadEndpoints() {
 
   try {
     apiEndpoints = parseEndpoints(apiEndpointsStr);
-    logger.debug('endpoint', `Loaded ${apiEndpoints.length} API endpoints`);
+    logger.debug(`Loaded ${apiEndpoints.length} API endpoints`);
   } catch (error: any) {
     // Parse error is expected if config is corrupted - show to user via logger
     logger.error( 'endpoint', 'Invalid API endpoints configured. Check options.', error);
@@ -98,8 +115,7 @@ async function loadStreams() {
   } catch (pingError) {
     // Known issue: background worker crashed or not loaded.
     logger.error( 'messaging', 'Extension background service not responding. Try reloading the extension.', pingError);
-    const loadingEl = document.getElementById('loading');
-    if (loadingEl) loadingEl.style.display = 'none';
+    if (els.loading) els.loading.style.display = 'none';
     return;
   }
 
@@ -112,32 +128,26 @@ async function loadStreams() {
   } catch (error) {
     // Message passing error - log and display
     logger.error( 'messaging', 'Failed to fetch streams from broker', error);
-    const loadingEl = document.getElementById('loading');
-    if (loadingEl) loadingEl.style.display = 'none';
+    if (els.loading) els.loading.style.display = 'none';
     return;
   }
 
   const streams = (response?.streams as StreamInfo[] | undefined) || [];
-  logger.debug('popup', `Loaded ${streams.length} streams for tab ${currentTabId}`);
+  logger.debug(`Loaded ${streams.length} streams for tab ${currentTabId}`);
 
-  const loadingEl = document.getElementById('loading');
-  if (loadingEl) loadingEl.style.display = 'none';
-
-  const statusEl = document.getElementById('status');
-  const emptyState = document.getElementById('empty-state');
+  if (els.loading) els.loading.style.display = 'none';
 
   if (streams.length === 0) {
-    if (emptyState) emptyState.style.display = 'block';
-    if (statusEl) statusEl.style.display = 'none';
+    if (els.emptyState) els.emptyState.style.display = 'block';
+    if (els.status) els.status.style.display = 'none';
   } else {
-    if (emptyState) emptyState.style.display = 'none';
-    if (statusEl) {
-      statusEl.style.display = 'block';
-      statusEl.classList.add('detected');
+    if (els.emptyState) els.emptyState.style.display = 'none';
+    if (els.status) {
+      els.status.style.display = 'block';
+      els.status.classList.add('detected');
     }
 
-    const badge = document.getElementById('stream-count');
-    if (badge) badge.textContent = streams.length.toString();
+    if (els.streamCount) els.streamCount.textContent = streams.length.toString();
 
     displayStreamsPopup(streams);
   }
@@ -173,7 +183,7 @@ function populatePanel(stream: StreamInfo, index: number, allStreams: StreamInfo
  */
 function handlePreview(stream: StreamInfo, endpointName?: string) {
   if (apiEndpoints.length === 0) {
-    logger.warn('endpoint', 'No endpoints configured');
+    logger.warn('No endpoints configured');
     return;
   }
 
@@ -212,7 +222,7 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab', stream: StreamInfo, end
 
   const action = mode === 'fetch' ? 'API call' : 'Open in tab';
   const endpoint = endpointName || 'default';
-  logger.info('apicall', `${action} starting: ${endpoint} → ${stream.type}`);
+  logger.info(`${action} starting: ${endpoint} → ${stream.type}`);
 
   // Direct call (popup runs in extension context)
   const response = await callEndpoint({
@@ -228,16 +238,16 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab', stream: StreamInfo, end
     const successMsg = mode === 'fetch'
       ? `✅ ${endpoint}: ${response.status || 'OK'}`
       : `✅ Opened in tab: ${response.details || stream.url}`;
-    logger.info('apicall', successMsg);
+    logger.info(successMsg);
 
     // Log response body separately in debug (keep it out of status bar)
     if (response.response) {
       const formatted = formatResponseBody(response.response);
-      logger.info('apicall', `Response body: ${formatted}`);
+      logger.info(`Response body: ${formatted}`);
     }
   } else {
     const errorMsg = response?.error ?? 'Unknown error';
-    logger.error('apicall', `${action} failed: ${endpoint} - ${errorMsg}`, response);
+    logger.error(`${action} failed: ${endpoint} - ${errorMsg}`, response);
   }
 }
 
@@ -248,10 +258,10 @@ async function handleCopyUrl(url: string) {
   try {
     await navigator.clipboard.writeText(url);
     logger.infoFlash(2000, 'clipboard', '📋 URL copied');
-    logger.debug('clipboard', `Copied: ${url}`);
+    logger.debug(`Copied: ${url}`);
   } catch (error) {
     // Clipboard write may fail due to permissions.
-    logger.warn('clipboard', 'Failed to copy URL', error);
+    logger.warn('Failed to copy URL', error);
   }
 }
 
@@ -260,19 +270,15 @@ async function handleCopyUrl(url: string) {
  */
 async function handleRefresh() {
   try {
-    const loading = document.getElementById('loading');
-    if (loading) loading.style.display = 'block';
+    if (els.loading) els.loading.style.display = 'block';
+    if (els.streamsContainer) els.streamsContainer.innerHTML = '';
 
-    const container = document.getElementById('streams-container');
-    if (container) container.innerHTML = '';
-
-    logger.debug('popup', 'Refresh button clicked');
+    logger.debug('Refresh button clicked');
     await loadStreams();
   } catch (error) {
     // Unexpected error in refresh - log and display
     logger.error( 'popup', 'Failed to refresh streams', error);
-    const loading = document.getElementById('loading');
-    if (loading) loading.style.display = 'none';
+    if (els.loading) els.loading.style.display = 'none';
   }
 }
 
@@ -280,7 +286,7 @@ async function handleRefresh() {
  * Handle options button
  */
 async function handleOptions() {
-  logger.debug('popup', 'Options button clicked');
+  logger.debug('Options button clicked');
   const optionsUrl = browser.runtime.getURL('dist/options-pane.html');
   await openOrSwitchToTab(optionsUrl);
 }
@@ -297,7 +303,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (error) {
     // Top-level exception handler - log and display to user
     logger.error( 'popup', 'Failed to initialize popup', error);
-    const loadingEl = document.getElementById('loading');
-    if (loadingEl) loadingEl.style.display = 'none';
+    if (els.loading) els.loading.style.display = 'none';
   }
 });

@@ -86,6 +86,7 @@ function formatArgs(args: unknown[]): string {
 }
 
 export class Logger {
+  private category: string;
   public logsRing: LogEntry[] = [];
   private maxEntries = 100;
   private slots = new Map<string, SlotMessage>();
@@ -93,43 +94,47 @@ export class Logger {
   private logSubscribers = new Set<(entries: LogEntry[]) => void>();
   private statusSubscribers = new Set<(msg: SlotMessage | null) => void>();
 
+  constructor(category: string) {
+    this.category = category;
+  }
+
   // ========================================================================
   // PERSISTENT STATUS (no expiration)
   // ========================================================================
 
-  error(slot: string, ...msg: unknown[]): void {
-    this.setSlotWithEmoji(LogLevel.Error, slot, undefined, '❌', ...msg);
+  error(...msg: unknown[]): void {
+    this.setSlotWithEmoji(LogLevel.Error, this.category, undefined, '❌', ...msg);
   }
 
-  warn(slot: string, ...msg: unknown[]): void {
-    this.setSlotWithEmoji(LogLevel.Warn, slot, undefined, '⚠️', ...msg);
+  warn(...msg: unknown[]): void {
+    this.setSlotWithEmoji(LogLevel.Warn, this.category, undefined, '⚠️', ...msg);
   }
 
-  info(slot: string, ...msg: unknown[]): void {
-    this.setSlotWithEmoji(LogLevel.Info, slot, undefined, 'ℹ️', ...msg);
+  info(...msg: unknown[]): void {
+    this.setSlotWithEmoji(LogLevel.Info, this.category, undefined, 'ℹ️', ...msg);
   }
 
-  debug(slot: string, ...msg: unknown[]): void {
-    this.setSlot(LogLevel.Debug, slot, undefined, ...msg);
+  debug(...msg: unknown[]): void {
+    this.setSlot(LogLevel.Debug, this.category, undefined, ...msg);
   }
 
   // ========================================================================
   // TRANSIENT STATUS (auto-expires)
   // ========================================================================
 
-  errorFlash(timeout: number, slot: string, ...msg: unknown[]): void {
+  errorFlash(timeout: number, ...msg: unknown[]): void {
     const expireTimestamp = new Date(Date.now() + timeout);
-    this.setSlotWithEmoji(LogLevel.Error, slot, expireTimestamp, '❌', ...msg);
+    this.setSlotWithEmoji(LogLevel.Error, this.category, expireTimestamp, '❌', ...msg);
   }
 
-  warnFlash(timeout: number, slot: string, ...msg: unknown[]): void {
+  warnFlash(timeout: number, ...msg: unknown[]): void {
     const expireTimestamp = new Date(Date.now() + timeout);
-    this.setSlotWithEmoji(LogLevel.Warn, slot, expireTimestamp, '⚠️', ...msg);
+    this.setSlotWithEmoji(LogLevel.Warn, this.category, expireTimestamp, '⚠️', ...msg);
   }
 
-  infoFlash(timeout: number, slot: string, ...msg: unknown[]): void {
+  infoFlash(timeout: number, ...msg: unknown[]): void {
     const expireTimestamp = new Date(Date.now() + timeout);
-    this.setSlotWithEmoji(LogLevel.Info, slot, expireTimestamp, 'ℹ️', ...msg);
+    this.setSlotWithEmoji(LogLevel.Info, this.category, expireTimestamp, 'ℹ️', ...msg);
   }
 
   // ========================================================================

@@ -10,7 +10,7 @@ import { Logger, LogLevel } from './logger';
 (() => {
   'use strict';
 
-  const logger = new Logger();
+  const logger = new Logger('page');
   const detectedStreams = new Set<string>();
 
   const getUrlString = (input: RequestInfo | URL): string | null => {

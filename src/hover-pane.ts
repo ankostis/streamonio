@@ -17,18 +17,40 @@ let apiEndpoints: ApiEndpoint[] = [];
 let logger: ReturnType<typeof initLogging>['logger'];
 let appendLog: ReturnType<typeof initLogging>['appendLog'];
 
+// Cached DOM elements (initialized in initialize())
+let els: {
+  loading: HTMLElement | null;
+  status: HTMLElement | null;
+  emptyState: HTMLElement | null;
+  streamCount: HTMLElement | null;
+  streamsList: HTMLElement | null;
+  streamsListContainer: HTMLElement | null;
+  streamPanel: HTMLElement | null;
+};
+
 /**
  * Initialize hover panel
  */
 async function initialize() {
   // Initialize logging infrastructure
-  const logging = initLogging({
+  const logging = initLogging('hover', {
     statusBar: document.getElementById('status-bar') as HTMLDivElement,
     statusMsg: document.getElementById('status-message') as HTMLSpanElement,
     logViewer: document.getElementById('log-viewer') as HTMLDivElement
   });
   logger = logging.logger;
   appendLog = logging.appendLog;
+
+  // Cache DOM elements
+  els = {
+    loading: document.getElementById('loading'),
+    status: document.getElementById('status'),
+    emptyState: document.getElementById('empty-state'),
+    streamCount: document.getElementById('stream-count'),
+    streamsList: document.getElementById('streams-list'),
+    streamsListContainer: document.getElementById('streams-list-container'),
+    streamPanel: document.getElementById('stream-panel'),
+  };
 
   // Wire log filtering
   const levelCheckboxes = document.querySelectorAll('.log-level-filter') as NodeListOf<HTMLInputElement>;
@@ -42,7 +64,7 @@ async function initialize() {
   document.getElementById('refresh-btn')?.addEventListener('click', handleRefresh);
   document.getElementById('options-btn')?.addEventListener('click', handleOptions);
 
-  logger.debug('hover', 'Hover panel initialized successfully');
+  logger.debug('Hover panel initialized successfully');
 }
 
 /**
@@ -53,13 +75,13 @@ async function loadEndpoints() {
     const response = await browser.runtime.sendMessage({ type: 'GET_ENDPOINTS' } as RuntimeMessage);
     if (response?.endpoints) {
       apiEndpoints = response.endpoints;
-      logger.debug('endpoint', `Loaded ${apiEndpoints.length} endpoints`);
+      logger.debug(`Loaded ${apiEndpoints.length} endpoints`);
     } else {
-      logger.warn('endpoint', 'No endpoints configured');
+      logger.warn('No endpoints configured');
       apiEndpoints = [];
     }
   } catch (error: any) {
-    logger.error('endpoint', 'Failed to load endpoints', error);
+    logger.error('Failed to load endpoints', error);
     apiEndpoints = [];
   }
 }
@@ -73,13 +95,10 @@ async function loadStreams() {
   try {
     await browser.runtime.sendMessage({ type: 'PING' } as RuntimeMessage);
   } catch (pingError) {
-    logger.error('broker', 'Broker not responding', pingError);
+    logger.error('Broker not responding', pingError);
     showEmptyState('⚠️ Extension not ready', 'Try refreshing the page');
     return;
   }
-
-  const loading = document.getElementById('loading');
-  const status = document.getElementById('status');
 
   try {
     // Use GET_STREAMS without tabId - broker will use sender.tab.id
@@ -93,26 +112,25 @@ async function loadStreams() {
     }
 
     const streams = response.streams as StreamInfo[];
-    logger.debug('broker', `Loaded ${streams.length} streams`);
+    logger.debug(`Loaded ${streams.length} streams`);
 
-    if (loading) loading.style.display = 'none';
+    if (els.loading) els.loading.style.display = 'none';
 
     if (streams.length === 0) {
       showEmptyState();
       return;
     }
 
-    if (status) {
-      status.style.display = 'block';
-      status.classList.add('detected');
+    if (els.status) {
+      els.status.style.display = 'block';
+      els.status.classList.add('detected');
     }
 
-    const badge = document.getElementById('stream-count');
-    if (badge) badge.textContent = streams.length.toString();
+    if (els.streamCount) els.streamCount.textContent = streams.length.toString();
 
     displayStreamsHover(streams);
   } catch (error: any) {
-    logger.error('broker', 'Failed to load streams', error);
+    logger.error('Failed to load streams', error);
     showEmptyState('❌ Error loading streams', error.message);
   }
 }
@@ -145,19 +163,14 @@ function populatePanel(stream: StreamInfo, _index: number, _allStreams: StreamIn
  * Show empty state with optional custom message
  */
 function showEmptyState(title = '🔍 No streams detected', subtitle = 'Browse to a page with streaming media to detect streams') {
-  const loading = document.getElementById('loading');
-  const listContainer = document.getElementById('streams-list-container');
-  const panel = document.getElementById('stream-panel');
-  const emptyState = document.getElementById('empty-state');
+  if (els.loading) els.loading.style.display = 'none';
+  if (els.streamsListContainer) els.streamsListContainer.style.display = 'none';
+  if (els.streamPanel) els.streamPanel.style.display = 'none';
 
-  if (loading) loading.style.display = 'none';
-  if (listContainer) listContainer.style.display = 'none';
-  if (panel) panel.style.display = 'none';
-
-  if (emptyState) {
-    emptyState.style.display = 'block';
-    const titleEl = emptyState.querySelector('p:first-of-type');
-    const subtitleEl = emptyState.querySelector('p:last-of-type');
+  if (els.emptyState) {
+    els.emptyState.style.display = 'block';
+    const titleEl = els.emptyState.querySelector('p:first-of-type');
+    const subtitleEl = els.emptyState.querySelector('p:last-of-type');
 
     if (titleEl) titleEl.innerHTML = `<strong>${title}</strong>`;
     if (subtitleEl) subtitleEl.textContent = subtitle;
@@ -169,7 +182,7 @@ function showEmptyState(title = '🔍 No streams detected', subtitle = 'Browse t
  */
 function handlePreview(stream: StreamInfo, endpointName?: string) {
   if (apiEndpoints.length === 0) {
-    logger.warn('endpoint', 'No endpoints configured');
+    logger.warn('No endpoints configured');
     return;
   }
 
@@ -191,13 +204,13 @@ function handlePreview(stream: StreamInfo, endpointName?: string) {
  */
 async function handleCallEndpoint(mode: 'fetch' | 'tab', stream: StreamInfo, endpointName?: string) {
   if (apiEndpoints.length === 0) {
-    logger.warn('endpoint', 'Please configure API endpoints in options first');
+    logger.warn('Please configure API endpoints in options first');
     return;
   }
 
   const action = mode === 'fetch' ? 'API call' : 'Open in tab';
   const endpoint = endpointName || 'default';
-  logger.info('apicall', `${action} starting: ${endpoint} → ${stream.type}`);
+  logger.info(`${action} starting: ${endpoint} → ${stream.type}`);
 
   // Delegate to broker via message
   try {
@@ -213,19 +226,19 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab', stream: StreamInfo, end
       const successMsg = mode === 'fetch'
         ? `✅ ${endpoint}: ${response.status || 'OK'}`
         : `✅ Opened in tab`;
-      logger.info('apicall', successMsg);
+      logger.info(successMsg);
 
       // Log response body separately in debug (keep it out of status bar)
       if (response.response) {
         const formatted = formatResponseBody(response.response);
-        logger.info('apicall', `Response body: ${formatted}`);
+        logger.info(`Response body: ${formatted}`);
       }
     } else {
       const errorMsg = response?.error ?? 'Unknown error';
-      logger.error('apicall', `${action} failed: ${endpoint} - ${errorMsg}`, response);
+      logger.error(`${action} failed: ${endpoint} - ${errorMsg}`, response);
     }
   } catch (error: any) {
-    logger.error('apicall', `Message failed: ${error.message}`, error);
+    logger.error(`Message failed: ${error.message}`, error);
   }
 }
 
@@ -236,9 +249,9 @@ async function handleCopyUrl(url: string) {
   try {
     await navigator.clipboard.writeText(url);
     logger.infoFlash(2000, 'clipboard', '📋 URL copied');
-    logger.debug('clipboard', `Copied: ${url}`);
+    logger.debug(`Copied: ${url}`);
   } catch (error) {
-    logger.warn('clipboard', 'Failed to copy URL', error);
+    logger.warn('Failed to copy URL', error);
   }
 }
 
@@ -247,15 +260,13 @@ async function handleCopyUrl(url: string) {
  */
 async function handleRefresh() {
   try {
-    const loading = document.getElementById('loading');
-    if (loading) loading.style.display = 'block';
+    if (els.loading) els.loading.style.display = 'block';
 
-    logger.debug('hover', 'Refresh clicked');
+    logger.debug('Refresh clicked');
     await loadStreams();
   } catch (error) {
-    logger.error('hover', 'Failed to refresh streams', error);
-    const loading = document.getElementById('loading');
-    if (loading) loading.style.display = 'none';
+    logger.error('Failed to refresh streams', error);
+    if (els.loading) els.loading.style.display = 'none';
   }
 }
 
@@ -263,11 +274,11 @@ async function handleRefresh() {
  * Handle options button - delegate to broker (can't open tabs from iframe)
  */
 async function handleOptions() {
-  logger.debug('hover', 'Options button clicked');
+  logger.debug('Options button clicked');
   try {
     await browser.runtime.sendMessage({ type: 'OPEN_OPTIONS' } as RuntimeMessage);
   } catch (error) {
-    logger.error('hover', 'Failed to open options', error);
+    logger.error('Failed to open options', error);
   }
 }
 
@@ -283,8 +294,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     await initialize();
   } catch (error) {
-    console.error('[hover-ui] Failed to initialize:', error);
-    const loadingEl = document.getElementById('loading');
-    if (loadingEl) loadingEl.style.display = 'none';
+    logger.error('Failed to initialize:', error);
+    if (els.loading) els.loading.style.display = 'none';
   }
 });
