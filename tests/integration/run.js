@@ -37,8 +37,10 @@ async function run() {
   const webExtPath = resolve(cwd, 'node_modules/.bin/web-ext');
   const args = [
     'run',
-    '--source-dir', '.',
-    '--start-url', `http://localhost:${port}/tests/test-page.html`,
+    '--source-dir',
+    '.',
+    '--start-url',
+    `http://localhost:${port}/tests/test-page.html`,
     '--verbose',
     '--no-input',
   ];
@@ -90,17 +92,25 @@ async function run() {
   try {
     await Promise.race([
       once(proc, 'exit'),
-      delay(5000).then(() => { proc.kill('SIGKILL'); })
+      delay(5000).then(() => {
+        proc.kill('SIGKILL');
+      }),
     ]);
   } catch {}
   server.close();
 
   const fatalRegex = /Error:|TypeError:|ReferenceError:|Unhandled/;
-  const hasStorageError = storageErrorRegex.test(stdout) || storageErrorRegex.test(stderr);
+  const hasStorageError =
+    storageErrorRegex.test(stdout) || storageErrorRegex.test(stderr);
   try {
     expect(addonInstalled, 'temporary add-on installed').to.equal(true);
-    expect(fatalRegex.test(stderr), 'no fatal errors in stderr').to.equal(false);
-    expect(hasStorageError, 'no storage API errors (check manifest has explicit addon ID)').to.equal(false);
+    expect(fatalRegex.test(stderr), 'no fatal errors in stderr').to.equal(
+      false,
+    );
+    expect(
+      hasStorageError,
+      'no storage API errors (check manifest has explicit addon ID)',
+    ).to.equal(false);
   } catch (err) {
     console.error('--- web-ext stdout ---');
     console.error(stdout);
@@ -113,8 +123,14 @@ async function run() {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('Extension Status:');
   console.log('  Installed:', addonInstalled ? '✓' : '✗');
-  console.log('  Fatal errors:', fatalRegex.test(stderr) ? '✗ Found' : '✓ None');
-  console.log('  Storage API:', hasStorageError ? '✗ Error (missing addon ID)' : '✓ OK');
+  console.log(
+    '  Fatal errors:',
+    fatalRegex.test(stderr) ? '✗ Found' : '✓ None',
+  );
+  console.log(
+    '  Storage API:',
+    hasStorageError ? '✗ Error (missing addon ID)' : '✓ OK',
+  );
   if (detections > 0) {
     console.log('Detection Status:');
     console.log('  Detected streams:', detections);
@@ -125,7 +141,7 @@ async function run() {
 run().catch((e) => {
   console.error('\n❌ Integration Failed');
   console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.error(e && e.stack || e);
+  console.error((e && e.stack) || e);
   console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   process.exit(1);
 });

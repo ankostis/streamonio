@@ -1,9 +1,10 @@
 /**
  * Unit tests for broker.ts message handlers
  */
-import { test } from 'node:test';
+
 import assert from 'node:assert/strict';
-import { type StreamInfo, type RuntimeMessage } from '../../src/types';
+import { test } from 'node:test';
+import type { RuntimeMessage, StreamInfo } from '../../src/types';
 
 // Mock browser APIs
 const mockBrowser = {
@@ -102,7 +103,11 @@ test('STREAM_DETECTED: initializes stream array on first detection', async () =>
   const result = await handleMessage(message, sender);
 
   assert.equal(result.success, true, 'Should return success');
-  assert.equal(tabStreams.has(1), true, 'Should initialize streams array for tab');
+  assert.equal(
+    tabStreams.has(1),
+    true,
+    'Should initialize streams array for tab',
+  );
   assert.equal(tabStreams.get(1)!.length, 1, 'Should have one stream');
   assert.equal(tabStreams.get(1)![0].url, 'https://example.com/stream.m3u8');
 });
@@ -252,8 +257,13 @@ test('RuntimeMessage type includes all handled message types', async () => {
   // Extract declared types from RuntimeMessage union in types.ts
   // Match the entire type definition including all union members
   // Pattern: export type RuntimeMessage = ... until final semicolon
-  const runtimeMessageMatch = typesContent.match(/export type RuntimeMessage\s*=\s*([\s\S]+?)\n(?=\n|$)/);
-  assert(runtimeMessageMatch, 'RuntimeMessage type definition not found in types.ts');
+  const runtimeMessageMatch = typesContent.match(
+    /export type RuntimeMessage\s*=\s*([\s\S]+?)\n(?=\n|$)/,
+  );
+  assert(
+    runtimeMessageMatch,
+    'RuntimeMessage type definition not found in types.ts',
+  );
 
   const declaredTypes = new Set<string>();
   const unionContent = runtimeMessageMatch[1];
@@ -264,7 +274,9 @@ test('RuntimeMessage type includes all handled message types', async () => {
   }
 
   console.log(`✓ Handled types: ${Array.from(handledTypes).sort().join(', ')}`);
-  console.log(`✓ Declared types: ${Array.from(declaredTypes).sort().join(', ')}`);
+  console.log(
+    `✓ Declared types: ${Array.from(declaredTypes).sort().join(', ')}`,
+  );
 
   // Verify all handled types are declared
   const missingTypes: string[] = [];
@@ -277,11 +289,13 @@ test('RuntimeMessage type includes all handled message types', async () => {
   assert.strictEqual(
     missingTypes.length,
     0,
-    `Message types handled but not declared in RuntimeMessage: ${missingTypes.join(', ')}`
+    `Message types handled but not declared in RuntimeMessage: ${missingTypes.join(', ')}`,
   );
 
   console.log(`✓ Handled types: ${Array.from(handledTypes).sort().join(', ')}`);
-  console.log(`✓ Declared types: ${Array.from(declaredTypes).sort().join(', ')}`);
+  console.log(
+    `✓ Declared types: ${Array.from(declaredTypes).sort().join(', ')}`,
+  );
 });
 
 test('No duplicate message type declarations in RuntimeMessage', async () => {
@@ -294,8 +308,13 @@ test('No duplicate message type declarations in RuntimeMessage', async () => {
   // Extract all declared types from types.ts
   // Match type declarations with possible whitespace/newlines
   const declaredTypesRegex = /type:\s*'([^']+)'/g;
-  const runtimeMessageMatch = content.match(/export type RuntimeMessage\s*=\s*([\s\S]*?);/);
-  assert(runtimeMessageMatch, 'RuntimeMessage type definition not found in types.ts');
+  const runtimeMessageMatch = content.match(
+    /export type RuntimeMessage\s*=\s*([\s\S]*?);/,
+  );
+  assert(
+    runtimeMessageMatch,
+    'RuntimeMessage type definition not found in types.ts',
+  );
 
   const types: string[] = [];
   const unionContent = runtimeMessageMatch[1];
@@ -310,6 +329,6 @@ test('No duplicate message type declarations in RuntimeMessage', async () => {
   assert.strictEqual(
     types.length,
     uniqueTypes.size,
-    `Duplicate message types found: ${duplicates.join(', ')}`
+    `Duplicate message types found: ${duplicates.join(', ')}`,
   );
 });

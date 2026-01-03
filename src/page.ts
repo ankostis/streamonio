@@ -2,14 +2,17 @@
  * stream-call Content Script (page-context)
  * Detects streaming media on web pages
  */
-import { isStreamUrl as isStreamUrlShared, getStreamType as getStreamTypeShared } from './detect';
+
 import { debounce } from './debounce';
+import {
+  getStreamType as getStreamTypeShared,
+  isStreamUrl as isStreamUrlShared,
+} from './detect';
 import { Logger, LogLevel } from './logger';
+
 // Module content script (no exports needed)
 
 (() => {
-  'use strict';
-
   const logger = new Logger('page');
   const detectedStreams = new Set<string>();
 
@@ -26,7 +29,7 @@ import { Logger, LogLevel } from './logger';
   function isStreamUrl(url: string | null | undefined): boolean {
     if (!url || typeof url !== 'string') return false;
 
-      return isStreamUrlShared(url ?? null, window.location.href);
+    return isStreamUrlShared(url ?? null, window.location.href);
   }
 
   /**
@@ -35,7 +38,7 @@ import { Logger, LogLevel } from './logger';
   function getStreamType(url: string): string {
     const urlLower = url.toLowerCase();
 
-      return getStreamTypeShared(url);
+    return getStreamTypeShared(url);
   }
 
   /**
@@ -56,7 +59,7 @@ import { Logger, LogLevel } from './logger';
       .sendMessage({
         type: 'STREAM_DETECTED',
         url,
-        streamType: getStreamType(url)
+        streamType: getStreamType(url),
       })
       .then(() => {
         // Relay detection status to a test ping if needed
@@ -66,7 +69,11 @@ import { Logger, LogLevel } from './logger';
       })
       .catch((err) => {
         // Message send can fail during page navigation/unload - this is expected
-        logger.warn('page', `Failed to report stream '${url}' to broker worker`, err);
+        logger.warn(
+          'page',
+          `Failed to report stream '${url}' to broker worker`,
+          err,
+        );
         // In a future enhancement, could track failure count and surface via a UI overlay.
       });
   }
@@ -75,7 +82,8 @@ import { Logger, LogLevel } from './logger';
    * Monitor media elements (audio/video)
    */
   function monitorMediaElements() {
-    const mediaElements = document.querySelectorAll<HTMLMediaElement>('audio, video');
+    const mediaElements =
+      document.querySelectorAll<HTMLMediaElement>('audio, video');
 
     mediaElements.forEach((element) => {
       if (element.src && isStreamUrl(element.src)) {
@@ -100,7 +108,7 @@ import { Logger, LogLevel } from './logger';
 
         observer.observe(element, {
           attributes: true,
-          attributeFilter: ['src']
+          attributeFilter: ['src'],
         });
       }
     });
@@ -120,7 +128,11 @@ import { Logger, LogLevel } from './logger';
     };
 
     const originalOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function (method: string, url?: string | URL, ...rest: any[]) {
+    XMLHttpRequest.prototype.open = function (
+      method: string,
+      url?: string | URL,
+      ...rest: any[]
+    ) {
       const urlString = typeof url === 'string' ? url : url?.toString();
       if (isStreamUrl(urlString)) {
         reportStream(urlString as string);
@@ -144,7 +156,7 @@ import { Logger, LogLevel } from './logger';
     if (document.body) {
       observer.observe(document.body, {
         childList: true,
-        subtree: true
+        subtree: true,
       });
     }
   }
@@ -159,10 +171,12 @@ import { Logger, LogLevel } from './logger';
       { name: 'HLS.js', key: 'Hls' },
       { name: 'Video.js', key: 'videojs' },
       { name: 'JW Player', key: 'jwplayer' },
-      { name: 'Shaka Player', key: 'shaka' }
+      { name: 'Shaka Player', key: 'shaka' },
     ];
 
-    const detected = frameworks.filter(fw => anyWindow[fw.key]).map(fw => fw.name);
+    const detected = frameworks
+      .filter((fw) => anyWindow[fw.key])
+      .map((fw) => fw.name);
     if (detected.length > 0) {
       logger.debug('page', `Frameworks detected: ${detected.join(', ')}`);
     }
@@ -194,7 +208,10 @@ import { Logger, LogLevel } from './logger';
     // Check if hover panel is enabled in settings
     const config = await browser.storage.sync.get({ enableHoverPanel: false });
     if (!config.enableHoverPanel) {
-      logger.info('page', 'Hover panel disabled in settings, skipping injection');
+      logger.info(
+        'page',
+        'Hover panel disabled in settings, skipping injection',
+      );
       return;
     }
 
@@ -222,7 +239,9 @@ import { Logger, LogLevel } from './logger';
     const togglePanel = (forceClose = false) => {
       const isVisible = iframe.style.transform === 'translateX(0px)';
       const shouldHide = forceClose || isVisible;
-      iframe.style.transform = shouldHide ? 'translateX(100%)' : 'translateX(0px)';
+      iframe.style.transform = shouldHide
+        ? 'translateX(100%)'
+        : 'translateX(0px)';
       // Button stays fixed, no transform needed
     };
 

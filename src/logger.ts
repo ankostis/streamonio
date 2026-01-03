@@ -5,15 +5,15 @@
  * =============
  *
  * PERSISTENT STATUS (add to ring + set slot, stays until cleared):
- *   logger.error(slot, ...msg)
- *   logger.warn(slot, ...msg)
- *   logger.info(slot, ...msg)
- *   logger.debug(slot, ...msg)
+ *   logger.error(...msg)
+ *   logger.warn(...msg)
+ *   logger.info(...msg)
+ *   logger.debug(...msg)
  *
  * TRANSIENT STATUS (add to ring + set slot, auto-expires after timeout):
- *   logger.errorFlash(timeout, slot, ...msg)
- *   logger.warnFlash(timeout, slot, ...msg)
- *   logger.infoFlash(timeout, slot, ...msg)
+ *   logger.errorFlash(timeout, ...msg)
+ *   logger.warnFlash(timeout, ...msg)
+ *   logger.infoFlash(timeout, ...msg)
  *
  * QUERY:
  *   logger.transientMsg()            → Current visible message (highest priority)
@@ -37,14 +37,14 @@
  * - Status messages embedded in SlotMessage (expireTimestamp field)
  * - Display priority: level first (error > warn > info > debug), then most recent
  * - Transient = has expireTimestamp, persistent = no expireTimestamp
+ * - Category moved to constructor (Phase 1 refactor)
  */
-export {};
 
 export enum LogLevel {
   Error = 'error',
   Warn = 'warn',
   Info = 'info',
-  Debug = 'debug'
+  Debug = 'debug',
 }
 
 export type LogCategory = string;
@@ -63,7 +63,7 @@ export interface SlotMessage {
   message: string;
   messageArgs?: unknown[];
   timestamp: Date;
-  expireTimestamp?: Date;  // undefined = persistent, Date = transient (auto-clear)
+  expireTimestamp?: Date; // undefined = persistent, Date = transient (auto-clear)
 }
 
 function formatArg(arg: unknown): string {
@@ -103,7 +103,13 @@ export class Logger {
   // ========================================================================
 
   error(...msg: unknown[]): void {
-    this.setSlotWithEmoji(LogLevel.Error, this.category, undefined, '❌', ...msg);
+    this.setSlotWithEmoji(
+      LogLevel.Error,
+      this.category,
+      undefined,
+      '❌',
+      ...msg,
+    );
   }
 
   warn(...msg: unknown[]): void {
@@ -124,17 +130,35 @@ export class Logger {
 
   errorFlash(timeout: number, ...msg: unknown[]): void {
     const expireTimestamp = new Date(Date.now() + timeout);
-    this.setSlotWithEmoji(LogLevel.Error, this.category, expireTimestamp, '❌', ...msg);
+    this.setSlotWithEmoji(
+      LogLevel.Error,
+      this.category,
+      expireTimestamp,
+      '❌',
+      ...msg,
+    );
   }
 
   warnFlash(timeout: number, ...msg: unknown[]): void {
     const expireTimestamp = new Date(Date.now() + timeout);
-    this.setSlotWithEmoji(LogLevel.Warn, this.category, expireTimestamp, '⚠️', ...msg);
+    this.setSlotWithEmoji(
+      LogLevel.Warn,
+      this.category,
+      expireTimestamp,
+      '⚠️',
+      ...msg,
+    );
   }
 
   infoFlash(timeout: number, ...msg: unknown[]): void {
     const expireTimestamp = new Date(Date.now() + timeout);
-    this.setSlotWithEmoji(LogLevel.Info, this.category, expireTimestamp, 'ℹ️', ...msg);
+    this.setSlotWithEmoji(
+      LogLevel.Info,
+      this.category,
+      expireTimestamp,
+      'ℹ️',
+      ...msg,
+    );
   }
 
   // ========================================================================
@@ -153,7 +177,11 @@ export class Logger {
   ): void {
     // Check if first message already starts with emoji (common emoji range)
     const firstMsg = msg[0];
-    const startsWithEmoji = typeof firstMsg === 'string' && /^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u2705\u274c\u26a0\u2139]/u.test(firstMsg);
+    const startsWithEmoji =
+      typeof firstMsg === 'string' &&
+      /^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u2705\u274c\u26a0\u2139]/u.test(
+        firstMsg,
+      );
 
     if (startsWithEmoji) {
       // Message already has emoji, don't add default
@@ -178,7 +206,7 @@ export class Logger {
       level,
       category: slot,
       message,
-      args: msg
+      args: msg,
     };
     this.logsRing.push(entry);
     if (this.logsRing.length > this.maxEntries) {
@@ -192,7 +220,7 @@ export class Logger {
       message,
       messageArgs: msg,
       timestamp: new Date(),
-      expireTimestamp
+      expireTimestamp,
     });
 
     // Console passthrough
@@ -200,7 +228,7 @@ export class Logger {
       [LogLevel.Error]: console.error,
       [LogLevel.Warn]: console.warn,
       [LogLevel.Info]: console.info,
-      [LogLevel.Debug]: console.debug
+      [LogLevel.Debug]: console.debug,
     };
     consoleMethods[level](`[${slot}]`, ...(msg.length > 0 ? msg : [message]));
 
@@ -236,12 +264,15 @@ export class Logger {
 
     if (earliest) {
       const delay = earliest.getTime() - Date.now();
-      this.expirationTimer = setTimeout(() => {
-        // Don't clear expired slots - they stay in Map and get filtered by transientMsg()
-        // Just notify UI so it can re-render without the expired message
-        this.notifyStatus();
-        this.scheduleNextExpiration();
-      }, Math.max(0, delay));
+      this.expirationTimer = setTimeout(
+        () => {
+          // Don't clear expired slots - they stay in Map and get filtered by transientMsg()
+          // Just notify UI so it can re-render without the expired message
+          this.notifyStatus();
+          this.scheduleNextExpiration();
+        },
+        Math.max(0, delay),
+      );
     }
   }
 
@@ -261,7 +292,7 @@ export class Logger {
     //
     const now = Date.now();
     const allMessages = Array.from(this.slots.values()).filter(
-      (m) => !m.expireTimestamp || m.expireTimestamp.getTime() > now
+      (m) => !m.expireTimestamp || m.expireTimestamp.getTime() > now,
     );
 
     // Scan by level (exclude Debug from status bar), then sort by post-timestamp.
@@ -270,7 +301,9 @@ export class Logger {
     for (const level of levels) {
       const messagesAtLevel = allMessages.filter((m) => m.level === level);
       if (messagesAtLevel.length > 0) {
-        return messagesAtLevel.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0];
+        return messagesAtLevel.sort(
+          (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
+        )[0];
       }
     }
 
@@ -279,9 +312,12 @@ export class Logger {
 
   filterLogs(levels?: LogLevel[], categories?: LogCategory[]): LogEntry[] {
     return this.logsRing.filter((entry) => {
-      const levelMatch = !levels || levels.length === 0 || levels.includes(entry.level);
+      const levelMatch =
+        !levels || levels.length === 0 || levels.includes(entry.level);
       const categoryMatch =
-        !categories || categories.length === 0 || categories.includes(entry.category);
+        !categories ||
+        categories.length === 0 ||
+        categories.includes(entry.category);
       return levelMatch && categoryMatch;
     });
   }
@@ -292,7 +328,7 @@ export class Logger {
       level: entry.level,
       category: entry.category,
       message: entry.message,
-      args: entry.args.map(formatArg)
+      args: entry.args.map(formatArg),
     }));
     return JSON.stringify(exportData, null, 2);
   }

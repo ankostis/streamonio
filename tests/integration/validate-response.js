@@ -17,15 +17,25 @@ function validateHttpbinResponse(response) {
 
     // Validate headers
     if (response.headers['User-Agent']) {
-      passed.push('✅ User-Agent header present: ' + response.headers['User-Agent'].substring(0, 50));
+      passed.push(
+        '✅ User-Agent header present: ' +
+          response.headers['User-Agent'].substring(0, 50),
+      );
     } else {
-      issues.push('⚠️  User-Agent header missing (includePageHeaders may be disabled)');
+      issues.push(
+        '⚠️  User-Agent header missing (includePageHeaders may be disabled)',
+      );
     }
 
     if (response.headers['Cookie']) {
-      passed.push('✅ Cookie header present: ' + response.headers['Cookie'].substring(0, 50));
+      passed.push(
+        '✅ Cookie header present: ' +
+          response.headers['Cookie'].substring(0, 50),
+      );
     } else {
-      issues.push('ℹ️  Cookie header missing (page may have no cookies or includeCookies disabled)');
+      issues.push(
+        'ℹ️  Cookie header missing (page may have no cookies or includeCookies disabled)',
+      );
     }
 
     if (response.headers['Referer']) {
@@ -37,7 +47,10 @@ function validateHttpbinResponse(response) {
     if (response.headers['Content-Type'] === 'application/json') {
       passed.push('✅ Content-Type is application/json');
     } else {
-      issues.push('❌ Content-Type not application/json: ' + response.headers['Content-Type']);
+      issues.push(
+        '❌ Content-Type not application/json: ' +
+          response.headers['Content-Type'],
+      );
     }
   }
 
@@ -77,10 +90,14 @@ function validateHttpbinResponse(response) {
       passed.push('✅ timestamp present: ' + response.json.timestamp);
 
       // Validate ISO format
-      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(response.json.timestamp)) {
+      if (
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(response.json.timestamp)
+      ) {
         passed.push('✅ timestamp is valid ISO format');
       } else {
-        issues.push('⚠️  timestamp not in ISO format: ' + response.json.timestamp);
+        issues.push(
+          '⚠️  timestamp not in ISO format: ' + response.json.timestamp,
+        );
       }
     } else {
       issues.push('❌ timestamp missing in body');
@@ -93,20 +110,22 @@ function validateHttpbinResponse(response) {
 
   if (passed.length > 0) {
     console.log('✅ Passed Checks:');
-    passed.forEach(p => console.log('   ' + p));
+    passed.forEach((p) => console.log('   ' + p));
     console.log('');
   }
 
   if (issues.length > 0) {
     console.log('⚠️  Issues Found:');
-    issues.forEach(i => console.log('   ' + i));
+    issues.forEach((i) => console.log('   ' + i));
     console.log('');
   }
 
-  const criticalIssues = issues.filter(i => i.startsWith('❌'));
+  const criticalIssues = issues.filter((i) => i.startsWith('❌'));
   if (criticalIssues.length === 0) {
     console.log('✅ VALIDATION PASSED');
-    console.log(`   ${passed.length} checks passed, ${issues.length} warnings\n`);
+    console.log(
+      `   ${passed.length} checks passed, ${issues.length} warnings\n`,
+    );
     return true;
   } else {
     console.log('❌ VALIDATION FAILED');
@@ -122,7 +141,9 @@ if (require.main === module) {
   if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
     console.log('Usage: node validate-response.js <httpbin-response.json>');
     console.log('');
-    console.log('Validates httpbin.org/anything response for stream-call integration.');
+    console.log(
+      'Validates httpbin.org/anything response for stream-call integration.',
+    );
     console.log('');
     console.log('Example:');
     console.log('  # Save response from browser console to file');

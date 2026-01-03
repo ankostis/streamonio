@@ -4,11 +4,11 @@
  */
 export function debounce<T extends (...args: any[]) => void>(
   fn: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
   let timerId: ReturnType<typeof setTimeout> | null = null;
 
-  return function (...args: Parameters<T>): void {
+  return (...args: Parameters<T>): void => {
     if (timerId !== null) {
       clearTimeout(timerId);
     }
@@ -18,5 +18,3 @@ export function debounce<T extends (...args: any[]) => void>(
     }, delay);
   };
 }
-
-export {};

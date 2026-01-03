@@ -1,12 +1,20 @@
 /**
  * stream-call options Script to define & CRUD endpoints (extension-context)
  */
-export {};
 
+import { initLogging } from './components-ui';
+import {
+  type ApiEndpoint,
+  callEndpoint,
+  DEFAULT_CONFIG,
+  formatResponseBody,
+  getBuiltInEndpoints,
+  previewCall,
+  suggestEndpointName,
+  validateEndpoints,
+} from './endpoint';
 import { LogLevel } from './logger';
 import { applyLogFiltering } from './logger-ui';
-import { initLogging } from './components-ui';
-import { ApiEndpoint, suggestEndpointName, validateEndpoints, DEFAULT_CONFIG, getBuiltInEndpoints, callEndpoint, previewCall, formatResponseBody } from './endpoint';
 
 type Config = typeof DEFAULT_CONFIG;
 
@@ -19,36 +27,46 @@ const els = {
   statusBar: () => document.getElementById('status-bar') as HTMLDivElement,
   statusIcon: () => document.getElementById('status-icon') as HTMLSpanElement,
   statusMsg: () => document.getElementById('status-message') as HTMLSpanElement,
-  endpointsList: () => document.getElementById('endpoints-list') as HTMLDivElement,
-  endpointsEmpty: () => document.getElementById('endpoints-empty') as HTMLDivElement,
+  endpointsList: () =>
+    document.getElementById('endpoints-list') as HTMLDivElement,
+  endpointsEmpty: () =>
+    document.getElementById('endpoints-empty') as HTMLDivElement,
   editorCard: () => document.getElementById('editor-card') as HTMLDivElement,
-  editorTitle: () => document.getElementById('editor-title') as HTMLHeadingElement,
-  saveBtn: () => document.getElementById('save-endpoint-btn') as HTMLButtonElement,
-  saveNewBtn: () => document.getElementById('save-new-btn') as HTMLButtonElement,
+  editorTitle: () =>
+    document.getElementById('editor-title') as HTMLHeadingElement,
+  saveBtn: () =>
+    document.getElementById('save-endpoint-btn') as HTMLButtonElement,
+  saveNewBtn: () =>
+    document.getElementById('save-new-btn') as HTMLButtonElement,
   name: () => document.getElementById('endpoint-name') as HTMLInputElement,
-  description: () => document.getElementById('endpoint-description') as HTMLInputElement,
+  description: () =>
+    document.getElementById('endpoint-description') as HTMLInputElement,
   method: () => document.getElementById('endpoint-method') as HTMLSelectElement,
-  endpoint: () => document.getElementById('endpoint-endpoint') as HTMLInputElement,
+  endpoint: () =>
+    document.getElementById('endpoint-endpoint') as HTMLInputElement,
   body: () => document.getElementById('endpoint-body') as HTMLTextAreaElement,
-  includeCookies: () => document.getElementById('endpoint-include-cookies') as HTMLInputElement,
-  includeHeaders: () => document.getElementById('endpoint-include-headers') as HTMLInputElement,
+  includeCookies: () =>
+    document.getElementById('endpoint-include-cookies') as HTMLInputElement,
+  includeHeaders: () =>
+    document.getElementById('endpoint-include-headers') as HTMLInputElement,
   headersRows: () => document.getElementById('headers-rows') as HTMLDivElement,
   logViewer: () => document.getElementById('log-viewer') as HTMLDivElement,
   logClear: () => document.getElementById('log-clear') as HTMLButtonElement,
   logExport: () => document.getElementById('log-export') as HTMLButtonElement,
-  enableHoverPanel: () => document.getElementById('enable-hover-panel') as HTMLInputElement,
+  enableHoverPanel: () =>
+    document.getElementById('enable-hover-panel') as HTMLInputElement,
   aboutVersion: () => document.getElementById('about-version') as HTMLElement,
   importModal: () => els.importModal() as HTMLDivElement,
   importPreview: () => els.importPreview() as HTMLDivElement,
   importUrlModal: () => els.importUrlModal() as HTMLDivElement,
-  importUrlInput: () => els.importUrlInput() as HTMLInputElement
+  importUrlInput: () => els.importUrlInput() as HTMLInputElement,
 };
 
 // Initialize logging infrastructure
 const logging = initLogging('options', {
   statusBar: els.statusBar(),
   statusMsg: els.statusMsg(),
-  logViewer: els.logViewer()
+  logViewer: els.logViewer(),
 });
 const logger = logging.logger;
 const appendLog = logging.appendLog;
@@ -89,12 +107,17 @@ function loadSettings() {
   browser.storage.sync
     .get(DEFAULT_CONFIG)
     .then((config) => {
-      const validated = validateEndpoints((config as Config).apiEndpoints || '[]');
+      const validated = validateEndpoints(
+        (config as Config).apiEndpoints || '[]',
+      );
       endpoints = validated.valid ? validated.parsed : [];
-      els.enableHoverPanel().checked = (config as Config).enableHoverPanel ?? false;
+      els.enableHoverPanel().checked =
+        (config as Config).enableHoverPanel ?? false;
       renderList();
       if (endpoints.length === 0) {
-        logger.info('No API endpoints configured yet. Add your first endpoint below.');
+        logger.info(
+          'No API endpoints configured yet. Add your first endpoint below.',
+        );
       }
     })
     .catch((error) => {
@@ -171,7 +194,9 @@ function renderList() {
     const summary = document.createElement('div');
     summary.className = 'endpoint-summary';
     const method = (endpoint.method || 'POST').toUpperCase();
-    const headersCount = endpoint.headers ? Object.keys(endpoint.headers).length : 0;
+    const headersCount = endpoint.headers
+      ? Object.keys(endpoint.headers).length
+      : 0;
     const flags = [];
     if (endpoint.includeCookies) flags.push('🍪');
     if (endpoint.includePageHeaders) flags.push('📋');
@@ -271,7 +296,7 @@ function newEndpointDefaults(): ApiEndpoint {
     headers: {},
     bodyTemplate: '',
     includeCookies: false,
-    includePageHeaders: false
+    includePageHeaders: false,
   };
 }
 
@@ -290,13 +315,13 @@ function buildEndpointFromForm(): ApiEndpoint | null {
   }
 
   const headers: Record<string, string> = {};
-  els.headersRows()
+  els
+    .headersRows()
     .querySelectorAll('.header-row')
     .forEach((row) => {
-      const [keyInput, valueInput] = Array.from(row.querySelectorAll('input')) as [
-        HTMLInputElement,
-        HTMLInputElement
-      ];
+      const [keyInput, valueInput] = Array.from(
+        row.querySelectorAll('input'),
+      ) as [HTMLInputElement, HTMLInputElement];
       const key = keyInput.value.trim();
       const value = valueInput.value.trim();
       if (key) {
@@ -313,7 +338,7 @@ function buildEndpointFromForm(): ApiEndpoint | null {
     bodyTemplate: bodyTemplate || undefined,
     includeCookies,
     includePageHeaders,
-    active: editingIndex !== null ? endpoints[editingIndex].active : true
+    active: editingIndex !== null ? endpoints[editingIndex].active : true,
   };
 
   return apiEndpoint;
@@ -332,7 +357,7 @@ function saveEndpoint() {
 
   const validated = validateEndpoints(JSON.stringify(updated));
   if (!validated.valid) {
-    logger.error( 'endpoint', validated.errorMessage || 'Invalid API endpoint');
+    logger.error('endpoint', validated.errorMessage || 'Invalid API endpoint');
     return;
   }
 
@@ -345,7 +370,7 @@ function saveEndpoint() {
       logger.info(`Endpoint saved: ${endpoints[editingIndex!].name}`);
     })
     .catch((error) => {
-      logger.error( 'storage', 'Failed to save API endpoint', error);
+      logger.error('storage', 'Failed to save API endpoint', error);
     });
 }
 
@@ -360,10 +385,10 @@ function saveAsNew() {
   if (!candidate) return;
 
   // Generate unique name by appending counter
-  let baseName = candidate.name || 'endpoint';
+  const baseName = candidate.name || 'endpoint';
   let newName = baseName;
   let counter = 2;
-  const existingNames = new Set(endpoints.map(e => e.name));
+  const existingNames = new Set(endpoints.map((e) => e.name));
 
   while (existingNames.has(newName)) {
     newName = `${baseName}-${counter}`;
@@ -375,7 +400,7 @@ function saveAsNew() {
 
   const validated = validateEndpoints(JSON.stringify(updated));
   if (!validated.valid) {
-    logger.error( 'endpoint', validated.errorMessage || 'Invalid API endpoint');
+    logger.error('endpoint', validated.errorMessage || 'Invalid API endpoint');
     return;
   }
 
@@ -388,7 +413,7 @@ function saveAsNew() {
       logger.info(`Endpoint saved: ${newName}`);
     })
     .catch((error) => {
-      logger.error( 'storage', 'Failed to save API endpoint', error);
+      logger.error('storage', 'Failed to save API endpoint', error);
     });
 }
 
@@ -403,7 +428,10 @@ function deleteEndpoint(index: number) {
   const updated = endpoints.filter((_, i) => i !== index);
   const validated = validateEndpoints(JSON.stringify(updated));
   if (!validated.valid) {
-    logger.error( 'endpoint', validated.errorMessage || 'Failed to delete API endpoint');
+    logger.error(
+      'endpoint',
+      validated.errorMessage || 'Failed to delete API endpoint',
+    );
     return;
   }
 
@@ -417,7 +445,7 @@ function deleteEndpoint(index: number) {
       logger.info(`Endpoint deleted: ${endpoint.name}`);
     })
     .catch((error) => {
-      logger.error( 'storage', 'Failed to delete API endpoint', error);
+      logger.error('storage', 'Failed to delete API endpoint', error);
     });
 }
 
@@ -429,7 +457,7 @@ function handlePreview() {
     streamUrl: 'https://example.com/stream.m3u8',
     timestamp: new Date().toISOString(),
     pageUrl: 'https://example.com/page',
-    pageTitle: 'Example page'
+    pageTitle: 'Example page',
   } as Record<string, unknown>;
 
   previewCall(candidate, context, logger);
@@ -442,7 +470,7 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab') {
   // Get current form endpoint
   const candidate = buildEndpointFromForm();
   if (!candidate) {
-    logger.error( 'endpoint', 'Invalid endpoint configuration');
+    logger.error('endpoint', 'Invalid endpoint configuration');
     return;
   }
 
@@ -451,7 +479,7 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab') {
   const pageTitle = 'Test Page - stream-call';
 
   const action = mode === 'fetch' ? 'Validating endpoint' : 'Opening in tab';
-  logger.info( 'apicall', `${action}: ${candidate.name} → ${testUrl}`);
+  logger.info('apicall', `${action}: ${candidate.name} → ${testUrl}`);
   logger.info(`${action}: ${candidate.name}`, { endpoint: candidate });
 
   // Direct call (options runs in extension context)
@@ -462,13 +490,14 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab') {
     pageTitle,
     endpointName: candidate.name,
     apiEndpoints: [candidate],
-    logger
+    logger,
   });
 
   if (response.success) {
-    const successMsg = mode === 'fetch'
-      ? `✅ ${candidate.name}: ${response.status || 'OK'}`
-      : `✅ Opened in new tab: ${response.details || testUrl}`;
+    const successMsg =
+      mode === 'fetch'
+        ? `✅ ${candidate.name}: ${response.status || 'OK'}`
+        : `✅ Opened in new tab: ${response.details || testUrl}`;
     logger.info(successMsg);
 
     // Log response body separately in debug (keep it out of status bar)
@@ -477,21 +506,28 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab') {
       logger.info(`Response body: ${formatted}`);
     }
   } else {
-    logger.error(`${action} failed: ${candidate.name} - ${response.error}`, { error: response.error });
+    logger.error(`${action} failed: ${candidate.name} - ${response.error}`, {
+      error: response.error,
+    });
   }
 }
 
 function resetBuiltIns() {
-  if (!confirm('Reset built-in blueprints to defaults? (User-defined endpoints will be preserved)')) return;
+  if (
+    !confirm(
+      'Reset built-in blueprints to defaults? (User-defined endpoints will be preserved)',
+    )
+  )
+    return;
 
   const builtIns = getBuiltInEndpoints();
-  const builtInNames = new Set(builtIns.map(e => e.name));
-  const userEndpoints = endpoints.filter(e => !builtInNames.has(e.name));
+  const builtInNames = new Set(builtIns.map((e) => e.name));
+  const userEndpoints = endpoints.filter((e) => !builtInNames.has(e.name));
   const merged = [...builtIns, ...userEndpoints];
 
   const validated = validateEndpoints(JSON.stringify(merged));
   if (!validated.valid) {
-    logger.error( 'endpoint', 'Failed to validate merged endpoints');
+    logger.error('endpoint', 'Failed to validate merged endpoints');
     return;
   }
 
@@ -500,10 +536,12 @@ function resetBuiltIns() {
     .then(() => {
       loadSettings();
       closeEditor();
-      logger.info(`Built-ins restored: ${builtIns.length} built-in, ${userEndpoints.length} user`);
+      logger.info(
+        `Built-ins restored: ${builtIns.length} built-in, ${userEndpoints.length} user`,
+      );
     })
     .catch((error) => {
-      logger.error( 'endpoint', 'Failed to reset built-ins', error);
+      logger.error('endpoint', 'Failed to reset built-ins', error);
     });
 }
 
@@ -518,13 +556,13 @@ function clearAllEndpoints() {
       logger.info('All endpoints cleared');
     })
     .catch((error) => {
-      logger.error( 'endpoint', 'Failed to clear endpoints', error);
+      logger.error('endpoint', 'Failed to clear endpoints', error);
     });
 }
 
 function exportEndpoints() {
   if (endpoints.length === 0) {
-    logger.warn( 'endpoint', 'No API endpoints to export');
+    logger.warn('endpoint', 'No API endpoints to export');
     return;
   }
 
@@ -554,14 +592,17 @@ function handleFileSelect(e: Event) {
       const validated = validateEndpoints(JSON.stringify(parsed));
 
       if (!validated.valid) {
-        logger.error( 'endpoint', `Invalid file: ${validated.errorMessage}`);
+        logger.error('endpoint', `Invalid file: ${validated.errorMessage}`);
         return;
       }
 
       pendingImportEndpoints = validated.parsed;
       showImportModal();
     } catch (error: any) {
-      logger.error( 'endpoint', `Failed to read file: ${error?.message ?? 'Invalid JSON'}`);
+      logger.error(
+        'endpoint',
+        `Failed to read file: ${error?.message ?? 'Invalid JSON'}`,
+      );
     }
   };
   reader.readAsText(file);
@@ -587,7 +628,9 @@ function convertGistUrl(url: string): string {
   // Convert GitHub gist URLs to raw format
   // https://gist.github.com/user/abc123 -> https://gist.githubusercontent.com/user/abc123/raw/
   // https://gist.github.com/user/abc123/def456 -> https://gist.githubusercontent.com/user/abc123/raw/def456/
-  const gistMatch = url.match(/^https?:\/\/gist\.github\.com\/([^\/]+)\/([a-f0-9]+)(?:\/([a-f0-9]+))?/);
+  const gistMatch = url.match(
+    /^https?:\/\/gist\.github\.com\/([^/]+)\/([a-f0-9]+)(?:\/([a-f0-9]+))?/,
+  );
   if (gistMatch) {
     const [, user, gistId, revision] = gistMatch;
     return revision
@@ -620,7 +663,9 @@ async function fetchFromUrl() {
   try {
     const response = await fetch(fetchUrl);
     if (!response.ok) {
-      logger.error(`Failed to fetch: ${response.status} ${response.statusText}`);
+      logger.error(
+        `Failed to fetch: ${response.status} ${response.statusText}`,
+      );
       return;
     }
 
@@ -638,7 +683,10 @@ async function fetchFromUrl() {
     showImportModal();
     logger.info(`Fetched ${validated.parsed.length} endpoint(s) from URL`);
   } catch (error: any) {
-    logger.error(`Failed to fetch: ${error?.message ?? 'Unknown error'}`, error);
+    logger.error(
+      `Failed to fetch: ${error?.message ?? 'Unknown error'}`,
+      error,
+    );
   }
 }
 
@@ -646,8 +694,12 @@ function showImportModal() {
   const modal = els.importModal() as HTMLDivElement;
   const preview = els.importPreview() as HTMLDivElement;
 
-  const dupes = pendingImportEndpoints.filter((p) => endpoints.some((existing) => existing.name === p.name));
-  const newEndpoints = pendingImportEndpoints.filter((p) => !endpoints.some((existing) => existing.name === p.name));
+  const dupes = pendingImportEndpoints.filter((p) =>
+    endpoints.some((existing) => existing.name === p.name),
+  );
+  const newEndpoints = pendingImportEndpoints.filter(
+    (p) => !endpoints.some((existing) => existing.name === p.name),
+  );
 
   let previewText = `Importing ${pendingImportEndpoints.length} endpoint(s):\n\n`;
   if (newEndpoints.length > 0) {
@@ -670,14 +722,22 @@ function closeImportModal() {
 function performImport(merge: boolean) {
   const updated = merge
     ? [
-        ...endpoints.filter((p) => !pendingImportEndpoints.some((imported) => imported.name === p.name)),
-        ...pendingImportEndpoints
+        ...endpoints.filter(
+          (p) =>
+            !pendingImportEndpoints.some(
+              (imported) => imported.name === p.name,
+            ),
+        ),
+        ...pendingImportEndpoints,
       ]
     : pendingImportEndpoints;
 
   const validated = validateEndpoints(JSON.stringify(updated));
   if (!validated.valid) {
-    logger.error( 'endpoint', `Invalid endpoints import: ${validated.errorMessage}`);
+    logger.error(
+      'endpoint',
+      `Invalid endpoints import: ${validated.errorMessage}`,
+    );
     return;
   }
 
@@ -692,31 +752,63 @@ function performImport(merge: boolean) {
       logger.info(`${validated.parsed.length} endpoint(s) ${action}`);
     })
     .catch((error) => {
-      logger.error( 'storage', 'Failed to import endpoints', error);
+      logger.error('storage', 'Failed to import endpoints', error);
     });
 }
 
 function wireEvents() {
-  document.getElementById('save-endpoint-btn')?.addEventListener('click', saveEndpoint);
+  document
+    .getElementById('save-endpoint-btn')
+    ?.addEventListener('click', saveEndpoint);
   document.getElementById('save-new-btn')?.addEventListener('click', saveAsNew);
-  document.getElementById('clear-edit-btn')?.addEventListener('click', closeEditor);
-  document.getElementById('preview-btn')?.addEventListener('click', handlePreview);
-  document.getElementById('add-header-row')?.addEventListener('click', () => addHeaderRow());
-  document.getElementById('call-btn')?.addEventListener('click', () => handleCallEndpoint('fetch'));
-  document.getElementById('open-tab-btn')?.addEventListener('click', () => handleCallEndpoint('tab'));
-  document.getElementById('reset-btn')?.addEventListener('click', resetBuiltIns);
-  document.getElementById('clear-all-btn')?.addEventListener('click', clearAllEndpoints);
-  document.getElementById('export-btn')?.addEventListener('click', exportEndpoints);
+  document
+    .getElementById('clear-edit-btn')
+    ?.addEventListener('click', closeEditor);
+  document
+    .getElementById('preview-btn')
+    ?.addEventListener('click', handlePreview);
+  document
+    .getElementById('add-header-row')
+    ?.addEventListener('click', () => addHeaderRow());
+  document
+    .getElementById('call-btn')
+    ?.addEventListener('click', () => handleCallEndpoint('fetch'));
+  document
+    .getElementById('open-tab-btn')
+    ?.addEventListener('click', () => handleCallEndpoint('tab'));
+  document
+    .getElementById('reset-btn')
+    ?.addEventListener('click', resetBuiltIns);
+  document
+    .getElementById('clear-all-btn')
+    ?.addEventListener('click', clearAllEndpoints);
+  document
+    .getElementById('export-btn')
+    ?.addEventListener('click', exportEndpoints);
   document.getElementById('import-file-btn')?.addEventListener('click', () => {
     (document.getElementById('import-file-input') as HTMLInputElement).click();
   });
-  document.getElementById('import-url-btn')?.addEventListener('click', showImportUrlModal);
-  document.getElementById('import-url-cancel-btn')?.addEventListener('click', hideImportUrlModal);
-  document.getElementById('import-url-fetch-btn')?.addEventListener('click', fetchFromUrl);
-  document.getElementById('import-file-input')?.addEventListener('change', handleFileSelect);
-  document.getElementById('import-merge-btn')?.addEventListener('click', () => performImport(true));
-  document.getElementById('import-replace-btn')?.addEventListener('click', () => performImport(false));
-  document.getElementById('import-cancel-btn')?.addEventListener('click', closeImportModal);
+  document
+    .getElementById('import-url-btn')
+    ?.addEventListener('click', showImportUrlModal);
+  document
+    .getElementById('import-url-cancel-btn')
+    ?.addEventListener('click', hideImportUrlModal);
+  document
+    .getElementById('import-url-fetch-btn')
+    ?.addEventListener('click', fetchFromUrl);
+  document
+    .getElementById('import-file-input')
+    ?.addEventListener('change', handleFileSelect);
+  document
+    .getElementById('import-merge-btn')
+    ?.addEventListener('click', () => performImport(true));
+  document
+    .getElementById('import-replace-btn')
+    ?.addEventListener('click', () => performImport(false));
+  document
+    .getElementById('import-cancel-btn')
+    ?.addEventListener('click', closeImportModal);
   els.endpoint().addEventListener('blur', () => {
     if (!els.name().value.trim() && els.endpoint().value.trim()) {
       els.name().value = suggestEndpointName(els.endpoint().value.trim());
@@ -735,7 +827,9 @@ function initialize() {
 
   // Wire log viewer controls using reusable helpers
   const logViewer = els.logViewer();
-  const levelCheckboxes = document.querySelectorAll('.log-level-filter') as NodeListOf<HTMLInputElement>;
+  const levelCheckboxes = document.querySelectorAll(
+    '.log-level-filter',
+  ) as NodeListOf<HTMLInputElement>;
 
   // Wire log filtering (filters always visible in header)
   applyLogFiltering(logViewer, levelCheckboxes);
@@ -761,10 +855,11 @@ function initialize() {
 
   // Settings checkbox
   els.enableHoverPanel().addEventListener('change', () => {
-    browser.storage.sync.set({ enableHoverPanel: els.enableHoverPanel().checked })
+    browser.storage.sync
+      .set({ enableHoverPanel: els.enableHoverPanel().checked })
       .then(() => {
         const status = els.enableHoverPanel().checked ? 'enabled' : 'disabled';
-        logger.info( 'storage', `Hover panel ${status}`);
+        logger.info('storage', `Hover panel ${status}`);
       })
       .catch((err) => {
         logger.error('Failed to save hover panel setting:', err);

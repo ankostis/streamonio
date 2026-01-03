@@ -6,9 +6,9 @@ If tests hang, use these commands to isolate the problem:
 
 ```bash
 # Test each file individually with timeout
-for f in tests/unit/*.test.ts; do 
-  echo "=== Testing $f ==="; 
-  timeout 5 npx tsx --test "$f" 2>&1 | tail -5 || echo "TIMEOUT or ERROR"; 
+for f in tests/unit/*.test.ts; do
+  echo "=== Testing $f ===";
+  timeout 5 npx tsx --test "$f" 2>&1 | tail -5 || echo "TIMEOUT or ERROR";
 done
 
 # Run specific test file with output
@@ -27,11 +27,11 @@ Logger tests use timers for transient messages. Always call `destroyLogger(logge
 ```typescript
 test('Logger: transient message test', async () => {
   const logger = new Logger('test');
-  
+
   logger.infoFlash(100, 'Message');
-  
+
   // Test assertions...
-  
+
   destroyLogger(logger);  // ← IMPORTANT: Clean up timer
 });
 ```
@@ -39,7 +39,7 @@ test('Logger: transient message test', async () => {
 ## Category Refactoring Notes
 
 After moving category from method parameter to constructor:
-- OLD: `logger.error('category', 'message')`  
+- OLD: `logger.error('category', 'message')`
 - NEW: `const logger = new Logger('category'); logger.error('message')`
 
 Tests need updates:

@@ -1,4 +1,6 @@
-export {};
+/**
+ * Lightweight UI helpers for rendering StatusBar and Logger output
+ */
 
 import type { LogLevel } from './logger';
 
@@ -8,7 +10,9 @@ export function createStatusRenderer(elements: {
   bar: HTMLDivElement;
   message: HTMLSpanElement;
 }) {
-  return function renderStatus(msg: { level: LogLevel; message: string } | null) {
+  return function renderStatus(
+    msg: { level: LogLevel; message: string } | null,
+  ) {
     const bar = elements.bar;
     if (!msg) {
       bar.style.display = 'none';
@@ -31,12 +35,17 @@ export function createStatusRenderer(elements: {
 }
 
 export function createLogAppender(viewer: HTMLDivElement) {
-  return function appendLog(level: 'error'|'warn'|'info'|'debug', category: string, message: string) {
+  return function appendLog(
+    level: 'error' | 'warn' | 'info' | 'debug',
+    category: string,
+    message: string,
+  ) {
     const empty = viewer.querySelector('.log-empty');
     if (empty) empty.remove();
 
     // Check if user has scrolled up before adding new content
-    const wasAtBottom = viewer.scrollHeight - viewer.scrollTop - viewer.clientHeight < 5;
+    const wasAtBottom =
+      viewer.scrollHeight - viewer.scrollTop - viewer.clientHeight < 5;
 
     const line = viewer.ownerDocument.createElement('div');
     line.textContent = `[${new Date().toISOString()}] ${level.toUpperCase()} ${category}: ${message}`;
@@ -65,21 +74,23 @@ export function applyLogFilter(viewer: HTMLDivElement, levels: string[]) {
   const allLines = viewer.querySelectorAll('div:not(.log-empty)');
   allLines.forEach((line) => {
     const text = line.textContent || '';
-    const hasMatch = levels.some(level => text.includes(`] ${level.toUpperCase()}`));
+    const hasMatch = levels.some((level) =>
+      text.includes(`] ${level.toUpperCase()}`),
+    );
     (line as HTMLElement).style.display = hasMatch ? 'block' : 'none';
   });
 }
 
 export function applyLogFiltering(
   viewer: HTMLDivElement,
-  levelCheckboxes: NodeListOf<HTMLInputElement>
+  levelCheckboxes: NodeListOf<HTMLInputElement>,
 ) {
   // Apply filter on checkbox change
-  levelCheckboxes.forEach(el => {
+  levelCheckboxes.forEach((el) => {
     el.addEventListener('change', () => {
       const selectedLevels = Array.from(levelCheckboxes)
-        .filter(checkbox => checkbox.checked)
-        .map(checkbox => checkbox.value);
+        .filter((checkbox) => checkbox.checked)
+        .map((checkbox) => checkbox.value);
       applyLogFilter(viewer, selectedLevels);
     });
   });

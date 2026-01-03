@@ -164,11 +164,31 @@ stream-call/
 
 - Install deps and run the TypeScript tests:
   ```bash
-  npm run install
-  npm run test
+  npm install
+  npm test
   ```
 - Covers placeholder interpolation, missing-key handling, and `url`/`json`
   filters.
+
+### Integration tests
+
+- Run full integration tests with Firefox:
+  ```bash
+  npm run test:integration
+  ```
+- Uses web-ext to launch Firefox and test real extension behavior
+
+### Code Quality
+
+The project uses Biome for linting/formatting, jscpd for duplication detection, and ts-prune for dead code analysis:
+
+```bash
+npm run lint         # Check code style and errors
+npm run lint:fix     # Auto-fix safe linting issues
+npm run format       # Format all files
+npm run dupes        # Detect code duplication
+npm run dead-code    # Find unused exports
+```
 
 ### Live testing
 

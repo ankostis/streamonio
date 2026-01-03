@@ -1,13 +1,25 @@
 /**
  * stream-call Popup Script that calls the API endpoint (extension-context)
  */
-export {};
 
-import { parseEndpoints, type ApiEndpoint, previewCall, callEndpoint, formatResponseBody } from './endpoint';
+import {
+  type ButtonConfig,
+  createButton,
+  displayStreams,
+  initLogging,
+  populateStreamPanel,
+  type StreamActionHandlers,
+} from './components-ui';
+import {
+  type ApiEndpoint,
+  callEndpoint,
+  formatResponseBody,
+  parseEndpoints,
+  previewCall,
+} from './endpoint';
 import { LogLevel } from './logger';
 import { applyLogFiltering } from './logger-ui';
-import { initLogging, createButton, displayStreams, populateStreamPanel, type StreamActionHandlers, type ButtonConfig } from './components-ui';
-import { type StreamInfo } from './types';
+import type { StreamInfo } from './types';
 
 let currentTabId: number | null = null;
 let apiEndpoints: ApiEndpoint[] = [];
@@ -53,7 +65,7 @@ async function initialize() {
   const logging = initLogging('popup', {
     statusBar: document.getElementById('status-bar') as HTMLDivElement,
     statusMsg: document.getElementById('status-message') as HTMLSpanElement,
-    logViewer: document.getElementById('log-viewer') as HTMLDivElement
+    logViewer: document.getElementById('log-viewer') as HTMLDivElement,
   });
   logger = logging.logger;
   appendLog = logging.appendLog;
@@ -68,16 +80,25 @@ async function initialize() {
   };
 
   // Wire log filtering (always visible)
-  const levelCheckboxes = document.querySelectorAll('.log-level-filter') as NodeListOf<HTMLInputElement>;
-  applyLogFiltering(document.getElementById('log-viewer') as HTMLDivElement, levelCheckboxes);
+  const levelCheckboxes = document.querySelectorAll(
+    '.log-level-filter',
+  ) as NodeListOf<HTMLInputElement>;
+  applyLogFiltering(
+    document.getElementById('log-viewer') as HTMLDivElement,
+    levelCheckboxes,
+  );
 
   // Load data
   await loadEndpoints();
   await loadStreams();
 
   // Wire action buttons
-  document.getElementById('refresh-btn')?.addEventListener('click', handleRefresh);
-  document.getElementById('options-btn')?.addEventListener('click', handleOptions);
+  document
+    .getElementById('refresh-btn')
+    ?.addEventListener('click', handleRefresh);
+  document
+    .getElementById('options-btn')
+    ?.addEventListener('click', handleOptions);
 
   logger.debug('Popup initialized successfully');
 }
@@ -96,7 +117,11 @@ async function loadEndpoints() {
     logger.debug(`Loaded ${apiEndpoints.length} API endpoints`);
   } catch (error: any) {
     // Parse error is expected if config is corrupted - show to user via logger
-    logger.error( 'endpoint', 'Invalid API endpoints configured. Check options.', error);
+    logger.error(
+      'endpoint',
+      'Invalid API endpoints configured. Check options.',
+      error,
+    );
     apiEndpoints = [];
   }
   endpointsCached = true;
@@ -114,7 +139,11 @@ async function loadStreams() {
     await browser.runtime.sendMessage({ type: 'PING' });
   } catch (pingError) {
     // Known issue: background worker crashed or not loaded.
-    logger.error( 'messaging', 'Extension background service not responding. Try reloading the extension.', pingError);
+    logger.error(
+      'messaging',
+      'Extension background service not responding. Try reloading the extension.',
+      pingError,
+    );
     if (els.loading) els.loading.style.display = 'none';
     return;
   }
@@ -123,11 +152,11 @@ async function loadStreams() {
   try {
     response = await browser.runtime.sendMessage({
       type: 'GET_STREAMS',
-      tabId: currentTabId
+      tabId: currentTabId,
     });
   } catch (error) {
     // Message passing error - log and display
-    logger.error( 'messaging', 'Failed to fetch streams from broker', error);
+    logger.error('messaging', 'Failed to fetch streams from broker', error);
     if (els.loading) els.loading.style.display = 'none';
     return;
   }
@@ -147,7 +176,8 @@ async function loadStreams() {
       els.status.classList.add('detected');
     }
 
-    if (els.streamCount) els.streamCount.textContent = streams.length.toString();
+    if (els.streamCount)
+      els.streamCount.textContent = streams.length.toString();
 
     displayStreamsPopup(streams);
   }
@@ -166,13 +196,18 @@ function displayStreamsPopup(streams: StreamInfo[]) {
 /**
  * Populate the detail panel with selected stream (uses shared component)
  */
-function populatePanel(stream: StreamInfo, index: number, allStreams: StreamInfo[]) {
-  const activeEndpoints = apiEndpoints.filter(ep => ep.active !== false);
+function populatePanel(
+  stream: StreamInfo,
+  index: number,
+  allStreams: StreamInfo[],
+) {
+  const activeEndpoints = apiEndpoints.filter((ep) => ep.active !== false);
 
   const handlers: StreamActionHandlers = {
     onPreview: (stream, endpointName) => handlePreview(stream, endpointName),
     onCopy: (url) => handleCopyUrl(url),
-    onCall: (mode, stream, endpointName) => handleCallEndpoint(mode, stream, endpointName)
+    onCall: (mode, stream, endpointName) =>
+      handleCallEndpoint(mode, stream, endpointName),
   };
 
   populateStreamPanel(stream, activeEndpoints, handlers);
@@ -187,12 +222,13 @@ function handlePreview(stream: StreamInfo, endpointName?: string) {
     return;
   }
 
-  const endpoint = apiEndpoints.find(ep => ep.name === endpointName) || apiEndpoints[0];
+  const endpoint =
+    apiEndpoints.find((ep) => ep.name === endpointName) || apiEndpoints[0];
   const context = {
     streamUrl: stream.url,
     timestamp: Date.now(),
     pageUrl: stream.pageUrl,
-    pageTitle: stream.pageTitle
+    pageTitle: stream.pageTitle,
   } as Record<string, unknown>;
 
   previewCall(endpoint, context, logger);
@@ -201,18 +237,26 @@ function handlePreview(stream: StreamInfo, endpointName?: string) {
 /**
  * Handle endpoint action (call API or open in tab)
  */
-async function handleCallEndpoint(mode: 'fetch' | 'tab', stream: StreamInfo, endpointName?: string) {
+async function handleCallEndpoint(
+  mode: 'fetch' | 'tab',
+  stream: StreamInfo,
+  endpointName?: string,
+) {
   const config = await browser.storage.sync.get(['apiEndpoints']);
   let endpoints: ReturnType<typeof parseEndpoints>;
   try {
     endpoints = parseEndpoints(config.apiEndpoints || '[]');
   } catch (parseError: any) {
-    logger.error( 'endpoint', 'Invalid endpoint configuration. Check options.', parseError);
+    logger.error(
+      'endpoint',
+      'Invalid endpoint configuration. Check options.',
+      parseError,
+    );
     return;
   }
 
   if (endpoints.length === 0) {
-    logger.warn( 'endpoint', 'Please configure API endpoints in options first');
+    logger.warn('endpoint', 'Please configure API endpoints in options first');
     setTimeout(async () => {
       const optionsUrl = browser.runtime.getURL('dist/options-pane.html');
       await openOrSwitchToTab(optionsUrl);
@@ -231,13 +275,14 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab', stream: StreamInfo, end
     pageUrl: stream.pageUrl,
     pageTitle: stream.pageTitle,
     endpointName,
-    logger
+    logger,
   });
 
   if (response?.success) {
-    const successMsg = mode === 'fetch'
-      ? `✅ ${endpoint}: ${response.status || 'OK'}`
-      : `✅ Opened in tab: ${response.details || stream.url}`;
+    const successMsg =
+      mode === 'fetch'
+        ? `✅ ${endpoint}: ${response.status || 'OK'}`
+        : `✅ Opened in tab: ${response.details || stream.url}`;
     logger.info(successMsg);
 
     // Log response body separately in debug (keep it out of status bar)
@@ -277,7 +322,7 @@ async function handleRefresh() {
     await loadStreams();
   } catch (error) {
     // Unexpected error in refresh - log and display
-    logger.error( 'popup', 'Failed to refresh streams', error);
+    logger.error('popup', 'Failed to refresh streams', error);
     if (els.loading) els.loading.style.display = 'none';
   }
 }
@@ -302,7 +347,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await initialize();
   } catch (error) {
     // Top-level exception handler - log and display to user
-    logger.error( 'popup', 'Failed to initialize popup', error);
+    logger.error('popup', 'Failed to initialize popup', error);
     if (els.loading) els.loading.style.display = 'none';
   }
 });

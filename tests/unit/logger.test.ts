@@ -1,6 +1,11 @@
-import { test } from 'node:test';
 import * as assert from 'node:assert';
-import { Logger, LogLevel, type LogEntry, type SlotMessage } from '../../src/logger';
+import { test } from 'node:test';
+import {
+  type LogEntry,
+  Logger,
+  LogLevel,
+  type SlotMessage,
+} from '../../src/logger';
 
 // ==============================================================================
 // TEST HELPERS
@@ -265,7 +270,7 @@ test('Logger: multiple transient messages use single timer', async () => {
   // Each call overwrites the previous since they share the same category/slot
   logger.infoFlash(100, 'First');
   logger.infoFlash(150, 'Second');
-  logger.infoFlash(200, 'Third');  // This is the final message
+  logger.infoFlash(200, 'Third'); // This is the final message
 
   // Last message ('Third' with 200ms) should be visible
   await new Promise((resolve) => setTimeout(resolve, 50));
@@ -319,7 +324,7 @@ test('Logger: transient expiration reveals lower-priority message', async () => 
   const logger = new Logger('test');
 
   logger.info('Persistent info');
-  logger.errorFlash(50, 'Transient error');  // Overwrites the info
+  logger.errorFlash(50, 'Transient error'); // Overwrites the info
 
   assert.strictEqual(logger.transientMsg()?.level, LogLevel.Error);
 
@@ -380,7 +385,10 @@ test('Logger: clearSlot with slot and level filters correctly', () => {
 
   // Try to clear with wrong level - should NOT clear
   logger.clearSlot('test', LogLevel.Error);
-  assert.ok(logger.transientMsg() !== null, 'Should not clear because level does not match');
+  assert.ok(
+    logger.transientMsg() !== null,
+    'Should not clear because level does not match',
+  );
 
   // Clear with correct level - should clear
   logger.clearSlot('test', LogLevel.Warn);

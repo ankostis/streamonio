@@ -12,10 +12,7 @@ const path = require('path');
  * @returns {string} JSON configuration
  */
 function generateTestConfig(options = {}) {
-  const {
-    includeCookies = true,
-    includePageHeaders = true,
-  } = options;
+  const { includeCookies = true, includePageHeaders = true } = options;
 
   const config = {
     apiEndpoints: [
@@ -28,12 +25,12 @@ function generateTestConfig(options = {}) {
           pageUrl: '{{pageUrl}}',
           pageTitle: '{{pageTitle}}',
           timestamp: '{{timestamp}}',
-          test: 'stream-call-integration'
+          test: 'stream-call-integration',
         }),
         includeCookies,
         includePageHeaders,
-      }
-    ]
+      },
+    ],
   };
 
   return JSON.stringify(config, null, 2);
@@ -59,7 +56,9 @@ function printManualSetupInstructions() {
   console.log('1. Build the extension:');
   console.log('   npm run build\n');
   console.log('2. Load extension in Firefox:');
-  console.log('   web-ext run --start-url https://www.ertecho.gr/radio/trito/\n');
+  console.log(
+    '   web-ext run --start-url https://www.ertecho.gr/radio/trito/\n',
+  );
   console.log('3. Configure httpbin endpoint:');
   console.log('   a. Click extension icon → Options');
   console.log('   b. Add endpoint:');

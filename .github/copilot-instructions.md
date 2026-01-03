@@ -69,11 +69,19 @@
 - Debugging: broker via about:debugging > Inspect; content in page console;
   PING handler for popup health checks; use logs.
 
+## Code quality checks
+- **Run after features & refactoring**: `npm run lint`, `npm run dupes`, `npm run dead-code`
+- Linting: `npm run lint` (Biome checks); `npm run lint:fix` (auto-fix safe issues)
+- Duplication: `npm run dupes` (jscpd analysis); keep below 5%, refactor if >8 clones
+- Dead code: `npm run dead-code` (ts-prune for unused exports)
+- See `notes/linting-report.md` for current metrics & refactoring priorities
+
 ## Quick references
 - Build: `npm run build` (clean + tsc + copy HTML)
 - Package: `npm run build && zip -r stream-call.zip manifest.json dist icons -x
   "icons/generate-icons.html"`
 - Tests: `npm test`; `npm run test:integration`
+- Quality: `npm run lint`; `npm run dupes`; `npm run dead-code`
 
 ## Roadmap context (notes/)
 - `ui-rework-plan.md`: Form-based editor (Phase 2), import/export by name (Phase

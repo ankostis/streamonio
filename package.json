@@ -13,17 +13,25 @@
     "test:integration:options": "node tests/integration/options-crud.js",
     "test:integration:real": "node tests/integration/real-stream.js",
     "test:integration:httpbin": "node tests/integration/httpbin-full.js --puppeteer",
-    "package": "zip -r stream-call-$npm_package_version.zip manifest.json dist icons -x 'icons/generate-icons.html'"
+    "package": "zip -r stream-call-$npm_package_version.zip manifest.json dist icons -x 'icons/generate-icons.html'",
+    "lint": "biome check src/ tests/",
+    "lint:fix": "biome check --write src/ tests/",
+    "format": "biome format --write src/ tests/",
+    "dupes": "jscpd src/",
+    "dead-code": "ts-prune"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.10",
     "@types/chai": "^4.3.11",
     "@types/firefox-webext-browser": "^143.0.0",
     "@types/jsdom": "^27.0.0",
     "@types/node": "^22.9.0",
     "chai": "^4.3.10",
     "esbuild": "^0.27.1",
+    "jscpd": "^4.0.5",
     "jsdom": "^27.3.0",
     "puppeteer": "^24.33.0",
+    "ts-prune": "^0.10.3",
     "tsx": "^4.7.2",
     "typescript": "^5.4.0",
     "web-ext": "^7.12.0"

@@ -11,7 +11,9 @@ const TIMEOUT = 30000; // 30s for browser operations
 
 async function run() {
   console.log('🚀 Starting Options CRUD Integration Test...\n');
-  console.log('Note: This test loads options.html via file:// with mocked browser.storage.\n');
+  console.log(
+    'Note: This test loads options.html via file:// with mocked browser.storage.\n',
+  );
 
   const browser = await puppeteer.launch({
     headless: false, // Set to true for CI; false for debugging
@@ -30,7 +32,7 @@ async function run() {
     const page = await browser.newPage();
 
     // Listen for console messages from the page
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       const text = msg.text();
       if (text.includes('ERROR') || text.includes('Error')) {
         console.log('  [PAGE]:', text);
@@ -41,7 +43,7 @@ async function run() {
     const optionsPath = `file://${resolve(EXTENSION_PATH, 'dist/options.html')}`;
     console.log(`Loading: ${optionsPath}\n`);
     await page.goto(optionsPath, { waitUntil: 'networkidle2' });
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500));
 
     // Inject browser.storage mock BEFORE page loads
     await page.evaluateOnNewDocument(() => {
@@ -49,44 +51,46 @@ async function run() {
         storage: {
           sync: {
             _data: { apiEndpoints: [] },
-            get: function(keys) {
+            get: function (keys) {
               console.log('[MOCK] storage.get', keys);
               if (typeof keys === 'string') {
                 return Promise.resolve({ [keys]: this._data[keys] });
               }
               if (Array.isArray(keys)) {
                 const result = {};
-                keys.forEach(k => result[k] = this._data[k]);
+                keys.forEach((k) => (result[k] = this._data[k]));
                 return Promise.resolve(result);
               }
               return Promise.resolve(this._data);
             },
-            set: function(items) {
+            set: function (items) {
               console.log('[MOCK] storage.set', items);
               Object.assign(this._data, items);
               // Trigger storage change event
               if (window.dispatchEvent) {
-                window.dispatchEvent(new CustomEvent('storage-changed', { detail: items }));
+                window.dispatchEvent(
+                  new CustomEvent('storage-changed', { detail: items }),
+                );
               }
               return Promise.resolve();
             },
-            remove: function(keys) {
+            remove: function (keys) {
               const keyArray = Array.isArray(keys) ? keys : [keys];
-              keyArray.forEach(k => delete this._data[k]);
+              keyArray.forEach((k) => delete this._data[k]);
               return Promise.resolve();
-            }
-          }
+            },
+          },
         },
         runtime: {
-          lastError: null
-        }
+          lastError: null,
+        },
       };
       console.log('[TEST] browser.storage API mocked');
     });
 
     // Reload to ensure mock is injected before script execution
     await page.reload({ waitUntil: 'networkidle2' });
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1500));
     console.log('📄 Options page loaded with mock API\n');
 
     // Helper to check status bar message
@@ -101,7 +105,9 @@ async function run() {
     async function getLogCount() {
       return await page.evaluate(() => {
         const viewer = document.getElementById('log-viewer');
-        return viewer ? viewer.querySelectorAll('div:not(.log-empty)').length : 0;
+        return viewer
+          ? viewer.querySelectorAll('div:not(.log-empty)').length
+          : 0;
       });
     }
 
@@ -129,7 +135,7 @@ async function run() {
         editor.style.display = 'block';
       }
     });
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500));
 
     // Fill form
     await page.type('#endpoint-name', 'Test API');
@@ -150,37 +156,47 @@ async function run() {
         method: 'POST',
         headers: {},
         bodyTemplate: '',
-        includePageInfo: true
+        includePageInfo: true,
       };
 
       // Store in mock storage
-      if (window.browser && window.browser.storage && window.browser.storage.sync) {
-        return window.browser.storage.sync.get('apiEndpoints').then(result => {
-          const endpoints = result.apiEndpoints || [];
-          endpoints.push(endpoint);
-          return window.browser.storage.sync.set({ apiEndpoints: endpoints });
-        }).then(() => {
-          // Manually render the endpoint
-          const list = document.getElementById('endpoints-list');
-          if (list) {
-            const card = document.createElement('div');
-            card.className = 'endpoint-card';
-            card.innerHTML = `<h3>${endpoint.name}</h3>`;
-            list.appendChild(card);
-          }
-          return true;
-        });
+      if (
+        window.browser &&
+        window.browser.storage &&
+        window.browser.storage.sync
+      ) {
+        return window.browser.storage.sync
+          .get('apiEndpoints')
+          .then((result) => {
+            const endpoints = result.apiEndpoints || [];
+            endpoints.push(endpoint);
+            return window.browser.storage.sync.set({ apiEndpoints: endpoints });
+          })
+          .then(() => {
+            // Manually render the endpoint
+            const list = document.getElementById('endpoints-list');
+            if (list) {
+              const card = document.createElement('div');
+              card.className = 'endpoint-card';
+              card.innerHTML = `<h3>${endpoint.name}</h3>`;
+              list.appendChild(card);
+            }
+            return true;
+          });
       }
       return false;
     });
 
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise((r) => setTimeout(r, 1000));
 
     const statusAfterCreate = await getStatusMessage();
     console.log(`  Status message: "${statusAfterCreate}"`);
 
     const countAfterCreate = await getEndpointCount();
-    expect(countAfterCreate).to.equal(initialCount + 1, 'Endpoint count should increase by 1');
+    expect(countAfterCreate).to.equal(
+      initialCount + 1,
+      'Endpoint count should increase by 1',
+    );
     console.log(`  ✓ Endpoint created (count: ${countAfterCreate})`);
     testsPassed++;
 
@@ -189,7 +205,9 @@ async function run() {
     const endpointExists = await page.evaluate(() => {
       const list = document.getElementById('endpoints-list');
       const items = list ? list.querySelectorAll('.endpoint-card') : [];
-      return Array.from(items).some(item => item.textContent.includes('Test API'));
+      return Array.from(items).some((item) =>
+        item.textContent.includes('Test API'),
+      );
     });
     expect(endpointExists).to.equal(true, 'Endpoint should appear in list');
     console.log('  ✓ Endpoint "Test API" found in list');
@@ -229,7 +247,7 @@ async function run() {
     });
 
     if (editClicked) {
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 500));
 
       // Clear and modify the URL
       await page.evaluate(() => {
@@ -240,7 +258,7 @@ async function run() {
       });
       await page.type('#endpoint-endpoint', 'https://httpbin.org/post');
       await page.click('#save-endpoint-btn');
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 1000));
 
       const statusAfterUpdate = await getStatusMessage();
       console.log(`  Status message: "${statusAfterUpdate}"`);
@@ -269,10 +287,13 @@ async function run() {
     });
 
     if (deleteClicked) {
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 1000));
 
       const countAfterDelete = await getEndpointCount();
-      expect(countAfterDelete).to.equal(initialCount, 'Endpoint count should return to initial');
+      expect(countAfterDelete).to.equal(
+        initialCount,
+        'Endpoint count should return to initial',
+      );
       console.log(`  ✓ Endpoint deleted (count: ${countAfterDelete})`);
       testsPassed++;
     } else {
@@ -284,48 +305,57 @@ async function run() {
 
     // Uncheck all levels
     await page.evaluate(() => {
-      const checkboxes = document.querySelectorAll('#log-filter-panel input[type="checkbox"]');
-      checkboxes.forEach(cb => {
+      const checkboxes = document.querySelectorAll(
+        '#log-filter-panel input[type="checkbox"]',
+      );
+      checkboxes.forEach((cb) => {
         cb.checked = false;
         cb.dispatchEvent(new Event('change', { bubbles: true }));
       });
     });
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500));
 
     const visibleAfterFilter = await page.evaluate(() => {
       const viewer = document.getElementById('log-viewer');
       const logs = viewer ? viewer.querySelectorAll('div:not(.log-empty)') : [];
-      return Array.from(logs).filter(log => {
+      return Array.from(logs).filter((log) => {
         const style = window.getComputedStyle(log);
         return style.display !== 'none';
       }).length;
     });
 
-    expect(visibleAfterFilter).to.equal(0, 'All logs should be hidden when no levels selected');
+    expect(visibleAfterFilter).to.equal(
+      0,
+      'All logs should be hidden when no levels selected',
+    );
     console.log('  ✓ Log filtering works (0 visible when all unchecked)');
     testsPassed++;
 
     // Re-check error level
     await page.evaluate(() => {
-      const checkboxes = document.querySelectorAll('#log-filter-panel input[type="checkbox"]');
-      checkboxes.forEach(cb => {
+      const checkboxes = document.querySelectorAll(
+        '#log-filter-panel input[type="checkbox"]',
+      );
+      checkboxes.forEach((cb) => {
         if (cb.value === 'ERROR') {
           cb.checked = true;
           cb.dispatchEvent(new Event('change', { bubbles: true }));
         }
       });
     });
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500));
 
     const visibleAfterErrorFilter = await page.evaluate(() => {
       const viewer = document.getElementById('log-viewer');
       const logs = viewer ? viewer.querySelectorAll('div:not(.log-empty)') : [];
-      return Array.from(logs).filter(log => {
+      return Array.from(logs).filter((log) => {
         const style = window.getComputedStyle(log);
         return style.display !== 'none';
       }).length;
     });
-    console.log(`  ✓ ${visibleAfterErrorFilter} error-level logs visible after filtering`);
+    console.log(
+      `  ✓ ${visibleAfterErrorFilter} error-level logs visible after filtering`,
+    );
     testsPassed++;
 
     // Test 9: Export logs
@@ -341,7 +371,7 @@ async function run() {
     });
 
     if (exportClicked) {
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 1000));
       console.log('  ✓ Export button clicked (download triggered)');
       testsPassed++;
     } else {
@@ -361,15 +391,17 @@ async function run() {
     });
 
     if (clearClicked) {
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 500));
       const logCountAfterClear = await getLogCount();
-      expect(logCountAfterClear).to.equal(0, 'Logger should be empty after clear');
+      expect(logCountAfterClear).to.equal(
+        0,
+        'Logger should be empty after clear',
+      );
       console.log('  ✓ Logs cleared');
       testsPassed++;
     } else {
       console.log('  ⚠ Clear button not found');
     }
-
   } catch (error) {
     console.error('\n❌ Test error:', error.message);
     if (error.stack) {
@@ -395,6 +427,6 @@ async function run() {
 
 run().catch((e) => {
   console.error('\n💥 Integration test failed:');
-  console.error(e && e.stack || e);
+  console.error((e && e.stack) || e);
   process.exit(1);
 });

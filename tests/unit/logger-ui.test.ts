@@ -1,5 +1,5 @@
-import test from 'node:test';
 import assert from 'node:assert';
+import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import { applyLogFilter, createLogAppender } from '../../src/logger-ui';
 
@@ -12,23 +12,23 @@ function createMockViewer(): HTMLDivElement {
   Object.defineProperty(viewer, 'scrollHeight', {
     value: 0,
     writable: true,
-    configurable: true
+    configurable: true,
   });
   Object.defineProperty(viewer, 'scrollTop', {
     value: 0,
     writable: true,
-    configurable: true
+    configurable: true,
   });
   Object.defineProperty(viewer, 'clientHeight', {
     value: 0,
     writable: true,
-    configurable: true
+    configurable: true,
   });
   Object.defineProperty(viewer, 'addEventListener', {
-    value: function(event: string, listener: any) {
+    value: (event: string, listener: any) => {
       // Mock addEventListener to prevent scroll listener from breaking tests
     },
-    writable: true
+    writable: true,
   });
 
   return viewer;
@@ -89,7 +89,11 @@ test('applyLogFilter: hides all when no levels selected', () => {
 
   applyLogFilter(viewer, []);
 
-  assert.strictEqual(line1.style.display, 'none', 'All lines should be hidden with empty filter');
+  assert.strictEqual(
+    line1.style.display,
+    'none',
+    'All lines should be hidden with empty filter',
+  );
 });
 
 test('applyLogFilter: ignores .log-empty placeholder', () => {
@@ -104,7 +108,11 @@ test('applyLogFilter: ignores .log-empty placeholder', () => {
 
   // Should not throw or modify the empty placeholder
   assert.strictEqual(viewer.children.length, 1);
-  assert.strictEqual(empty.style.display, '', 'Empty placeholder should not be affected');
+  assert.strictEqual(
+    empty.style.display,
+    '',
+    'Empty placeholder should not be affected',
+  );
 });
 
 test('createLogAppender: appends log lines to viewer', () => {
@@ -132,6 +140,10 @@ test('createLogAppender: removes .log-empty placeholder on first log', () => {
   const appendLog = createLogAppender(viewer);
   appendLog('info', 'storage', 'First log');
 
-  assert.strictEqual(viewer.querySelectorAll('.log-empty').length, 0, 'Empty placeholder should be removed');
+  assert.strictEqual(
+    viewer.querySelectorAll('.log-empty').length,
+    0,
+    'Empty placeholder should be removed',
+  );
   assert.strictEqual(viewer.children.length, 1, 'Only log line should remain');
 });

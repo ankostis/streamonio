@@ -1,6 +1,6 @@
-import test from 'node:test';
 import assert from 'node:assert';
-import { isStreamUrl, getStreamType } from '../../src/detect';
+import test from 'node:test';
+import { getStreamType, isStreamUrl } from '../../src/detect';
 
 test('detects HLS by extension', () => {
   assert.strictEqual(isStreamUrl('https://example.com/live.m3u8'), true);
@@ -13,8 +13,14 @@ test('detects DASH by extension', () => {
 });
 
 test('detects HTTP audio', () => {
-  assert.strictEqual(isStreamUrl('https://cdn.example.com/audio.mp3?x=1'), true);
-  assert.strictEqual(getStreamType('https://cdn.example.com/audio.mp3?x=1'), 'HTTP Audio');
+  assert.strictEqual(
+    isStreamUrl('https://cdn.example.com/audio.mp3?x=1'),
+    true,
+  );
+  assert.strictEqual(
+    getStreamType('https://cdn.example.com/audio.mp3?x=1'),
+    'HTTP Audio',
+  );
 });
 
 test('rejects non-stream URLs', () => {

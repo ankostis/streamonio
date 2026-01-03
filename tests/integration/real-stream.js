@@ -22,8 +22,10 @@ async function run() {
   const webExtPath = resolve(cwd, 'node_modules/.bin/web-ext');
   const args = [
     'run',
-    '--source-dir', '.',
-    '--start-url', TEST_URL,
+    '--source-dir',
+    '.',
+    '--start-url',
+    TEST_URL,
     '--verbose',
     '--no-input',
   ];
@@ -72,7 +74,10 @@ async function run() {
         const streamUrl = streamMatch[0];
         if (!detectedStreams.has(streamUrl)) {
           detectedStreams.add(streamUrl);
-          console.log(`✓ Stream detected [${detectedStreams.size}]:`, streamUrl.substring(0, 60) + '...');
+          console.log(
+            `✓ Stream detected [${detectedStreams.size}]:`,
+            streamUrl.substring(0, 60) + '...',
+          );
         }
       }
     }
@@ -133,7 +138,9 @@ async function run() {
   try {
     await Promise.race([
       once(proc, 'exit'),
-      delay(5000).then(() => { proc.kill('SIGKILL'); })
+      delay(5000).then(() => {
+        proc.kill('SIGKILL');
+      }),
     ]);
   } catch {}
 
@@ -141,7 +148,9 @@ async function run() {
   console.log('📊 Test Results:');
   console.log('================');
   console.log(`Addon installed: ${addonInstalled ? '✅' : '❌'}`);
-  console.log(`Stream detections: ${streamDetections} (unique: ${detectedStreams.size})`);
+  console.log(
+    `Stream detections: ${streamDetections} (unique: ${detectedStreams.size})`,
+  );
   console.log(`API calls: ${apiCalls}`);
   console.log(`Cookies sent: ${cookiesSent ? '✅' : '❌'}`);
   console.log(`Headers sent: ${headersSent ? '✅' : '❌'}`);
@@ -150,7 +159,8 @@ async function run() {
   // Fatal error checks
   const fatalRegex = /Error:|TypeError:|ReferenceError:|Unhandled/;
   const storageErrorRegex = /temporary addon ID|storage API will not work/i;
-  const hasStorageError = storageErrorRegex.test(stdout) || storageErrorRegex.test(stderr);
+  const hasStorageError =
+    storageErrorRegex.test(stdout) || storageErrorRegex.test(stderr);
   const hasFatalError = fatalRegex.test(stderr);
 
   // Assertions
@@ -181,7 +191,9 @@ async function run() {
   }
 
   try {
-    expect(streamDetections, 'at least one stream detected').to.be.greaterThan(0);
+    expect(streamDetections, 'at least one stream detected').to.be.greaterThan(
+      0,
+    );
     console.log('✅ Stream detection');
   } catch (err) {
     console.log('❌ Stream detection:', err.message);
@@ -198,13 +210,17 @@ async function run() {
   if (cookiesSent) {
     console.log('✅ Cookie header capture verified');
   } else {
-    console.log('ℹ️  Cookie header not detected (may require endpoint with includeCookies=true)');
+    console.log(
+      'ℹ️  Cookie header not detected (may require endpoint with includeCookies=true)',
+    );
   }
 
   if (headersSent) {
     console.log('✅ Headers capture verified');
   } else {
-    console.log('ℹ️  Headers not detected (may require endpoint with includePageHeaders=true)');
+    console.log(
+      'ℹ️  Headers not detected (may require endpoint with includePageHeaders=true)',
+    );
   }
 
   // Summary

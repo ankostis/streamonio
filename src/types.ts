@@ -22,10 +22,22 @@ export type StreamInfo = {
  */
 export type RuntimeMessage =
   | { type: 'STREAM_DETECTED'; url: string; streamType: string }
-  | { type: 'GET_STREAMS'; tabId?: number }  // tabId optional - uses sender.tab.id if omitted
-  | { type: 'CALL_API'; streamUrl: string; pageUrl?: string; pageTitle?: string; endpointName?: string }
-  | { type: 'OPEN_IN_TAB'; streamUrl: string; pageUrl?: string; pageTitle?: string; endpointName?: string }
+  | { type: 'GET_STREAMS'; tabId?: number } // tabId optional - uses sender.tab.id if omitted
+  | {
+      type: 'CALL_API';
+      streamUrl: string;
+      pageUrl?: string;
+      pageTitle?: string;
+      endpointName?: string;
+    }
+  | {
+      type: 'OPEN_IN_TAB';
+      streamUrl: string;
+      pageUrl?: string;
+      pageTitle?: string;
+      endpointName?: string;
+    }
   | { type: 'GET_ENDPOINTS' }
   | { type: 'OPEN_OPTIONS' }
-  | { type: 'CLOSE_HOVER_PANEL' }  // postMessage from hover-ui to page.ts
+  | { type: 'CLOSE_HOVER_PANEL' } // postMessage from hover-ui to page.ts
   | { type: 'PING' };

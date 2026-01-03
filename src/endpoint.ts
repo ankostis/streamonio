@@ -31,27 +31,33 @@ export const DEFAULT_CONFIG = {
         description: 'Simple GET request to just test the call ',
         endpointTemplate: 'https://httpbingo.org/anything',
         method: 'GET',
-        active: true
+        active: true,
       },
       {
         name: 'WiiM play',
-        description: 'WiiM streamers support a GET API call that can play arbitrary streams, see PDF: https://www.wiimhome.com/pdf/HTTP%20API%20for%20WiiM%20Mini.pdf',
-        endpointTemplate: 'https://your.wiim.hostOrIP/httpapi.asp?command=setPlayerCmd:play:{{streamUrl}}',
-        active: false
+        description:
+          'WiiM streamers support a GET API call that can play arbitrary streams, see PDF: https://www.wiimhome.com/pdf/HTTP%20API%20for%20WiiM%20Mini.pdf',
+        endpointTemplate:
+          'https://your.wiim.hostOrIP/httpapi.asp?command=setPlayerCmd:play:{{streamUrl}}',
+        active: false,
       },
       {
         name: 'httpbingo POST + headers',
-        description: 'Example showing custom headers and authentication patterns',
+        description:
+          'Example showing custom headers and authentication patterns',
         endpointTemplate: 'https://httpbingo.org/anything',
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Custom-Header': 'stream-call' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Custom-Header': 'stream-call',
+        },
         bodyTemplate: '{"streamUrl":"{{streamUrl}}","timestamp":{{timestamp}}}',
-        active: false
-      }
+        active: false,
+      },
     ],
     null,
-    2
-  )
+    2,
+  ),
 } as const;
 
 /**
@@ -97,7 +103,7 @@ export function parseEndpoints(raw: string): ApiEndpoint[] {
       bodyTemplate: p.bodyTemplate,
       includeCookies: p.includeCookies,
       includePageHeaders: p.includePageHeaders,
-      active: p.active !== undefined ? p.active : true
+      active: p.active !== undefined ? p.active : true,
     }))
     .filter((p) => {
       // Require endpoint and unique name
@@ -120,7 +126,7 @@ export function parseEndpoints(raw: string): ApiEndpoint[] {
 export function generatePreview(
   endpoint: ApiEndpoint,
   context: Record<string, unknown>,
-  applyTemplate: (template: string, context: Record<string, unknown>) => string
+  applyTemplate: (template: string, context: Record<string, unknown>) => string,
 ): string {
   const url = applyTemplate(endpoint.endpointTemplate, context);
   const body = endpoint.bodyTemplate
@@ -135,7 +141,7 @@ export function generatePreview(
     `Headers: ${JSON.stringify(endpoint.headers || {}, null, 2)}`,
     '',
     `Body:`,
-    body
+    body,
   ].join('\n');
 }
 
@@ -146,13 +152,16 @@ export function generatePreview(
 export function previewCall(
   endpoint: ApiEndpoint,
   context: Record<string, unknown>,
-  logger: { info: (message: string, ...args: unknown[]) => void }
+  logger: { info: (message: string, ...args: unknown[]) => void },
 ): void {
   try {
     const preview = generatePreview(endpoint, context, applyTemplate);
     logger.info(preview, { endpoint, context });
   } catch (error: any) {
-    logger.info(`Interpolation error: ${error?.message ?? 'Invalid placeholder'}`, error);
+    logger.info(
+      `Interpolation error: ${error?.message ?? 'Invalid placeholder'}`,
+      error,
+    );
   }
 }
 
@@ -173,19 +182,27 @@ export function validateEndpoints(raw: string): {
         valid: false,
         parsed: [],
         formatted: '[]',
-        errorMessage: 'API endpoints must be a JSON array.'
+        errorMessage: 'API endpoints must be a JSON array.',
       };
     }
 
     const names = new Set<string>();
     const cleaned = parsed
       .map((p: any, index: number) => {
-        if (!p || typeof p.endpointTemplate !== 'string' || !p.endpointTemplate.trim()) {
-          throw new Error(`Endpoint ${index + 1} is missing an endpointTemplate.`);
+        if (
+          !p ||
+          typeof p.endpointTemplate !== 'string' ||
+          !p.endpointTemplate.trim()
+        ) {
+          throw new Error(
+            `Endpoint ${index + 1} is missing an endpointTemplate.`,
+          );
         }
         const name = p.name || suggestEndpointName(p.endpointTemplate);
         if (names.has(name)) {
-          throw new Error(`Duplicate endpoint name: "${name}" (Endpoint ${index + 1})`);
+          throw new Error(
+            `Duplicate endpoint name: "${name}" (Endpoint ${index + 1})`,
+          );
         }
         names.add(name);
         return {
@@ -197,7 +214,7 @@ export function validateEndpoints(raw: string): {
           bodyTemplate: p.bodyTemplate,
           includeCookies: p.includeCookies,
           includePageHeaders: p.includePageHeaders,
-          active: p.active
+          active: p.active,
         };
       })
       .filter(Boolean);
@@ -205,14 +222,14 @@ export function validateEndpoints(raw: string): {
     return {
       valid: true,
       parsed: cleaned,
-      formatted: JSON.stringify(cleaned, null, 2)
+      formatted: JSON.stringify(cleaned, null, 2),
     };
   } catch (e: any) {
     return {
       valid: false,
       parsed: [],
       formatted: '[]',
-      errorMessage: e?.message
+      errorMessage: e?.message,
     };
   }
 }
@@ -225,14 +242,14 @@ export function validateEndpoints(raw: string): {
 export function applyTemplate(
   template: string,
   context: Record<string, unknown>,
-  options: { onMissing?: 'leave' | 'empty' | 'throw' } = { onMissing: 'leave' }
+  options: { onMissing?: 'leave' | 'empty' | 'throw' } = { onMissing: 'leave' },
 ): string {
   const onMissing = options.onMissing ?? 'leave';
   const placeholderRe = /\{\{(\w+)(?:\|(url|json))?\}\}/gi;
 
   // Case-insensitive matching
   const normalizedContext = Object.fromEntries(
-    Object.entries(context).map(([k, v]) => [k.toLowerCase(), v])
+    Object.entries(context).map(([k, v]) => [k.toLowerCase(), v]),
   );
 
   const encodeJsonString = (val: unknown) => JSON.stringify(String(val));
@@ -242,16 +259,20 @@ export function applyTemplate(
     return String(val ?? '');
   };
 
-  return template.replace(placeholderRe, (_m, key: string, filter?: 'url' | 'json') => {
-    const value = normalizedContext[key.toLowerCase()];
-    const hasValue = value !== undefined && value !== null;
-    if (!hasValue) {
-      if (onMissing === 'empty') return '';
-      if (onMissing === 'throw') throw new Error(`Missing placeholder: ${key}`);
-      return `{{${key}${filter ? '|' + filter : ''}}}`;
-    }
-    return applyFilter(value, filter);
-  });
+  return template.replace(
+    placeholderRe,
+    (_m, key: string, filter?: 'url' | 'json') => {
+      const value = normalizedContext[key.toLowerCase()];
+      const hasValue = value !== undefined && value !== null;
+      if (!hasValue) {
+        if (onMissing === 'empty') return '';
+        if (onMissing === 'throw')
+          throw new Error(`Missing placeholder: ${key}`);
+        return `{{${key}${filter ? '|' + filter : ''}}}`;
+      }
+      return applyFilter(value, filter);
+    },
+  );
 }
 
 /**
@@ -260,7 +281,7 @@ export function applyTemplate(
 function buildContext({
   streamUrl,
   pageUrl,
-  pageTitle
+  pageTitle,
 }: {
   streamUrl: string;
   pageUrl?: string;
@@ -270,7 +291,7 @@ function buildContext({
     streamUrl,
     pageUrl,
     pageTitle,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 }
 
@@ -295,7 +316,7 @@ export async function callEndpoint({
   endpointName,
   tabHeaders,
   apiEndpoints,
-  logger
+  logger,
 }: {
   mode: 'fetch' | 'tab';
   streamUrl: string;
@@ -318,23 +339,28 @@ export async function callEndpoint({
       endpoints = apiEndpoints;
     } else {
       const defaults = { apiEndpoints: '[]' } as const;
-      const config = (await browser.storage.sync.get(defaults)) as typeof defaults;
+      const config = (await browser.storage.sync.get(
+        defaults,
+      )) as typeof defaults;
       try {
         endpoints = parseEndpoints(config.apiEndpoints);
       } catch (parseError: any) {
         return {
           success: false,
-          error: `Failed to parse API endpoints: ${parseError?.message ?? 'Unknown error'}`
+          error: `Failed to parse API endpoints: ${parseError?.message ?? 'Unknown error'}`,
         };
       }
     }
 
-    selectedEndpoint = endpointName ? endpoints.find((e) => e.name === endpointName) : endpoints[0];
+    selectedEndpoint = endpointName
+      ? endpoints.find((e) => e.name === endpointName)
+      : endpoints[0];
 
     if (!selectedEndpoint) {
       return {
         success: false,
-        error: 'No API endpoints configured. Please add an endpoint in the extension options.'
+        error:
+          'No API endpoints configured. Please add an endpoint in the extension options.',
       };
     }
 
@@ -343,15 +369,20 @@ export async function callEndpoint({
     // Template interpolation
     let bodyJson: string | undefined;
     try {
-      finalUrl = applyTemplate(selectedEndpoint.endpointTemplate, requestContext);
+      finalUrl = applyTemplate(
+        selectedEndpoint.endpointTemplate,
+        requestContext,
+      );
       // Interpolate body template for both modes (fetch needs it, tab uses it for form fields)
       bodyJson = selectedEndpoint.bodyTemplate
         ? applyTemplate(selectedEndpoint.bodyTemplate, requestContext)
-        : (mode === 'fetch' ? JSON.stringify(requestContext) : undefined);
+        : mode === 'fetch'
+          ? JSON.stringify(requestContext)
+          : undefined;
     } catch (templateError: any) {
       return {
         success: false,
-        error: `Interpolation error in endpoint "${selectedEndpoint.name}": ${templateError?.message ?? 'Invalid placeholder'}. Check endpoint/body templates and placeholders.`
+        error: `Interpolation error in endpoint "${selectedEndpoint.name}": ${templateError?.message ?? 'Invalid placeholder'}. Check endpoint/body templates and placeholders.`,
       };
     }
 
@@ -364,11 +395,11 @@ export async function callEndpoint({
         logger.warn(`Invalid URL after interpolation: ${finalUrl}`, {
           endpoint: selectedEndpoint.name,
           url: finalUrl,
-          error: urlError
+          error: urlError,
         });
         return {
           success: false,
-          error: `Invalid URL after interpolation: ${finalUrl}`
+          error: `Invalid URL after interpolation: ${finalUrl}`,
         };
       }
 
@@ -377,7 +408,7 @@ export async function callEndpoint({
       logger.info(`Opening URL in tab (${method}): ${selectedEndpoint.name}`, {
         endpoint: selectedEndpoint.name,
         url: finalUrl,
-        method
+        method,
       });
 
       // For GET/HEAD or no method specified: use simple tab navigation
@@ -392,20 +423,28 @@ export async function callEndpoint({
           try {
             const tab = await browser.tabs.get(storedTabId);
             if (tab) {
-              await browser.tabs.update(storedTabId, { url: finalUrl, active: true });
+              await browser.tabs.update(storedTabId, {
+                url: finalUrl,
+                active: true,
+              });
               return {
                 success: true,
                 message: 'Reused existing tab',
-                details: finalUrl
+                details: finalUrl,
               };
             }
           } catch (tabError: any) {
-            logger.warn(`Stored tab ${storedTabId} no longer exists, creating new tab: ${tabError.message}`);
+            logger.warn(
+              `Stored tab ${storedTabId} no longer exists, creating new tab: ${tabError.message}`,
+            );
           }
         }
 
         // Create new tab and store its ID
-        const newTab = await browser.tabs.create({ url: finalUrl, active: true });
+        const newTab = await browser.tabs.create({
+          url: finalUrl,
+          active: true,
+        });
         if (newTab.id) {
           await browser.storage.session.set({ [storageKey]: newTab.id });
         }
@@ -413,7 +452,7 @@ export async function callEndpoint({
         return {
           success: true,
           message: `Opened URL in new tab: (${finalUrl}`,
-          details: finalUrl
+          details: finalUrl,
         };
       }
 
@@ -430,7 +469,8 @@ export async function callEndpoint({
       // Parse body template and create hidden inputs
       if (bodyJson) {
         try {
-          const bodyData = typeof bodyJson === 'string' ? JSON.parse(bodyJson) : bodyJson;
+          const bodyData =
+            typeof bodyJson === 'string' ? JSON.parse(bodyJson) : bodyJson;
           if (typeof bodyData === 'object' && bodyData !== null) {
             Object.entries(bodyData).forEach(([key, value]) => {
               const input = document.createElement('input');
@@ -441,7 +481,9 @@ export async function callEndpoint({
             });
           }
         } catch (parseError: any) {
-          logger.warn(`Could not parse body as JSON for form submission: ${parseError.message}. Sending as raw field.`);
+          logger.warn(
+            `Could not parse body as JSON for form submission: ${parseError.message}. Sending as raw field.`,
+          );
           const input = document.createElement('input');
           input.type = 'hidden';
           input.name = 'data';
@@ -473,14 +515,16 @@ export async function callEndpoint({
       return {
         success: true,
         message: `Opened URL in tab via ${method} form submission`,
-        details: `${finalUrl} (window: ${windowName})`
+        details: `${finalUrl} (window: ${windowName})`,
       };
     }
 
     // Mode: fetch (HTTP request)
     method = (selectedEndpoint.method || 'POST').toUpperCase();
 
-    let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    let headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
     if (selectedEndpoint.headers) {
       headers = { ...headers, ...selectedEndpoint.headers };
     }
@@ -490,11 +534,16 @@ export async function callEndpoint({
       try {
         const cookies = await browser.cookies.getAll({ url: pageUrl });
         if (cookies.length > 0) {
-          const cookieHeader = cookies.map((c) => `${c.name}=${c.value}`).join('; ');
+          const cookieHeader = cookies
+            .map((c) => `${c.name}=${c.value}`)
+            .join('; ');
           headers['Cookie'] = cookieHeader;
         }
       } catch (cookieError: any) {
-        logger.warn(`Failed to get cookies: ${cookieError}`, { pageUrl, cookieError });
+        logger.warn(`Failed to get cookies: ${cookieError}`, {
+          pageUrl,
+          cookieError,
+        });
       }
     }
 
@@ -509,7 +558,7 @@ export async function callEndpoint({
 
     const fetchOptions: RequestInit = {
       method,
-      headers
+      headers,
     };
 
     if (method !== 'GET' && method !== 'HEAD') {
@@ -521,7 +570,10 @@ export async function callEndpoint({
       method,
       url: finalUrl,
       headers,
-      body: fetchOptions.body ? fetchOptions.body.substring(0, 200) + (fetchOptions.body.length > 200 ? '...' : '') : '(none - GET/HEAD)'
+      body: fetchOptions.body
+        ? fetchOptions.body.substring(0, 200) +
+          (fetchOptions.body.length > 200 ? '...' : '')
+        : '(none - GET/HEAD)',
     });
 
     const response = await fetch(finalUrl, fetchOptions);
@@ -537,28 +589,35 @@ export async function callEndpoint({
       } catch {
         // Ignore if we can't read error body
       }
-      logger.error(`API Error Response: ${response.status} ${response.statusText}`, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
-        body: errorBody.substring(0, 500) + (errorBody.length > 500 ? '...' : '')
-      });
+      logger.error(
+        `API Error Response: ${response.status} ${response.statusText}`,
+        {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          body:
+            errorBody.substring(0, 500) + (errorBody.length > 500 ? '...' : ''),
+        },
+      );
       throw new Error(`API returned ${response.status}: ${errorDetail}`);
     }
 
     const result = await response.text();
-    logger.info(`API Success Response: ${response.status} ${response.statusText}`, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries()),
-      body: result.substring(0, 500) + (result.length > 500 ? '...' : '')
-    });
+    logger.info(
+      `API Success Response: ${response.status} ${response.statusText}`,
+      {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+        body: result.substring(0, 500) + (result.length > 500 ? '...' : ''),
+      },
+    );
 
     return {
       success: true,
       message: `${response.status} ${response.statusText}`,
       status: response.status,
-      response: result
+      response: result,
     };
   } catch (error: any) {
     const action = mode === 'tab' ? 'open URL' : 'API call';
@@ -567,17 +626,20 @@ export async function callEndpoint({
       url: finalUrl,
       method,
       mode,
-      error
+      error,
     });
 
     let errorMsg = error?.message ?? 'Unknown error';
-    if (mode === 'fetch' && (errorMsg.includes('NetworkError') || errorMsg.includes('fetch'))) {
+    if (
+      mode === 'fetch' &&
+      (errorMsg.includes('NetworkError') || errorMsg.includes('fetch'))
+    ) {
       errorMsg += ` (Check: 1) Server is reachable, 2) CORS/host permissions, 3) HTTP vs HTTPS)`;
     }
 
     return {
       success: false,
-      error: errorMsg
+      error: errorMsg,
     };
   }
 }
@@ -587,11 +649,10 @@ export async function callEndpoint({
  */
 export function formatResponseBody(response: any): string {
   try {
-    const parsed = typeof response === 'string' ? JSON.parse(response) : response;
+    const parsed =
+      typeof response === 'string' ? JSON.parse(response) : response;
     return JSON.stringify(parsed, null, 2);
   } catch {
     return String(response);
   }
 }
-
-export {};

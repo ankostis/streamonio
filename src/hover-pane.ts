@@ -3,13 +3,22 @@
  * In-page overlay for mobile UX. Mirrors popup.ts structure.
  * Uses browser.runtime.sendMessage - broker gets sender.tab.id automatically.
  */
-export {};
 
-import { parseEndpoints, type ApiEndpoint, previewCall, formatResponseBody } from './endpoint';
+import {
+  displayStreams,
+  initLogging,
+  populateStreamPanel,
+  type StreamActionHandlers,
+} from './components-ui';
+import {
+  type ApiEndpoint,
+  formatResponseBody,
+  parseEndpoints,
+  previewCall,
+} from './endpoint';
 import { LogLevel } from './logger';
 import { applyLogFiltering } from './logger-ui';
-import { initLogging, displayStreams, populateStreamPanel, type StreamActionHandlers } from './components-ui';
-import { type StreamInfo, type RuntimeMessage } from './types';
+import type { RuntimeMessage, StreamInfo } from './types';
 
 let apiEndpoints: ApiEndpoint[] = [];
 
@@ -36,7 +45,7 @@ async function initialize() {
   const logging = initLogging('hover', {
     statusBar: document.getElementById('status-bar') as HTMLDivElement,
     statusMsg: document.getElementById('status-message') as HTMLSpanElement,
-    logViewer: document.getElementById('log-viewer') as HTMLDivElement
+    logViewer: document.getElementById('log-viewer') as HTMLDivElement,
   });
   logger = logging.logger;
   appendLog = logging.appendLog;
@@ -53,16 +62,25 @@ async function initialize() {
   };
 
   // Wire log filtering
-  const levelCheckboxes = document.querySelectorAll('.log-level-filter') as NodeListOf<HTMLInputElement>;
-  applyLogFiltering(document.getElementById('log-viewer') as HTMLDivElement, levelCheckboxes);
+  const levelCheckboxes = document.querySelectorAll(
+    '.log-level-filter',
+  ) as NodeListOf<HTMLInputElement>;
+  applyLogFiltering(
+    document.getElementById('log-viewer') as HTMLDivElement,
+    levelCheckboxes,
+  );
 
   // Load data
   await loadEndpoints();
   await loadStreams();
 
   // Wire action buttons
-  document.getElementById('refresh-btn')?.addEventListener('click', handleRefresh);
-  document.getElementById('options-btn')?.addEventListener('click', handleOptions);
+  document
+    .getElementById('refresh-btn')
+    ?.addEventListener('click', handleRefresh);
+  document
+    .getElementById('options-btn')
+    ?.addEventListener('click', handleOptions);
 
   logger.debug('Hover panel initialized successfully');
 }
@@ -72,7 +90,9 @@ async function initialize() {
  */
 async function loadEndpoints() {
   try {
-    const response = await browser.runtime.sendMessage({ type: 'GET_ENDPOINTS' } as RuntimeMessage);
+    const response = await browser.runtime.sendMessage({
+      type: 'GET_ENDPOINTS',
+    } as RuntimeMessage);
     if (response?.endpoints) {
       apiEndpoints = response.endpoints;
       logger.debug(`Loaded ${apiEndpoints.length} endpoints`);
@@ -103,7 +123,7 @@ async function loadStreams() {
   try {
     // Use GET_STREAMS without tabId - broker will use sender.tab.id
     const response = await browser.runtime.sendMessage({
-      type: 'GET_STREAMS'
+      type: 'GET_STREAMS',
     } as RuntimeMessage);
 
     if (!response?.streams) {
@@ -126,7 +146,8 @@ async function loadStreams() {
       els.status.classList.add('detected');
     }
 
-    if (els.streamCount) els.streamCount.textContent = streams.length.toString();
+    if (els.streamCount)
+      els.streamCount.textContent = streams.length.toString();
 
     displayStreamsHover(streams);
   } catch (error: any) {
@@ -147,13 +168,18 @@ function displayStreamsHover(streams: StreamInfo[]) {
 /**
  * Populate the detail panel with selected stream (uses shared component)
  */
-function populatePanel(stream: StreamInfo, _index: number, _allStreams: StreamInfo[]) {
-  const activeEndpoints = apiEndpoints.filter(ep => ep.active !== false);
+function populatePanel(
+  stream: StreamInfo,
+  _index: number,
+  _allStreams: StreamInfo[],
+) {
+  const activeEndpoints = apiEndpoints.filter((ep) => ep.active !== false);
 
   const handlers: StreamActionHandlers = {
     onPreview: (stream, endpointName) => handlePreview(stream, endpointName),
     onCopy: (url) => handleCopyUrl(url),
-    onCall: (mode, stream, endpointName) => handleCallEndpoint(mode, stream, endpointName)
+    onCall: (mode, stream, endpointName) =>
+      handleCallEndpoint(mode, stream, endpointName),
   };
 
   populateStreamPanel(stream, activeEndpoints, handlers);
@@ -162,7 +188,10 @@ function populatePanel(stream: StreamInfo, _index: number, _allStreams: StreamIn
 /**
  * Show empty state with optional custom message
  */
-function showEmptyState(title = '🔍 No streams detected', subtitle = 'Browse to a page with streaming media to detect streams') {
+function showEmptyState(
+  title = '🔍 No streams detected',
+  subtitle = 'Browse to a page with streaming media to detect streams',
+) {
   if (els.loading) els.loading.style.display = 'none';
   if (els.streamsListContainer) els.streamsListContainer.style.display = 'none';
   if (els.streamPanel) els.streamPanel.style.display = 'none';
@@ -186,12 +215,13 @@ function handlePreview(stream: StreamInfo, endpointName?: string) {
     return;
   }
 
-  const endpoint = apiEndpoints.find(ep => ep.name === endpointName) || apiEndpoints[0];
+  const endpoint =
+    apiEndpoints.find((ep) => ep.name === endpointName) || apiEndpoints[0];
   const context = {
     streamUrl: stream.url,
     timestamp: Date.now(),
     pageUrl: stream.pageUrl,
-    pageTitle: stream.pageTitle
+    pageTitle: stream.pageTitle,
   } as Record<string, unknown>;
 
   logger.infoFlash(2100, 'hover', 'Generating preview:');
@@ -202,7 +232,11 @@ function handlePreview(stream: StreamInfo, endpointName?: string) {
  * Handle endpoint action (call API or open in tab) via messaging
  * Broker handles CORS and tabs - hover-ui delegates everything.
  */
-async function handleCallEndpoint(mode: 'fetch' | 'tab', stream: StreamInfo, endpointName?: string) {
+async function handleCallEndpoint(
+  mode: 'fetch' | 'tab',
+  stream: StreamInfo,
+  endpointName?: string,
+) {
   if (apiEndpoints.length === 0) {
     logger.warn('Please configure API endpoints in options first');
     return;
@@ -219,13 +253,14 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab', stream: StreamInfo, end
       streamUrl: stream.url,
       pageUrl: stream.pageUrl,
       pageTitle: stream.pageTitle,
-      endpointName
+      endpointName,
     } as RuntimeMessage);
 
     if (response?.success) {
-      const successMsg = mode === 'fetch'
-        ? `✅ ${endpoint}: ${response.status || 'OK'}`
-        : `✅ Opened in tab`;
+      const successMsg =
+        mode === 'fetch'
+          ? `✅ ${endpoint}: ${response.status || 'OK'}`
+          : `✅ Opened in tab`;
       logger.info(successMsg);
 
       // Log response body separately in debug (keep it out of status bar)
@@ -276,7 +311,9 @@ async function handleRefresh() {
 async function handleOptions() {
   logger.debug('Options button clicked');
   try {
-    await browser.runtime.sendMessage({ type: 'OPEN_OPTIONS' } as RuntimeMessage);
+    await browser.runtime.sendMessage({
+      type: 'OPEN_OPTIONS',
+    } as RuntimeMessage);
   } catch (error) {
     logger.error('Failed to open options', error);
   }

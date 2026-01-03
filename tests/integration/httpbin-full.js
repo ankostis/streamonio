@@ -19,14 +19,20 @@ async function run() {
   // Launch Firefox with web-ext and enable remote debugging
   console.log('🚀 Launching Firefox with extension and CDP enabled...');
   const webExtPath = resolve(cwd, 'node_modules/.bin/web-ext');
-  const proc = spawn(webExtPath, [
-    'run',
-    '--source-dir', '.',
-    '--start-url', TEST_URL,
-    '--no-input',
-    '--args=--remote-debugging-port=9222',
-    '--args=--remote-allow-origins=http://127.0.0.1:9222',
-  ], { cwd });
+  const proc = spawn(
+    webExtPath,
+    [
+      'run',
+      '--source-dir',
+      '.',
+      '--start-url',
+      TEST_URL,
+      '--no-input',
+      '--args=--remote-debugging-port=9222',
+      '--args=--remote-allow-origins=http://127.0.0.1:9222',
+    ],
+    { cwd },
+  );
 
   let stdout = '';
   proc.stdout.on('data', (d) => {
@@ -36,7 +42,9 @@ async function run() {
       console.log('   Firefox starting...');
     }
   });
-  proc.stderr.on('data', (d) => { stdout += d.toString(); });
+  proc.stderr.on('data', (d) => {
+    stdout += d.toString();
+  });
 
   // Wait for Firefox to start and CDP to be available
   console.log('⏳ Waiting for Firefox to start (15s)...');
@@ -51,7 +59,7 @@ async function run() {
       const testReq = await new Promise((resolve, reject) => {
         const req = http.get('http://127.0.0.1:9222/json/version', (res) => {
           let data = '';
-          res.on('data', chunk => data += chunk);
+          res.on('data', (chunk) => (data += chunk));
           res.on('end', () => resolve({ status: res.statusCode, data }));
         });
         req.on('error', reject);
@@ -77,7 +85,7 @@ async function run() {
     });
 
     const pages = await browser.pages();
-    const page = pages[0] || await browser.newPage();
+    const page = pages[0] || (await browser.newPage());
 
     // Navigate to test page
     console.log(`📄 Loading stream page: ${TEST_URL}`);
@@ -94,7 +102,7 @@ async function run() {
 
     // For now, check console for stream detections
     const consoleLogs = [];
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       const text = msg.text();
       consoleLogs.push(text);
       if (text.includes('Stream detected')) {
@@ -110,8 +118,9 @@ async function run() {
     await delay(5000);
 
     console.log(`\n📊 Console logs captured: ${consoleLogs.length}`);
-    const streamLogs = consoleLogs.filter(log =>
-      log.includes('Stream detected') || log.includes('STREAM_DETECTED')
+    const streamLogs = consoleLogs.filter(
+      (log) =>
+        log.includes('Stream detected') || log.includes('STREAM_DETECTED'),
     );
 
     console.log(`✅ Stream detection logs: ${streamLogs.length}`);
@@ -120,10 +129,11 @@ async function run() {
     });
 
     // Assertions
-    expect(streamLogs.length, 'at least one stream detected').to.be.greaterThan(0);
+    expect(streamLogs.length, 'at least one stream detected').to.be.greaterThan(
+      0,
+    );
 
     console.log('\n✅ TEST PASSED: Stream detection working');
-
   } catch (err) {
     console.error('❌ Test failed:', err.message);
     throw err;
@@ -135,7 +145,9 @@ async function run() {
     try {
       await Promise.race([
         once(proc, 'exit'),
-        delay(5000).then(() => { proc.kill('SIGKILL'); })
+        delay(5000).then(() => {
+          proc.kill('SIGKILL');
+        }),
       ]);
     } catch {}
     console.log('\n🛑 Firefox stopped\n');
