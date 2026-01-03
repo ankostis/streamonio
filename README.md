@@ -9,11 +9,14 @@ stations, live streams) and send to HTTP API endpoint(s).
 
 - 🔍 **Page Stream Detection** - Detects HLS, DASH, MP3, AAC, OGG, RTMP,
   RTSP, Icecast, Shoutcast from the current page.
+- 0️⃣ **Zero-Stream Support** - Extension works even without detected streams:
+  shows '0' badge, allows API calls with page URL/title. Name endpoints clearly
+  to distinguish page-only vs stream-dependent calls.
 - 📡 **Configurable Endpoints** - Define multiple API endpoints with template placeholders, export & import bluprints from files or sites
 - 🌐 **Two API call Modes** - "Open in Tab" (GET via navigation or POST/PUT/DELETE via form submission - bypasses CORS), "Call API" (`fetch` HTTP request with full control: custom headers, body templates, programmatic response handling)
 - 📋 **Copy URLs** - Quick copy stream URLs to clipboard.
 - 🔔 **Badge Notifications** - Shows number of detected streams on the
-  extension icon.
+  extension icon (including '0' when no streams).
 - **Mobile Firefox Nightly Support** - Extension works also on mobile Firefox Nightly.
 
 
@@ -95,12 +98,18 @@ Placeholders are *case-insensitive* and support 2 jinja-like filters eg. `{{stre
 
 1. Navigate to any website with streaming media (e.g., online radio, podcast player).
 2. The extension will automatically detect streams and on its icon a badge will appear
-   showing the number of detected streams.
+   showing the number of detected streams (including '0' when no streams found).
 3. Click the extension icon to view all detected streams.
 4. Select the desired API Endpoint (pre-configured above).
 5. Choose action:
    - **📤 Call API** - Send HTTP request (fetch) with full control over headers/body. Receives programmatic response, shows success/error in log.
    - **🌐 Open in Tab** - Open URL in new browser tab. GET/HEAD uses simple navigation, POST/PUT/DELETE uses form submission to bypass CORS and sen. Useful for HTML-returning services where you want to see the rendered page.
+
+**Zero-Stream Mode**: Even when no streams are detected, the extension remains
+functional. The badge shows '0' and you can still call endpoints using page URL/title
+placeholders (`{{pageUrl}}`, `{{pageTitle}}`). Consider naming your endpoints
+clearly (e.g., "Bookmark Page", "Send to Wallabag") to distinguish page-only
+endpoints from stream-dependent ones.
 
 #### Supported Stream Types
 

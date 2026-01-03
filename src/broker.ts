@@ -211,25 +211,25 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
   }
 });
 
+// Initialize badge when tab becomes active
+browser.tabs.onActivated.addListener(async ({ tabId }) => {
+  const count = tabStreams.get(tabId)?.length || 0;
+  updateBadge(tabId, count);
+});
+
 /**
  * Update extension badge with stream count
+ * Always shows count (including '0') to indicate extension is active
  */
 function updateBadge(tabId: number, count: number) {
-  if (count > 0) {
-    browser.action.setBadgeText({
-      text: count.toString(),
-      tabId,
-    });
-    browser.action.setBadgeBackgroundColor({
-      color: '#4CAF50',
-      tabId,
-    });
-  } else {
-    browser.action.setBadgeText({
-      text: '',
-      tabId,
-    });
-  }
+  browser.action.setBadgeText({
+    text: count.toString(),
+    tabId,
+  });
+  browser.action.setBadgeBackgroundColor({
+    color: count > 0 ? '#4CAF50' : '#9E9E9E',
+    tabId,
+  });
 }
 
 logger.info('Broker service worker loaded');

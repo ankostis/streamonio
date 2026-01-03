@@ -167,8 +167,30 @@ async function loadStreams() {
   if (els.loading) els.loading.style.display = 'none';
 
   if (streams.length === 0) {
-    if (els.emptyState) els.emptyState.style.display = 'block';
-    if (els.status) els.status.style.display = 'none';
+    // Show UI even without streams - user selects endpoints for page-URL calls
+    if (els.emptyState) els.emptyState.style.display = 'none';
+    if (els.status) {
+      els.status.style.display = 'block';
+      els.status.classList.remove('detected');
+    }
+    if (els.streamCount) els.streamCount.textContent = '0';
+    const container = document.getElementById('streams-list');
+    if (container) container.innerHTML = '';
+    // Create page-only stream object with page metadata
+    const tabs = await browser.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (tabs.length > 0 && tabs[0]) {
+      const pageStream: StreamInfo = {
+        url: tabs[0].url || '',
+        type: 'PAGE',
+        pageUrl: tabs[0].url,
+        pageTitle: tabs[0].title,
+        timestamp: Date.now(),
+      };
+      populatePanel(pageStream, 0, [pageStream]);
+    }
   } else {
     if (els.emptyState) els.emptyState.style.display = 'none';
     if (els.status) {
@@ -191,6 +213,52 @@ function displayStreamsPopup(streams: StreamInfo[]) {
   displayStreams(streams, (stream, index) => {
     populatePanel(stream, index, streams);
   });
+}
+
+/**
+ * Display page-only calling option when no streams detected
+ */
+function displayPageOnlyOption() {
+  const container = document.getElementById('streams-list');
+  if (!container) return;
+
+  container.innerHTML = '';
+  const item = document.createElement('div');
+  item.className = 'stream-list-item page-only-item';
+  item.innerHTML = `
+    <span class="stream-type">PAGE</span>
+    <div class="stream-url">Call endpoint with page URL only</div>
+  `;
+  container.appendChild(item);
+
+  // Populate panel with page info (no stream)
+  populatePageOnlyPanel();
+}
+
+/**
+ * Populate panel for page-only endpoint calls
+ */
+async function populatePageOnlyPanel() {
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  if (tabs.length === 0) return;
+
+  const pageInfo: Partial<StreamInfo> = {
+    url: tabs[0].url || '',
+    type: 'PAGE',
+    pageUrl: tabs[0].url,
+    pageTitle: tabs[0].title,
+  };
+
+  const activeEndpoints = apiEndpoints.filter((ep) => ep.active !== false);
+  const handlers: StreamActionHandlers = {
+    onPreview: (stream, endpointName) =>
+      handlePreview(pageInfo as StreamInfo, endpointName),
+    onCopy: (url) => handleCopyUrl(url),
+    onCall: (mode, stream, endpointName) =>
+      handleCallEndpoint(mode, pageInfo as StreamInfo, endpointName),
+  };
+
+  populateStreamPanel(pageInfo as StreamInfo, activeEndpoints, handlers);
 }
 
 /**

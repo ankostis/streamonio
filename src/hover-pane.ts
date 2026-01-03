@@ -137,7 +137,25 @@ async function loadStreams() {
     if (els.loading) els.loading.style.display = 'none';
 
     if (streams.length === 0) {
-      showEmptyState();
+      // Show UI even without streams - user selects endpoints for page-URL calls
+      if (els.status) {
+        els.status.style.display = 'block';
+        els.status.classList.remove('detected');
+      }
+      if (els.streamCount) els.streamCount.textContent = '0';
+      if (els.loading) els.loading.style.display = 'none';
+      if (els.streamPanel) els.streamPanel.style.display = 'block';
+      const list = els.streamsList;
+      if (list) list.innerHTML = '';
+      // Create page-only stream object (use window location since no browser.tabs in iframe)
+      const pageStream: StreamInfo = {
+        url: window.location.href,
+        type: 'PAGE',
+        pageUrl: window.location.href,
+        pageTitle: document.title,
+        timestamp: Date.now(),
+      };
+      populatePanel(pageStream, 0, [pageStream]);
       return;
     }
 
@@ -183,6 +201,55 @@ function populatePanel(
   };
 
   populateStreamPanel(stream, activeEndpoints, handlers);
+}
+
+/**
+ * Display page-only calling option when no streams detected
+ */
+function displayPageOnlyOption() {
+  if (els.loading) els.loading.style.display = 'none';
+  if (els.streamPanel) els.streamPanel.style.display = 'block';
+
+  const list = els.streamsList;
+  if (!list) return;
+
+  list.innerHTML = '';
+  const item = document.createElement('div');
+  item.className = 'stream-list-item page-only-item';
+  item.innerHTML = `
+    <span class="stream-type">PAGE</span>
+    <div class="stream-url">Call endpoint with page URL only</div>
+  `;
+  list.appendChild(item);
+
+  // Populate panel with page info (no stream)
+  populatePageOnlyPanel();
+}
+
+/**
+ * Populate panel for page-only endpoint calls
+ */
+async function populatePageOnlyPanel() {
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  if (tabs.length === 0) return;
+
+  const pageInfo: Partial<StreamInfo> = {
+    url: tabs[0].url || '',
+    type: 'PAGE',
+    pageUrl: tabs[0].url,
+    pageTitle: tabs[0].title,
+  };
+
+  const activeEndpoints = apiEndpoints.filter((ep) => ep.active !== false);
+  const handlers: StreamActionHandlers = {
+    onPreview: (stream, endpointName) =>
+      handlePreview(pageInfo as StreamInfo, endpointName),
+    onCopy: (url) => handleCopyUrl(pageInfo.url || ''),
+    onCall: (mode, stream, endpointName) =>
+      handleCallEndpoint(mode, pageInfo as StreamInfo, endpointName),
+  };
+
+  populateStreamPanel(pageInfo as StreamInfo, activeEndpoints, handlers);
 }
 
 /**

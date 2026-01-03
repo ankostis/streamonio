@@ -50,11 +50,6 @@ import { Logger, LogLevel } from './logger';
     detectedStreams.add(url);
     logger.info('page', 'Detected stream:', url);
 
-    // Inject hover panel on first stream detection
-    if (detectedStreams.size === 1) {
-      await injectHoverPanel();
-    }
-
     browser.runtime
       .sendMessage({
         type: 'STREAM_DETECTED',
@@ -199,7 +194,7 @@ import { Logger, LogLevel } from './logger';
   }
 
   /**
-   * Inject hover panel (WIP for mobile testing) - only called after streams detected
+   * Inject hover panel button on all pages (if enabled)
    */
   async function injectHoverPanel() {
     // Only inject once
@@ -222,14 +217,14 @@ import { Logger, LogLevel } from './logger';
       position: fixed;
       top: 0;
       right: 0;
-      width: 25rem;
+      width: 400px;
       max-width: 90vw;
       height: 100vh;
       border: none;
       z-index: 999999;
       transform: translateX(100%);
       transition: transform 0.3s ease-in-out;
-      box-shadow: -0.25rem 0 0.75rem rgba(0,0,0,0.3);
+      box-shadow: -4px 0 12px rgba(0,0,0,0.3);
     `;
 
     document.body.appendChild(iframe);
@@ -252,26 +247,31 @@ import { Logger, LogLevel } from './logger';
       }
     });
 
-    // Add toggle button - fixed position, always visible above iframe
+    // Add toggle button - fixed position, always visible
     const toggleBtn = document.createElement('button');
     toggleBtn.id = 'stream-call-toggle-btn';
     toggleBtn.innerHTML = '🎵';
     toggleBtn.title = 'Toggle Stream call panel';
     toggleBtn.style.cssText = `
       position: fixed;
-      top: 0.625rem;
+      top: 10px;
       right: calc(100vw - 98vw);
-      width: 3rem;
-      height: 3rem;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
-      font-size: 1.25rem;
+      font-size: 16px;
+      line-height: 32px;
       cursor: pointer;
-      box-shadow: 0 0.25rem 0.75rem rgba(102, 126, 234, 0.4);
+      box-shadow: 0 2px 4px rgba(102, 126, 234, 0.4);
       z-index: 1000001;
       transition: box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
     `;
 
     toggleBtn.addEventListener('click', () => togglePanel());
@@ -286,11 +286,11 @@ import { Logger, LogLevel } from './logger';
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         startDetection();
-        // Hover panel will be injected automatically when first stream is detected
+        injectHoverPanel();
       });
     } else {
       startDetection();
-      // Hover panel will be injected automatically when first stream is detected
+      injectHoverPanel();
     }
   }
 
