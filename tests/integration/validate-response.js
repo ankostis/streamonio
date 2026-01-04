@@ -2,8 +2,8 @@
 // Validate httpbin API response for stream-call integration testing
 // Usage: node validate-response.js <httpbin-response.json>
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const _path = require('node:path');
 
 function validateHttpbinResponse(response) {
   const issues = [];
@@ -27,10 +27,9 @@ function validateHttpbinResponse(response) {
       );
     }
 
-    if (response.headers['Cookie']) {
+    if (response.headers.Cookie) {
       passed.push(
-        '✅ Cookie header present: ' +
-          response.headers['Cookie'].substring(0, 50),
+        '✅ Cookie header present: ' + response.headers.Cookie.substring(0, 50),
       );
     } else {
       issues.push(
@@ -38,8 +37,8 @@ function validateHttpbinResponse(response) {
       );
     }
 
-    if (response.headers['Referer']) {
-      passed.push('✅ Referer header present: ' + response.headers['Referer']);
+    if (response.headers.Referer) {
+      passed.push(`✅ Referer header present: ${response.headers.Referer}`);
     } else {
       issues.push('⚠️  Referer header missing');
     }
@@ -62,32 +61,32 @@ function validateHttpbinResponse(response) {
     // Validate body fields
     if (response.json.streamUrl) {
       const streamUrl = response.json.streamUrl;
-      passed.push('✅ streamUrl present: ' + streamUrl);
+      passed.push(`✅ streamUrl present: ${streamUrl}`);
 
       // Check stream format
       if (/\.(m3u8|mpd|mp3|aac|ogg)/.test(streamUrl)) {
         passed.push('✅ streamUrl is valid media format');
       } else {
-        issues.push('⚠️  streamUrl may not be a media file: ' + streamUrl);
+        issues.push(`⚠️  streamUrl may not be a media file: ${streamUrl}`);
       }
     } else {
       issues.push('❌ streamUrl missing in body');
     }
 
     if (response.json.pageUrl) {
-      passed.push('✅ pageUrl present: ' + response.json.pageUrl);
+      passed.push(`✅ pageUrl present: ${response.json.pageUrl}`);
     } else {
       issues.push('⚠️  pageUrl missing in body');
     }
 
     if (response.json.pageTitle) {
-      passed.push('✅ pageTitle present: ' + response.json.pageTitle);
+      passed.push(`✅ pageTitle present: ${response.json.pageTitle}`);
     } else {
       issues.push('⚠️  pageTitle missing in body');
     }
 
     if (response.json.timestamp) {
-      passed.push('✅ timestamp present: ' + response.json.timestamp);
+      passed.push(`✅ timestamp present: ${response.json.timestamp}`);
 
       // Validate ISO format
       if (
@@ -96,7 +95,7 @@ function validateHttpbinResponse(response) {
         passed.push('✅ timestamp is valid ISO format');
       } else {
         issues.push(
-          '⚠️  timestamp not in ISO format: ' + response.json.timestamp,
+          `⚠️  timestamp not in ISO format: ${response.json.timestamp}`,
         );
       }
     } else {
@@ -110,13 +109,13 @@ function validateHttpbinResponse(response) {
 
   if (passed.length > 0) {
     console.log('✅ Passed Checks:');
-    passed.forEach((p) => console.log('   ' + p));
+    passed.forEach((p) => console.log(`   ${p}`));
     console.log('');
   }
 
   if (issues.length > 0) {
     console.log('⚠️  Issues Found:');
-    issues.forEach((i) => console.log('   ' + i));
+    issues.forEach((i) => console.log(`   ${i}`));
     console.log('');
   }
 

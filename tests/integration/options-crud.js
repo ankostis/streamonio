@@ -142,7 +142,7 @@ async function run() {
     await page.type('#endpoint-endpoint', 'https://httpbin.org/anything');
 
     // Click save button (simulate directly if needed)
-    const saveSuccess = await page.evaluate(() => {
+    const _saveSuccess = await page.evaluate(() => {
       // Try triggering save logic directly
       const nameInput = document.getElementById('endpoint-name');
       const urlInput = document.getElementById('endpoint-endpoint');
@@ -160,11 +160,7 @@ async function run() {
       };
 
       // Store in mock storage
-      if (
-        window.browser &&
-        window.browser.storage &&
-        window.browser.storage.sync
-      ) {
+      if (window.browser?.storage?.sync) {
         return window.browser.storage.sync
           .get('apiEndpoints')
           .then((result) => {
@@ -237,7 +233,7 @@ async function run() {
       for (const item of items) {
         if (item.textContent.includes('Test API')) {
           const editBtn = item.querySelector('.btn-ghost');
-          if (editBtn && editBtn.textContent.includes('Edit')) {
+          if (editBtn?.textContent.includes('Edit')) {
             editBtn.click();
             return true;
           }
@@ -277,7 +273,7 @@ async function run() {
       for (const item of items) {
         if (item.textContent.includes('Test API')) {
           const deleteBtn = item.querySelector('.btn-danger');
-          if (deleteBtn && deleteBtn.textContent.includes('Delete')) {
+          if (deleteBtn?.textContent.includes('Delete')) {
             deleteBtn.click();
             return true;
           }
@@ -427,6 +423,6 @@ async function run() {
 
 run().catch((e) => {
   console.error('\n💥 Integration test failed:');
-  console.error((e && e.stack) || e);
+  console.error(e?.stack || e);
   process.exit(1);
 });

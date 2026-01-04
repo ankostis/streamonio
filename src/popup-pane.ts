@@ -3,8 +3,6 @@
  */
 
 import {
-  type ButtonConfig,
-  createButton,
   displayStreams,
   initLogging,
   populateStreamPanel,
@@ -17,7 +15,6 @@ import {
   parseEndpoints,
   previewCall,
 } from './endpoint';
-import { LogLevel } from './logger';
 import { applyLogFiltering } from './logger-ui';
 import type { StreamInfo } from './types';
 
@@ -29,7 +26,6 @@ let endpointsCached = false;
 
 // Logging utilities (initialized in initialize() after DOM ready)
 let logger: ReturnType<typeof initLogging>['logger'];
-let appendLog: ReturnType<typeof initLogging>['appendLog'];
 
 // Cached DOM elements (initialized in initialize())
 let els: {
@@ -68,7 +64,7 @@ async function initialize() {
     logViewer: document.getElementById('log-viewer') as HTMLDivElement,
   });
   logger = logging.logger;
-  appendLog = logging.appendLog;
+  _appendLog = logging.appendLog;
 
   // Cache DOM elements
   els = {
@@ -216,58 +212,12 @@ function displayStreamsPopup(streams: StreamInfo[]) {
 }
 
 /**
- * Display page-only calling option when no streams detected
- */
-function displayPageOnlyOption() {
-  const container = document.getElementById('streams-list');
-  if (!container) return;
-
-  container.innerHTML = '';
-  const item = document.createElement('div');
-  item.className = 'stream-list-item page-only-item';
-  item.innerHTML = `
-    <span class="stream-type">PAGE</span>
-    <div class="stream-url">Call endpoint with page URL only</div>
-  `;
-  container.appendChild(item);
-
-  // Populate panel with page info (no stream)
-  populatePageOnlyPanel();
-}
-
-/**
- * Populate panel for page-only endpoint calls
- */
-async function populatePageOnlyPanel() {
-  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-  if (tabs.length === 0) return;
-
-  const pageInfo: Partial<StreamInfo> = {
-    url: tabs[0].url || '',
-    type: 'PAGE',
-    pageUrl: tabs[0].url,
-    pageTitle: tabs[0].title,
-  };
-
-  const activeEndpoints = apiEndpoints.filter((ep) => ep.active !== false);
-  const handlers: StreamActionHandlers = {
-    onPreview: (stream, endpointName) =>
-      handlePreview(pageInfo as StreamInfo, endpointName),
-    onCopy: (url) => handleCopyUrl(url),
-    onCall: (mode, stream, endpointName) =>
-      handleCallEndpoint(mode, pageInfo as StreamInfo, endpointName),
-  };
-
-  populateStreamPanel(pageInfo as StreamInfo, activeEndpoints, handlers);
-}
-
-/**
  * Populate the detail panel with selected stream (uses shared component)
  */
 function populatePanel(
   stream: StreamInfo,
-  index: number,
-  allStreams: StreamInfo[],
+  _index: number,
+  _allStreams: StreamInfo[],
 ) {
   const activeEndpoints = apiEndpoints.filter((ep) => ep.active !== false);
 

@@ -15,7 +15,7 @@ test('Stream URL truncation: long URLs should be displayable', () => {
 
   // Simulates display logic (truncation for UI, full URL in title attribute)
   const displayText =
-    longUrl.length > 60 ? longUrl.substring(0, 60) + '...' : longUrl;
+    longUrl.length > 60 ? `${longUrl.substring(0, 60)}...` : longUrl;
   const titleText = longUrl;
 
   assert(displayText.length <= 63, 'Display text should be truncated');
@@ -33,7 +33,7 @@ test('Stream URL truncation: long URLs should be displayable', () => {
 test('Stream URL truncation: short URLs remain unchanged', () => {
   const shortUrl = 'https://example.com/stream.m3u8';
   const displayText =
-    shortUrl.length > 60 ? shortUrl.substring(0, 60) + '...' : shortUrl;
+    shortUrl.length > 60 ? `${shortUrl.substring(0, 60)}...` : shortUrl;
 
   assert.strictEqual(
     displayText,
@@ -67,8 +67,8 @@ test('Stream grouping by type: groups streams by their type', () => {
     3,
     'Should have 3 stream types',
   );
-  assert.strictEqual(grouped['HLS'].length, 2, 'Should have 2 HLS streams');
-  assert.strictEqual(grouped['DASH'].length, 1, 'Should have 1 DASH stream');
+  assert.strictEqual(grouped.HLS.length, 2, 'Should have 2 HLS streams');
+  assert.strictEqual(grouped.DASH.length, 1, 'Should have 1 DASH stream');
   assert.strictEqual(
     grouped['HTTP Audio'].length,
     1,

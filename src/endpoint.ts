@@ -288,7 +288,7 @@ export function applyTemplate(
         if (onMissing === 'empty') return '';
         if (onMissing === 'throw')
           throw new Error(`Missing placeholder: ${key}`);
-        return `{{${key}${filter ? '|' + filter : ''}}}`;
+        return `{{${key}${filter ? `|${filter}` : ''}}}`;
       }
       return applyFilter(value, filter);
     },
@@ -551,12 +551,12 @@ export async function callEndpoint({
 
     // Add authentication headers
     if (selectedEndpoint.bearerToken) {
-      headers['Authorization'] = `Bearer ${selectedEndpoint.bearerToken}`;
+      headers.Authorization = `Bearer ${selectedEndpoint.bearerToken}`;
     } else if (selectedEndpoint.username && selectedEndpoint.password) {
       const credentials = btoa(
         `${selectedEndpoint.username}:${selectedEndpoint.password}`,
       );
-      headers['Authorization'] = `Basic ${credentials}`;
+      headers.Authorization = `Basic ${credentials}`;
     }
 
     // Add cookies to headers if flag is enabled
@@ -567,7 +567,7 @@ export async function callEndpoint({
           const cookieHeader = cookies
             .map((c) => `${c.name}=${c.value}`)
             .join('; ');
-          headers['Cookie'] = cookieHeader;
+          headers.Cookie = cookieHeader;
         }
       } catch (cookieError: any) {
         logger.warn(`Failed to get cookies: ${cookieError}`, {

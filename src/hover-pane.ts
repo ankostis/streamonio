@@ -10,13 +10,7 @@ import {
   populateStreamPanel,
   type StreamActionHandlers,
 } from './components-ui';
-import {
-  type ApiEndpoint,
-  formatResponseBody,
-  parseEndpoints,
-  previewCall,
-} from './endpoint';
-import { LogLevel } from './logger';
+import { type ApiEndpoint, formatResponseBody, previewCall } from './endpoint';
 import { applyLogFiltering } from './logger-ui';
 import type { RuntimeMessage, StreamInfo } from './types';
 
@@ -24,7 +18,6 @@ let apiEndpoints: ApiEndpoint[] = [];
 
 // Logging utilities (initialized in initialize() after DOM ready)
 let logger: ReturnType<typeof initLogging>['logger'];
-let appendLog: ReturnType<typeof initLogging>['appendLog'];
 
 // Cached DOM elements (initialized in initialize())
 let els: {
@@ -48,7 +41,6 @@ async function initialize() {
     logViewer: document.getElementById('log-viewer') as HTMLDivElement,
   });
   logger = logging.logger;
-  appendLog = logging.appendLog;
 
   // Cache DOM elements
   els = {
@@ -204,55 +196,6 @@ function populatePanel(
 }
 
 /**
- * Display page-only calling option when no streams detected
- */
-function displayPageOnlyOption() {
-  if (els.loading) els.loading.style.display = 'none';
-  if (els.streamPanel) els.streamPanel.style.display = 'block';
-
-  const list = els.streamsList;
-  if (!list) return;
-
-  list.innerHTML = '';
-  const item = document.createElement('div');
-  item.className = 'stream-list-item page-only-item';
-  item.innerHTML = `
-    <span class="stream-type">PAGE</span>
-    <div class="stream-url">Call endpoint with page URL only</div>
-  `;
-  list.appendChild(item);
-
-  // Populate panel with page info (no stream)
-  populatePageOnlyPanel();
-}
-
-/**
- * Populate panel for page-only endpoint calls
- */
-async function populatePageOnlyPanel() {
-  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-  if (tabs.length === 0) return;
-
-  const pageInfo: Partial<StreamInfo> = {
-    url: tabs[0].url || '',
-    type: 'PAGE',
-    pageUrl: tabs[0].url,
-    pageTitle: tabs[0].title,
-  };
-
-  const activeEndpoints = apiEndpoints.filter((ep) => ep.active !== false);
-  const handlers: StreamActionHandlers = {
-    onPreview: (stream, endpointName) =>
-      handlePreview(pageInfo as StreamInfo, endpointName),
-    onCopy: (url) => handleCopyUrl(pageInfo.url || ''),
-    onCall: (mode, stream, endpointName) =>
-      handleCallEndpoint(mode, pageInfo as StreamInfo, endpointName),
-  };
-
-  populateStreamPanel(pageInfo as StreamInfo, activeEndpoints, handlers);
-}
-
-/**
  * Show empty state with optional custom message
  */
 function showEmptyState(
@@ -384,13 +327,6 @@ async function handleOptions() {
   } catch (error) {
     logger.error('Failed to open options', error);
   }
-}
-
-/**
- * Handle close button - tell parent page.ts to hide iframe
- */
-function handleClose() {
-  window.parent.postMessage({ type: 'CLOSE_HOVER_PANEL' }, '*');
 }
 
 // Initialize when DOM ready

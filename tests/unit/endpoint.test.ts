@@ -353,7 +353,7 @@ test('Import file format: handles duplicate names during merge logic', () => {
 });
 
 test('Import file format: replace strategy discards existing', () => {
-  const existingEndpoints = [
+  const _existingEndpoints = [
     { name: 'Old', endpointTemplate: 'https://old.com', method: 'POST' },
   ];
   const importedEndpoints = [
@@ -397,7 +397,7 @@ test('Header rows: builds record from key-value pairs', () => {
   });
 
   assert.strictEqual(Object.keys(headers).length, 2);
-  assert.strictEqual(headers['Authorization'], 'Bearer token123');
+  assert.strictEqual(headers.Authorization, 'Bearer token123');
   assert.strictEqual(headers['Content-Type'], 'application/json');
   assert.strictEqual(headers[''], undefined, 'Empty key should not be added');
 });

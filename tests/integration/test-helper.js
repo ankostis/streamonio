@@ -1,8 +1,8 @@
 // Test configuration helper for httpbin endpoint setup
 // Creates a test config with httpbin endpoint that captures cookies/headers
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /**
  * Generate test configuration with httpbin endpoint

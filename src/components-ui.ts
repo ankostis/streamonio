@@ -3,12 +3,8 @@
  */
 
 import type { ApiEndpoint } from './endpoint';
-import { Logger, LogLevel, SlotMessage } from './logger';
-import {
-  applyLogFiltering,
-  createLogAppender,
-  createStatusRenderer,
-} from './logger-ui';
+import { Logger } from './logger';
+import { createLogAppender, createStatusRenderer } from './logger-ui';
 import type { StreamInfo } from './types';
 
 /**
@@ -69,9 +65,7 @@ export function initLogging(
 
   const appendLog = createLogAppender(elements.logViewer);
   logger.subscribeLogs((entries) => {
-    entries
-      .slice(-1)
-      .forEach((e) => appendLog(e.level, e.category as any, e.message));
+    entries.slice(-1).forEach((e) => appendLog(e.level, e.category, e.message));
   });
 
   return { logger, appendLog };

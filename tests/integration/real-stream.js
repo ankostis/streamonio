@@ -76,7 +76,7 @@ async function run() {
           detectedStreams.add(streamUrl);
           console.log(
             `✓ Stream detected [${detectedStreams.size}]:`,
-            streamUrl.substring(0, 60) + '...',
+            `${streamUrl.substring(0, 60)}...`,
           );
         }
       }
@@ -224,10 +224,10 @@ async function run() {
   }
 
   // Summary
-  console.log('\n' + '='.repeat(50));
+  console.log(`\n${'='.repeat(50)}`);
   if (failures.length === 0) {
     console.log('✅ ALL CRITICAL TESTS PASSED');
-    console.log('='.repeat(50) + '\n');
+    console.log(`${'='.repeat(50)}\n`);
     process.exit(0);
   } else {
     console.log('❌ SOME TESTS FAILED');

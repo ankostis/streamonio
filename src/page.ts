@@ -8,7 +8,7 @@ import {
   getStreamType as getStreamTypeShared,
   isStreamUrl as isStreamUrlShared,
 } from './detect';
-import { Logger, LogLevel } from './logger';
+import { Logger } from './logger';
 
 // Module content script (no exports needed)
 
@@ -36,8 +36,6 @@ import { Logger, LogLevel } from './logger';
    * Determine stream type from URL
    */
   function getStreamType(url: string): string {
-    const urlLower = url.toLowerCase();
-
     return getStreamTypeShared(url);
   }
 

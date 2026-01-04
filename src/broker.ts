@@ -5,7 +5,7 @@
  */
 
 import { callEndpoint, DEFAULT_CONFIG } from './endpoint';
-import { Logger, LogLevel } from './logger';
+import { Logger } from './logger';
 import type { RuntimeMessage, StreamInfo } from './types';
 
 const logger = new Logger('broker');
@@ -165,9 +165,10 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
         const endpoints = parseEndpoints(stored.apiEndpoints || '[]');
         logger.debug(`GET_ENDPOINTS: ${endpoints.length} endpoints`);
         return { endpoints };
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
         logger.error('GET_ENDPOINTS: Failed to parse endpoints', error);
-        return { endpoints: [], error: error.message };
+        return { endpoints: [], error: message };
       }
     }
 

@@ -25,7 +25,7 @@ function createMockViewer(): HTMLDivElement {
     configurable: true,
   });
   Object.defineProperty(viewer, 'addEventListener', {
-    value: (event: string, listener: any) => {
+    value: (_event: string, _listener: any) => {
       // Mock addEventListener to prevent scroll listener from breaking tests
     },
     writable: true,

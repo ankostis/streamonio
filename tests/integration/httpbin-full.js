@@ -14,7 +14,7 @@ async function run() {
 
   const cwd = resolve(__dirname, '../../');
   const TEST_URL = 'https://www.ertecho.gr/radio/trito/';
-  const HTTPBIN_URL = 'https://httpbin.org/anything';
+  const _HTTPBIN_URL = 'https://httpbin.org/anything';
 
   // Launch Firefox with web-ext and enable remote debugging
   console.log('🚀 Launching Firefox with extension and CDP enabled...');
@@ -34,16 +34,16 @@ async function run() {
     { cwd },
   );
 
-  let stdout = '';
+  let _stdout = '';
   proc.stdout.on('data', (d) => {
     const text = d.toString();
-    stdout += text;
+    _stdout += text;
     if (text.includes('file:///') || text.includes('http://')) {
       console.log('   Firefox starting...');
     }
   });
   proc.stderr.on('data', (d) => {
-    stdout += d.toString();
+    _stdout += d.toString();
   });
 
   // Wait for Firefox to start and CDP to be available
@@ -55,7 +55,7 @@ async function run() {
     // Test CDP endpoint availability first
     console.log('🔍 Checking CDP endpoint at http://127.0.0.1:9222...');
     try {
-      const http = require('http');
+      const http = require('node:http');
       const testReq = await new Promise((resolve, reject) => {
         const req = http.get('http://127.0.0.1:9222/json/version', (res) => {
           let data = '';
@@ -97,7 +97,7 @@ async function run() {
 
     // Open options page to configure httpbin endpoint
     console.log('⚙️  Configuring httpbin endpoint...');
-    const optionsUrl = 'moz-extension://[UUID]/dist/options.html'; // Need actual UUID
+    const _optionsUrl = 'moz-extension://[UUID]/dist/options.html'; // Need actual UUID
     // Alternative: use about:debugging to get extension UUID
 
     // For now, check console for stream detections

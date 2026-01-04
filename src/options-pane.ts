@@ -13,7 +13,6 @@ import {
   suggestEndpointName,
   validateEndpoints,
 } from './endpoint';
-import { LogLevel } from './logger';
 import { applyLogFiltering } from './logger-ui';
 
 type Config = typeof DEFAULT_CONFIG;
@@ -77,7 +76,6 @@ const logging = initLogging('options', {
   logViewer: els.logViewer(),
 });
 const logger = logging.logger;
-const appendLog = logging.appendLog;
 
 function addHeaderRow(key = '', value = '') {
   const row = document.createElement('div');

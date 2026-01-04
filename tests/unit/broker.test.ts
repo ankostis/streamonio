@@ -108,8 +108,8 @@ test('STREAM_DETECTED: initializes stream array on first detection', async () =>
     true,
     'Should initialize streams array for tab',
   );
-  assert.equal(tabStreams.get(1)!.length, 1, 'Should have one stream');
-  assert.equal(tabStreams.get(1)![0].url, 'https://example.com/stream.m3u8');
+  assert.equal(tabStreams.get(1)?.length, 1, 'Should have one stream');
+  assert.equal(tabStreams.get(1)?.[0].url, 'https://example.com/stream.m3u8');
 });
 
 test('STREAM_DETECTED: adds stream to existing array', async () => {
@@ -134,7 +134,7 @@ test('STREAM_DETECTED: adds stream to existing array', async () => {
 
   await handleMessage(message, sender);
 
-  assert.equal(tabStreams.get(1)!.length, 2, 'Should have two streams');
+  assert.equal(tabStreams.get(1)?.length, 2, 'Should have two streams');
 });
 
 test('STREAM_DETECTED: prevents duplicate streams', async () => {
@@ -153,7 +153,7 @@ test('STREAM_DETECTED: prevents duplicate streams', async () => {
   await handleMessage(message, sender);
   await handleMessage(message, sender); // Send same stream again
 
-  assert.equal(tabStreams.get(1)!.length, 1, 'Should not add duplicate');
+  assert.equal(tabStreams.get(1)?.length, 1, 'Should not add duplicate');
 });
 
 test('STREAM_DETECTED: handles missing tab context', async () => {
@@ -238,8 +238,8 @@ test('STREAM_DETECTED: captures page context', async () => {
 test('RuntimeMessage type includes all handled message types', async () => {
   // Read the types.ts source to extract declared types
   // and broker.ts source to extract handled types
-  const fs = await import('fs/promises');
-  const path = await import('path');
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
 
   const brokerPath = path.join(process.cwd(), 'src', 'broker.ts');
   const typesPath = path.join(process.cwd(), 'src', 'types.ts');
@@ -299,8 +299,8 @@ test('RuntimeMessage type includes all handled message types', async () => {
 });
 
 test('No duplicate message type declarations in RuntimeMessage', async () => {
-  const fs = await import('fs/promises');
-  const path = await import('path');
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
 
   const typesPath = path.join(process.cwd(), 'src', 'types.ts');
   const content = await fs.readFile(typesPath, 'utf-8');

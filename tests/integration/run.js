@@ -53,8 +53,8 @@ async function run() {
   let detections = 0;
 
   const detectionRegex = /Stream detected:/i;
-  const badgeRegex = /setBadgeText|badge count/i;
-  const apiRegex = /CALL_API|API request/i;
+  const _badgeRegex = /setBadgeText|badge count/i;
+  const _apiRegex = /CALL_API|API request/i;
   const storageErrorRegex = /temporary addon ID|storage API will not work/i;
 
   proc.stdout.on('data', (d) => {
@@ -141,7 +141,7 @@ async function run() {
 run().catch((e) => {
   console.error('\n❌ Integration Failed');
   console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.error((e && e.stack) || e);
+  console.error(e?.stack || e);
   console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   process.exit(1);
 });
