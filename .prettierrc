@@ -1,0 +1,13 @@
+{
+  "overrides": [
+    {
+      "files": "*.html",
+      "options": {
+        "printWidth": 100,
+        "tabWidth": 2,
+        "useTabs": false,
+        "htmlWhitespaceSensitivity": "css"
+      }
+    }
+  ]
+}

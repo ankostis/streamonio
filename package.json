@@ -16,7 +16,7 @@
     "package": "zip -r stream-call-$npm_package_version.zip manifest.json dist icons -x 'icons/generate-icons.html'",
     "lint": "biome check src/ tests/",
     "lint:fix": "biome check --write src/ tests/",
-    "format": "biome format --write src/ tests/",
+    "format": "biome format --write src/ tests/ && prettier --write '*.html'",
     "dupes": "jscpd src/",
     "dead-code": "ts-prune"
   },
@@ -30,6 +30,7 @@
     "esbuild": "^0.27.1",
     "jscpd": "^4.0.5",
     "jsdom": "^27.3.0",
+    "prettier": "^3.7.4",
     "puppeteer": "^24.33.0",
     "ts-prune": "^0.10.3",
     "tsx": "^4.7.2",

@@ -1,0 +1,7 @@
+# Ignore everything except HTML
+*.ts
+*.js
+*.json
+*.md
+dist/
+node_modules/

@@ -1,1204 +1,1309 @@
-<!DOCTYPE html>
+<!doctype html>
 <!--
   Options Page: Configure API endpoints for stream URL notifications.
   Features: CRUD for endpoints, import/export, test API, preview templates.
   Includes Logger and StatusBar for user-visible error feedback.
 -->
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stream call Options</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      font-size: 0.875rem;
-      color: #333;
-      background: #f5f5f5;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-      overflow-x: hidden;
-    }
-
-    .header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 1.25rem 2rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      flex-shrink: 0;
-    }
-
-    .header h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
-
-    .header p {
-      font-size: 0.8125rem;
-      opacity: 0.9;
-    }
-
-    .container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      max-width: 1400px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 1rem;
-      gap: 1rem;
-      overflow: hidden;
-    }
-
-    .main-content {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      overflow: visible;
-      min-height: 0;
-    }
-
-    .column {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      overflow-y: auto;
-      overflow-x: hidden;
-      min-height: 0;
-      padding-bottom: 2rem;
-    }
-
-    .card {
-      background: white;
-      border-radius: 0.5rem;
-      padding: 1.25rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      min-height: 0;
-    }
-
-    #log-card {
-      flex: 1;
-      min-height: 0;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    .card-actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .card-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      color: #667eea;
-      flex-shrink: 0;
-    }
-
-    .form-group {
-      margin-bottom: 0.75em;
-    }
-
-    .form-group:last-child {
-      margin-bottom: 0;
-    }
-
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 0.25em;
-    }
-
-    .label-description {
-      font-weight: normal;
-      font-size: 0.75rem;
-      color: #666;
-      margin-top: 0.25rem;
-    }
-
-    input[type="text"],
-    input[type="url"],
-    textarea {
-      width: 100%;
-      max-width: 100%;
-    }
-
-    select {
-      width: auto;
-      min-width: 5em;
-      max-width: 100%;
-      padding: 0.625rem 12px;
-      border: 1px solid #ddd;
-      border-radius: 0.25rem;
-      font-size: 0.875rem;
-      font-family: inherit;
-      transition: border-color 0.2s;
-    }
-
-    input[type="text"]:focus,
-    input[type="url"]:focus,
-    textarea:focus,
-    select:focus {
-      outline: none;
-      border-color: #667eea;
-    }
-
-    textarea {
-      min-height: 60px;
-      resize: vertical;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    }
-
-    #endpoint-endpoint {
-      min-height: 3em;
-      font-family: inherit;
-    }
-
-    input[type="checkbox"] {
-      width: 1.125rem;
-      height: 1.125rem;
-      margin-right: 0.5rem;
-      cursor: pointer;
-    }
-
-    .checkbox-group {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .checkbox-group label {
-      margin-bottom: 0;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-    }
-
-    .button-group {
-      display: flex;
-      gap: 0.75em;
-      margin-top: 1em;
-    }
-
-    button {
-      padding: 0.5em 1em;
-      border: none;
-      border-radius: 0.25rem;
-      font-size: 0.875rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-primary {
-      background: #667eea;
-      color: white;
-      flex: 1;
-    }
-
-    .btn-primary:hover {
-      background: #5568d3;
-    }
-
-    .btn-primary:active {
-      background: #4557c2;
-      transform: scale(0.98);
-    }
-
-    .btn-secondary {
-      background: #e0e0e0;
-      color: #333;
-    }
-
-    .btn-secondary:hover {
-      background: #d0d0d0;
-    }
-
-    .btn-secondary:active {
-      background: #c0c0c0;
-      transform: scale(0.98);
-    }
-
-    .btn-test {
-      background: #ffc107;
-      color: #000;
-    }
-
-    .btn-test:hover {
-      background: #e0a800;
-    }
-
-    .btn-test:active {
-      background: #c69500;
-      transform: scale(0.98);
-    }
-
-    .btn-action {
-      background: #4CAF50;
-      color: white;
-    }
-
-    .btn-action:hover {
-      background: #45a049;
-    }
-
-    .btn-action:active {
-      background: #3d8b40;
-      transform: scale(0.98);
-    }
-
-    .alert {
-      padding: 10.125rem 16px;
-      border-radius: 0.25rem;
-      margin-bottom: 1rem;
-      display: none;
-    }
-
-    .alert.success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-
-    .alert.error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-
-    .alert.info {
-      background: #d1ecf1;
-      color: #0c5460;
-      border: 1px solid #bee5eb;
-    }
-
-    .code-example {
-      background: #f8f9fa;
-      border: 1px solid #e9ecef;
-      border-radius: 0.25rem;
-      padding: 0.75rem;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 0.75rem;
-      margin-top: 0.5rem;
-      overflow-x: auto;
-    }
-
-    .help-text {
-      font-size: 0.75rem;
-      color: #666;
-      margin-top: 0.5rem;
-      line-height: 1.5;
-    }
-
-    .help-icon {
-      display: inline-block;
-      width: 1rem;
-      height: 1rem;
-      line-height: 1rem;
-      text-align: center;
-      background: #667eea;
-      color: white;
-      border-radius: 50%;
-      font-size: 11px;
-      font-weight: bold;
-      margin-left: 0.375rem;
-      cursor: help;
-      vertical-align: middle;
-      position: relative;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .help-icon:hover,
-    .help-icon:active {
-      background: #5568d3;
-      transform: scale(1.1);
-      transition: all 0.15s ease;
-    }
-
-    /* Tooltip bubble - appears on tap/click for mobile */
-    .help-icon::after {
-      content: attr(title);
-      position: absolute;
-      left: 50%;
-      bottom: calc(100% + 8px);
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.9);
-      color: white;
-      padding: 0.5rem 12px;
-      border-radius: 0.375rem;
-      font-size: 0.75rem;
-      font-weight: normal;
-      white-space: normal;
-      width: max-content;
-      max-width: 250px;
-      line-height: 1.4;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 1000;
-      transition: opacity 0.2s ease;
-    }
-
-    .help-icon::before {
-      content: '';
-      position: absolute;
-      left: 50%;
-      bottom: calc(100% + 2px);
-      transform: translateX(-50%);
-      border: 0.375rem solid transparent;
-      border-top-color: rgba(0, 0, 0, 0.9);
-      opacity: 0;
-      pointer-events: none;
-      z-index: 1000;
-      transition: opacity 0.2s ease;
-    }
-
-    .help-icon.show-tooltip::after,
-    .help-icon.show-tooltip::before {
-      opacity: 1;
-    }
-
-    /* Desktop hover */
-    @media (hover: hover) and (pointer: fine) {
-      .help-icon:hover::after,
-      .help-icon:hover::before {
-        opacity: 1;
-      }
-    }
-
-    .template-help {
-      background: #f8f9fa;
-      border: 1px solid #e1e4e8;
-      border-radius: 0.375rem;
-      padding: 0.375rem 10px;
-      margin-bottom: 1rem;
-      font-size: 11px;
-      line-height: 1.6;
-    }
-
-    .template-help strong {
-      font-size: 11px;
-      font-weight: 600;
-      color: #24292e;
-      margin-right: 0.375rem;
-    }
-
-    .template-help code {
-      background: #fff;
-      border: 1px solid #e1e4e8;
-      border-radius: 3px;
-      padding: 1px 4px;
-      font-family: 'Courier New', monospace;
-      font-size: 0.625rem;
-      color: #d73a49;
-      cursor: pointer;
-      user-select: all;
-      white-space: nowrap;
-      margin: 0 2px;
-    }
-
-    .template-help code:hover {
-      background: #fff5b1;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .scrollable-content {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      min-height: 0;
-      padding-right: 0.25rem;
-    }
-
-    .scrollable-content::-webkit-scrollbar {
-      width: 0.5rem;
-    }
-
-    .scrollable-content::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 0.25rem;
-    }
-
-    .scrollable-content::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 0.25rem;
-    }
-
-    .scrollable-content::-webkit-scrollbar-thumb:hover {
-      background: #555;
-    }
-
-    .example-box {
-      background: #f8f9fa;
-      border-left: 0.25rem solid #667eea;
-      padding: 0.75rem;
-      margin-top: 0.75rem;
-      font-size: 0.8125rem;
-    }
-
-    .example-box strong {
-      color: #667eea;
-    }
-
-    .card .endpoints-list,
-    #endpoints-list.endpoints-list {
-      background: white;
-      border: 1px solid #e0e0e0;
-      border-radius: 0.375rem;
-      height: 14rem; /* Fixed height for ~5 items */
-      overflow-y: auto;
-      flex-shrink: 0;
-    }
-
-    .endpoint-item {
-      padding: 0.375rem 10px;
-      background: white;
-      border-bottom: 1px solid #f0f0f0;
-      transition: all 0.2s;
-      cursor: pointer;
-      display: flex;
-      align-items: stretch;
-      gap: 0.5rem;
-    }
-
-    .endpoint-item:last-child {
-      border-bottom: none;
-    }
-
-    .endpoint-item:first-child {
-      border-top-left-radius: 0.375rem;
-      border-top-right-radius: 0.375rem;
-    }
-
-    .endpoint-item:last-child {
-      border-bottom-left-radius: 0.375rem;
-      border-bottom-right-radius: 0.375rem;
-    }
-
-    .endpoint-item.inactive {
-      opacity: 0.6;
-      background: #f9fafb;
-    }
-
-    .endpoint-item:hover {
-      background: #f8f9fa;
-    }
-
-    .endpoint-item:active {
-      background: #e9ecef;
-    }
-
-    .endpoint-item.selected {
-      background: #e7ecff;
-      border-left: 3px solid #667eea;
-      padding-left: calc(0.75em - 2px); /* Compensate for border */
-    }
-
-    .endpoint-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.125rem;
-      min-width: 0;
-    }
-
-    .endpoint-header {
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-    }
-
-    .endpoint-active {
-      width: 1.125rem;
-      height: 1.125rem;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .endpoint-name {
-      flex: 1;
-      font-size: 0.8125rem;
-      font-weight: 600;
-      color: #111827;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .endpoint-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-      flex-shrink: 0;
-    }
-
-    .btn-icon {
-      background: transparent;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.25rem;
-      padding: 0.25rem 6px;
-      font-size: 0.875rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      min-width: 2rem;
-      align-self: stretch;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-icon:hover {
-      background: #f3f4f6;
-      border-color: #667eea;
-    }
-
-    .btn-icon:active {
-      background: #e5e7eb;
-      transform: scale(0.95);
-    }
-
-    .btn-icon.btn-danger:hover {
-      background: #fef2f2;
-      border-color: #b91c1c;
-    }
-
-    .btn-icon.btn-danger:active {
-      background: #fee2e2;
-      transform: scale(0.95);
-    }
-
-    .endpoint-summary {
-      font-size: 11px;
-      color: #6b7280;
-      line-height: 1.3;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      padding-left: 1.5rem;
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: #667eea;
-      padding: 0.5rem 12px;
-      border: 1px solid #e5e7eb;
-      flex: 1;
-    }
-
-    .btn-danger {
-      background: #fef2f2;
-      color: #b91c1c;
-      border: 1px solid #fecaca;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 1.5rem;
-      border: 1px dashed #e5e7eb;
-      border-radius: 0.375rem;
-      color: #6b7280;
-    }
-
-    #endpoints-empty.empty-state {
-      height: 14rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: white;
-      border: 1px solid #e0e0e0;
-    }
-
-    .empty-state-icon {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .form-grid {
-      display: grid;
-      gap: 1rem;
-    }
-
-    .headers-rows {
-      display: grid;
-      gap: 0.5rem;
-    }
-
-    .header-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .preview {
-      background: #0b1021;
-      color: #e5e7eb;
-      border-radius: 0.375rem;
-      padding: 0.75rem;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 0.75rem;
-      white-space: pre-wrap;
-      line-height: 1.5;
-      margin-top: 1em;
-    }
-
-    .preview:empty {
-      display: none;
-    }
-
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    .modal-content {
-      background: white;
-      border-radius: 0.5rem;
-      padding: 1.5rem;
-      max-width: 500px;
-      max-height: 80vh;
-      overflow-y: auto;
-      box-shadow: 0 1.25rem 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .modal-content h2 {
-      font-size: 1.125rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      color: #667eea;
-    }
-
-    .import-preview {
-      background: #f8f9fa;
-      border-radius: 0.375rem;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      border: 1px solid #e5e7eb;
-      font-size: 0.8125rem;
-      line-height: 1.6;
-    }
-
-    /* Status bar styling */
-    .status-bar-card {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      padding: 0.625rem 16px;
-      border-top: 3px solid #667eea;
-      border-left: none;
-      border-radius: 0;
-      box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-      z-index: 1000;
-      margin-bottom: 0;
-      font-size: 0.8125rem;
-    }
-
-    .status-content {
-      display: flex;
-      align-items: center;
-    }
-
-    .status-text {
-      color: #333;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex: 1;
-    }
-
-    /* Log viewer styling */
-    .filter-group {
-      margin-bottom: 0.75rem;
-    }
-
-    .filter-group:last-child {
-      margin-bottom: 0;
-    }
-
-    .log-viewer {
-      background: #0b1021;
-      color: #e5e7eb;
-      border-radius: 0.375rem;
-      padding: 0.75rem;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 0.75rem;
-      line-height: 1.5;
-      border: 1px solid #1e293b;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      overflow: auto;
-      min-height: 0;
-    }
-
-    .log-viewer > div {
-      margin-bottom: 0.25rem;
-      flex-shrink: 0;
-    }
-
-    .log-empty {
-      color: #6b7280;
-      font-style: italic;
-    }
-
-    /* Log filter panel visibility (toggle with logbox) */
-    .log-filter-panel {
-      display: none;
-    }
-
-    .log-filter-panel.visible {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    /* Responsive CSS for mobile/narrow viewports */
-    @media (max-width: 1024px) {
-      .main-content {
-        grid-template-columns: 1fr;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stream call Options</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
 
       body {
-        height: auto;
-        overflow: auto;
-        overflow-x: hidden;
-      }
-
-      .container {
-        overflow: visible;
-        overflow-x: hidden;
-      }
-
-      .main-content {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.875rem;
+        color: #333;
+        background: #f5f5f5;
         display: flex;
         flex-direction: column;
-        overflow: visible;
+        height: 100vh;
+        overflow: hidden;
+        overflow-x: hidden;
       }
 
-      .column {
-        overflow: visible;
-      }
-
-      .card {
-        overflow: visible;
-        max-height: none;
-      }
-
-      .scrollable-content {
-        overflow: visible;
-        max-height: none;
-      }
-
-      /* Keep endpoint list scrollable on mobile */
-      #endpoints-list.endpoints-list {
-        height: 14rem; /* Fixed height for consistency */
-        overflow-y: auto;
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.25rem 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         flex-shrink: 0;
       }
 
-      /* Limit log viewer height on mobile for autoscroll to work */
-      .log-viewer {
-        max-height: 30vh;
+      .header h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+
+      .header p {
+        font-size: 0.8125rem;
+        opacity: 0.9;
+      }
+
+      .container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        max-width: 1400px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 1rem;
+        gap: 1rem;
+        overflow: hidden;
+      }
+
+      .main-content {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        overflow: visible;
+        min-height: 0;
+      }
+
+      .column {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
         overflow-y: auto;
+        overflow-x: hidden;
+        min-height: 0;
+        padding-bottom: 2rem;
+      }
+
+      .card {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.25rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-height: 0;
       }
 
       #log-card {
-        min-height: 10em;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .header {
-        padding: 1rem;
-        overflow-x: hidden;
-      }
-
-      .header h1 {
-        font-size: 1.25rem;
-      }
-
-      .container {
-        padding: 0.5rem;
-        gap: 0.75rem;
-        overflow-x: hidden;
-      }
-
-      .card {
-        padding: 1rem;
+        flex: 1;
+        min-height: 0;
       }
 
       .card-header {
-        flex-direction: column;
-        align-items: flex-start;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         gap: 0.75rem;
-      }
-
-      .card-actions {
-        width: 100%;
         flex-wrap: wrap;
       }
 
-      .card-actions button {
-        flex: 1 1 auto;
-      }
-
-      .button-group {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+      .card-actions {
+        display: flex;
         gap: 0.5rem;
-      }
-
-      .form-row {
-        flex-direction: column;
-      }
-
-      .form-group {
-        width: 100%;
-      }
-
-      .endpoint-card {
-        padding: 0.75rem;
-      }
-
-      .endpoint-actions {
-        flex-direction: column;
-        gap: 0.375rem;
-      }
-
-      .endpoint-actions button {
-        width: 100%;
-      }
-
-      .log-viewer {
-        font-size: 0.625rem;
-      }
-
-      .status-bar-card {
-        font-size: 11px;
-        padding: 0.5rem 12px;
-      }
-    }
-
-    @media (max-width: 450px) {
-      body {
-        font-size: 0.8125rem;
-      }
-
-      .header h1 {
-        font-size: 1.25rem;
-      }
-
-      .container {
-        padding: 0.125rem 8px;
-      }
-
-      .card {
-        padding: 0.75rem;
+        flex-wrap: wrap;
       }
 
       .card-title {
         font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #667eea;
+        flex-shrink: 0;
       }
 
-      .form-group label {
+      .form-group {
+        margin-bottom: 0.75em;
+      }
+
+      .form-group:last-child {
+        margin-bottom: 0;
+      }
+
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.25em;
+      }
+
+      .label-description {
+        font-weight: normal;
         font-size: 0.75rem;
+        color: #666;
+        margin-top: 0.25rem;
       }
 
-      input, textarea, select {
+      input[type="text"],
+      input[type="url"],
+      textarea {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      select {
+        width: auto;
+        min-width: 5em;
+        max-width: 100%;
+        padding: 0.625rem 12px;
+        border: 1px solid #ddd;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        font-family: inherit;
+        transition: border-color 0.2s;
+      }
+
+      input[type="text"]:focus,
+      input[type="url"]:focus,
+      textarea:focus,
+      select:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      textarea {
+        min-height: 60px;
+        resize: vertical;
+        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+      }
+
+      #endpoint-endpoint {
+        min-height: 3em;
+        font-family: inherit;
+      }
+
+      input[type="checkbox"] {
+        width: 1.125rem;
+        height: 1.125rem;
+        margin-right: 0.5rem;
+        cursor: pointer;
+      }
+
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .checkbox-group label {
+        margin-bottom: 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 0.75em;
+        margin-top: 1em;
+      }
+
+      button {
+        padding: 0.5em 1em;
+        border: none;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+        flex: 1;
+      }
+
+      .btn-primary:hover {
+        background: #5568d3;
+      }
+
+      .btn-primary:active {
+        background: #4557c2;
+        transform: scale(0.98);
+      }
+
+      .btn-secondary {
+        background: #e0e0e0;
+        color: #333;
+      }
+
+      .btn-secondary:hover {
+        background: #d0d0d0;
+      }
+
+      .btn-secondary:active {
+        background: #c0c0c0;
+        transform: scale(0.98);
+      }
+
+      .btn-test {
+        background: #ffc107;
+        color: #000;
+      }
+
+      .btn-test:hover {
+        background: #e0a800;
+      }
+
+      .btn-test:active {
+        background: #c69500;
+        transform: scale(0.98);
+      }
+
+      .btn-action {
+        background: #4caf50;
+        color: white;
+      }
+
+      .btn-action:hover {
+        background: #45a049;
+      }
+
+      .btn-action:active {
+        background: #3d8b40;
+        transform: scale(0.98);
+      }
+
+      .alert {
+        padding: 10.125rem 16px;
+        border-radius: 0.25rem;
+        margin-bottom: 1rem;
+        display: none;
+      }
+
+      .alert.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .alert.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .alert.info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+
+      .code-example {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 0.25rem;
+        padding: 0.75rem;
+        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+        font-size: 0.75rem;
+        margin-top: 0.5rem;
+        overflow-x: auto;
+      }
+
+      .help-text {
+        font-size: 0.75rem;
+        color: #666;
+        margin-top: 0.5rem;
+        line-height: 1.5;
+      }
+
+      .help-icon {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        line-height: 1rem;
+        text-align: center;
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
+        font-size: 11px;
+        font-weight: bold;
+        margin-left: 0.375rem;
+        cursor: help;
+        vertical-align: middle;
+        position: relative;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .help-icon:hover,
+      .help-icon:active {
+        background: #5568d3;
+        transform: scale(1.1);
+        transition: all 0.15s ease;
+      }
+
+      /* Tooltip bubble - appears on tap/click for mobile */
+      .help-icon::after {
+        content: attr(title);
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 8px);
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 0.5rem 12px;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        font-weight: normal;
+        white-space: normal;
+        width: max-content;
+        max-width: 250px;
+        line-height: 1.4;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 1000;
+        transition: opacity 0.2s ease;
+      }
+
+      .help-icon::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 2px);
+        transform: translateX(-50%);
+        border: 0.375rem solid transparent;
+        border-top-color: rgba(0, 0, 0, 0.9);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 1000;
+        transition: opacity 0.2s ease;
+      }
+
+      .help-icon.show-tooltip::after,
+      .help-icon.show-tooltip::before {
+        opacity: 1;
+      }
+
+      /* Desktop hover */
+      @media (hover: hover) and (pointer: fine) {
+        .help-icon:hover::after,
+        .help-icon:hover::before {
+          opacity: 1;
+        }
+      }
+
+      .template-help {
+        background: #f8f9fa;
+        border: 1px solid #e1e4e8;
+        border-radius: 0.375rem;
+        padding: 0.375rem 10px;
+        margin-bottom: 1rem;
+        font-size: 11px;
+        line-height: 1.6;
+      }
+
+      .template-help strong {
+        font-size: 11px;
+        font-weight: 600;
+        color: #24292e;
+        margin-right: 0.375rem;
+      }
+
+      .template-help code {
+        background: #fff;
+        border: 1px solid #e1e4e8;
+        border-radius: 3px;
+        padding: 1px 4px;
+        font-family: "Courier New", monospace;
+        font-size: 0.625rem;
+        color: #d73a49;
+        cursor: pointer;
+        user-select: all;
+        white-space: nowrap;
+        margin: 0 2px;
+      }
+
+      .template-help code:hover {
+        background: #fff5b1;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .scrollable-content {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        min-height: 0;
+        padding-right: 0.25rem;
+      }
+
+      .scrollable-content::-webkit-scrollbar {
+        width: 0.5rem;
+      }
+
+      .scrollable-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 0.25rem;
+      }
+
+      .scrollable-content::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 0.25rem;
+      }
+
+      .scrollable-content::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+
+      .example-box {
+        background: #f8f9fa;
+        border-left: 0.25rem solid #667eea;
+        padding: 0.75rem;
+        margin-top: 0.75rem;
         font-size: 0.8125rem;
       }
 
-      .btn-primary, .btn-secondary, .btn-danger {
-        padding: 0.5rem 12px;
-        font-size: 0.75rem;
+      .example-box strong {
+        color: #667eea;
       }
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>🎵 <em>Stream call</em> Options</h1>
-    <p>Configure your HTTP API endpoint and preferences</p>
-  </div>
 
-  <div class="container">
-    <!-- Status Bar -->
-    <div id="status-bar" class="status-bar-card" style="display:none;">
-      <div class="status-content">
-        <span id="status-message" class="status-text"></span>
-      </div>
+      .card .endpoints-list,
+      #endpoints-list.endpoints-list {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 0.375rem;
+        height: 14rem; /* Fixed height for ~5 items */
+        overflow-y: auto;
+        flex-shrink: 0;
+      }
+
+      .endpoint-item {
+        padding: 0.375rem 10px;
+        background: white;
+        border-bottom: 1px solid #f0f0f0;
+        transition: all 0.2s;
+        cursor: pointer;
+        display: flex;
+        align-items: stretch;
+        gap: 0.5rem;
+      }
+
+      .endpoint-item:last-child {
+        border-bottom: none;
+      }
+
+      .endpoint-item:first-child {
+        border-top-left-radius: 0.375rem;
+        border-top-right-radius: 0.375rem;
+      }
+
+      .endpoint-item:last-child {
+        border-bottom-left-radius: 0.375rem;
+        border-bottom-right-radius: 0.375rem;
+      }
+
+      .endpoint-item.inactive {
+        opacity: 0.6;
+        background: #f9fafb;
+      }
+
+      .endpoint-item:hover {
+        background: #f8f9fa;
+      }
+
+      .endpoint-item:active {
+        background: #e9ecef;
+      }
+
+      .endpoint-item.selected {
+        background: #e7ecff;
+        border-left: 3px solid #667eea;
+        padding-left: calc(0.75em - 2px); /* Compensate for border */
+      }
+
+      .endpoint-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+        min-width: 0;
+      }
+
+      .endpoint-header {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+      }
+
+      .endpoint-active {
+        width: 1.125rem;
+        height: 1.125rem;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .endpoint-name {
+        flex: 1;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #111827;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .endpoint-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        flex-shrink: 0;
+      }
+
+      .btn-icon {
+        background: transparent;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.25rem;
+        padding: 0.25rem 6px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 2rem;
+        align-self: stretch;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-icon:hover {
+        background: #f3f4f6;
+        border-color: #667eea;
+      }
+
+      .btn-icon:active {
+        background: #e5e7eb;
+        transform: scale(0.95);
+      }
+
+      .btn-icon.btn-danger:hover {
+        background: #fef2f2;
+        border-color: #b91c1c;
+      }
+
+      .btn-icon.btn-danger:active {
+        background: #fee2e2;
+        transform: scale(0.95);
+      }
+
+      .endpoint-summary {
+        font-size: 11px;
+        color: #6b7280;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-left: 1.5rem;
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: #667eea;
+        padding: 0.5rem 12px;
+        border: 1px solid #e5e7eb;
+        flex: 1;
+      }
+
+      .btn-danger {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 1.5rem;
+        border: 1px dashed #e5e7eb;
+        border-radius: 0.375rem;
+        color: #6b7280;
+      }
+
+      #endpoints-empty.empty-state {
+        height: 14rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border: 1px solid #e0e0e0;
+      }
+
+      .empty-state-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .headers-rows {
+        display: grid;
+        gap: 0.5rem;
+      }
+
+      .header-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .preview {
+        background: #0b1021;
+        color: #e5e7eb;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+        font-size: 0.75rem;
+        white-space: pre-wrap;
+        line-height: 1.5;
+        margin-top: 1em;
+      }
+
+      .preview:empty {
+        display: none;
+      }
+
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .modal-content {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 1.25rem 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .modal-content h2 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #667eea;
+      }
+
+      .import-preview {
+        background: #f8f9fa;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        border: 1px solid #e5e7eb;
+        font-size: 0.8125rem;
+        line-height: 1.6;
+      }
+
+      /* Status bar styling */
+      .status-bar-card {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 0.625rem 16px;
+        border-top: 3px solid #667eea;
+        border-left: none;
+        border-radius: 0;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        margin-bottom: 0;
+        font-size: 0.8125rem;
+      }
+
+      .status-content {
+        display: flex;
+        align-items: center;
+      }
+
+      .status-text {
+        color: #333;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+      }
+
+      /* Log viewer styling */
+      .filter-group {
+        margin-bottom: 0.75rem;
+      }
+
+      .filter-group:last-child {
+        margin-bottom: 0;
+      }
+
+      .log-viewer {
+        background: #0b1021;
+        color: #e5e7eb;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+        font-size: 0.75rem;
+        line-height: 1.5;
+        border: 1px solid #1e293b;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        overflow: auto;
+        min-height: 0;
+      }
+
+      .log-viewer > div {
+        margin-bottom: 0.25rem;
+        flex-shrink: 0;
+      }
+
+      .log-empty {
+        color: #6b7280;
+        font-style: italic;
+      }
+
+      /* Log filter panel visibility (toggle with logbox) */
+      .log-filter-panel {
+        display: none;
+      }
+
+      .log-filter-panel.visible {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      /* Responsive CSS for mobile/narrow viewports */
+      @media (max-width: 1024px) {
+        .main-content {
+          grid-template-columns: 1fr;
+        }
+
+        body {
+          height: auto;
+          overflow: auto;
+          overflow-x: hidden;
+        }
+
+        .container {
+          overflow: visible;
+          overflow-x: hidden;
+        }
+
+        .main-content {
+          display: flex;
+          flex-direction: column;
+          overflow: visible;
+        }
+
+        .column {
+          overflow: visible;
+        }
+
+        .card {
+          overflow: visible;
+          max-height: none;
+        }
+
+        .scrollable-content {
+          overflow: visible;
+          max-height: none;
+        }
+
+        /* Keep endpoint list scrollable on mobile */
+        #endpoints-list.endpoints-list {
+          height: 14rem; /* Fixed height for consistency */
+          overflow-y: auto;
+          flex-shrink: 0;
+        }
+
+        /* Limit log viewer height on mobile for autoscroll to work */
+        .log-viewer {
+          max-height: 30vh;
+          overflow-y: auto;
+        }
+
+        #log-card {
+          min-height: 10em;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .header {
+          padding: 1rem;
+          overflow-x: hidden;
+        }
+
+        .header h1 {
+          font-size: 1.25rem;
+        }
+
+        .container {
+          padding: 0.5rem;
+          gap: 0.75rem;
+          overflow-x: hidden;
+        }
+
+        .card {
+          padding: 1rem;
+        }
+
+        .card-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.75rem;
+        }
+
+        .card-actions {
+          width: 100%;
+          flex-wrap: wrap;
+        }
+
+        .card-actions button {
+          flex: 1 1 auto;
+        }
+
+        .button-group {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0.5rem;
+        }
+
+        .form-row {
+          flex-direction: column;
+        }
+
+        .form-group {
+          width: 100%;
+        }
+
+        .endpoint-card {
+          padding: 0.75rem;
+        }
+
+        .endpoint-actions {
+          flex-direction: column;
+          gap: 0.375rem;
+        }
+
+        .endpoint-actions button {
+          width: 100%;
+        }
+
+        .log-viewer {
+          font-size: 0.625rem;
+        }
+
+        .status-bar-card {
+          font-size: 11px;
+          padding: 0.5rem 12px;
+        }
+      }
+
+      @media (max-width: 450px) {
+        body {
+          font-size: 0.8125rem;
+        }
+
+        .header h1 {
+          font-size: 1.25rem;
+        }
+
+        .container {
+          padding: 0.125rem 8px;
+        }
+
+        .card {
+          padding: 0.75rem;
+        }
+
+        .card-title {
+          font-size: 1rem;
+        }
+
+        .form-group label {
+          font-size: 0.75rem;
+        }
+
+        input,
+        textarea,
+        select {
+          font-size: 0.8125rem;
+        }
+
+        .btn-primary,
+        .btn-secondary,
+        .btn-danger {
+          padding: 0.5rem 12px;
+          font-size: 0.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>🎵 <em>Stream call</em> Options</h1>
+      <p>Configure your HTTP API endpoint and preferences</p>
     </div>
 
-    <div id="alert" class="alert" style="display:none"></div>
-
-    <div class="main-content">
-      <!-- Left Column: Endpoints List & Editor -->
-      <div class="column">
-
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">API Endpoints</h2>
-        <div class="card-actions">
-          <button id="reset-btn" class="btn-secondary">↺ Reset</button>
-          <button id="clear-all-btn" class="btn-danger">✖ Clear all</button>
-          <button id="export-btn" class="btn-secondary">⬇ Export</button>
-          <button id="import-file-btn" class="btn-secondary">⬆ Import file</button>
-          <button id="import-url-btn" class="btn-secondary">🌐 Import URL</button>
+    <div class="container">
+      <!-- Status Bar -->
+      <div id="status-bar" class="status-bar-card" style="display: none">
+        <div class="status-content">
+          <span id="status-message" class="status-text"></span>
         </div>
       </div>
 
-      <div id="endpoints-empty" class="empty-state">
-        <div class="empty-state-icon">📄</div>
-        <p><strong>No endpoints yet</strong></p>
-        <p style="font-size: 0.75rem; margin-top: 0.5rem;">Click “Add API endpoint” to create one.</p>
-      </div>
+      <div id="alert" class="alert" style="display: none"></div>
 
-      <div id="endpoints-list" class="endpoints-list"></div>
+      <div class="main-content">
+        <!-- Left Column: Endpoints List & Editor -->
+        <div class="column">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">API Endpoints</h2>
+              <div class="card-actions">
+                <button id="reset-btn" class="btn-secondary">↺ Reset</button>
+                <button id="clear-all-btn" class="btn-danger">✖ Clear all</button>
+                <button id="export-btn" class="btn-secondary">⬇ Export</button>
+                <button id="import-file-btn" class="btn-secondary">⬆ Import file</button>
+                <button id="import-url-btn" class="btn-secondary">🌐 Import URL</button>
+              </div>
+            </div>
+
+            <div id="endpoints-empty" class="empty-state">
+              <div class="empty-state-icon">📄</div>
+              <p><strong>No endpoints yet</strong></p>
+              <p style="font-size: 0.75rem; margin-top: 0.5rem">
+                Click “Add API endpoint” to create one.
+              </p>
+            </div>
+
+            <div id="endpoints-list" class="endpoints-list"></div>
+          </div>
+
+          <!-- API Endpoint Editor -->
+          <div class="card" id="editor-card">
+            <h2 class="card-title" id="editor-title">API endpoint</h2>
+            <div class="scrollable-content">
+              <div class="form-grid">
+                <!-- Name & Description -->
+                <div class="form-group">
+                  <label for="endpoint-name"
+                    >Endpoint name *<span
+                      class="help-icon"
+                      title="Must be unique. Auto-suggested from endpoint host."
+                      >ℹ</span
+                    ></label
+                  >
+                  <input type="text" id="endpoint-name" placeholder="example.com POST" />
+                </div>
+
+                <div class="form-group">
+                  <label for="endpoint-description">Description (optional)</label>
+                  <input
+                    type="text"
+                    id="endpoint-description"
+                    placeholder="Brief description of this endpoint's purpose"
+                  />
+                </div>
+
+                <!-- URL & Body -->
+                <div class="form-group">
+                  <label for="endpoint-endpoint"
+                    >Endpoint URL *<span
+                      class="help-icon"
+                      title="Supports placeholders like {{streamUrl|url}}, {{PAGEURL}}, {{pageTitle|json}}, {{timestamp}}."
+                      >ℹ</span
+                    ></label
+                  >
+                  <textarea
+                    id="endpoint-endpoint"
+                    placeholder="https://api.example.com/stream"
+                  ></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="endpoint-body"
+                    >Body template (optional)<span
+                      class="help-icon"
+                      title="Leave empty to send defaults (URL + timestamp, and page info if enabled)."
+                      >ℹ</span
+                    ></label
+                  >
+                  <textarea id="endpoint-body" placeholder='{"url":"{{streamUrl}}"}'></textarea>
+                </div>
+
+                <div class="template-help">
+                  <strong>📋 Placeholders:</strong>
+                  <code>{{streamUrl}}</code>
+                  <code>{{streamUrl|url}}</code>
+                  <code>{{pageUrl}}</code>
+                  <code>{{pageTitle}}</code>
+                  <code>{{pageTitle|json}}</code>
+                  <code>{{timestamp}}</code>
+                </div>
+
+                <!-- Method & Content-Type -->
+                <div
+                  class="form-group"
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 2fr;
+                    gap: 0.75rem;
+                    align-items: start;
+                  "
+                >
+                  <div>
+                    <label for="endpoint-method">HTTP method *</label>
+                    <select id="endpoint-method">
+                      <option value="POST">POST</option>
+                      <option value="GET">GET</option>
+                      <option value="PUT">PUT</option>
+                      <option value="PATCH">PATCH</option>
+                      <option value="DELETE">DELETE</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="endpoint-content-type">Content-Type</label>
+                    <input
+                      type="text"
+                      id="endpoint-content-type"
+                      list="content-type-suggestions"
+                      placeholder="application/json"
+                    />
+                    <datalist id="content-type-suggestions">
+                      <option value="application/json"></option>
+                      <option value="application/x-www-form-urlencoded"></option>
+                      <option value="multipart/form-data"></option>
+                      <option value="text/plain"></option>
+                      <option value="application/xml"></option>
+                      <option value="text/xml"></option>
+                    </datalist>
+                    <div class="help-text">Default: application/json</div>
+                  </div>
+                </div>
+
+                <!-- Authentication -->
+                <div class="form-group">
+                  <label
+                    >Authentication (optional)<span
+                      class="help-icon"
+                      title="Choose Bearer token OR username/password. Bearer takes precedence if both provided."
+                      >ℹ</span
+                    ></label
+                  >
+                  <div style="display: grid; gap: 0.5rem">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem">
+                      <div>
+                        <input
+                          type="text"
+                          id="endpoint-username"
+                          placeholder="Username"
+                          style="width: 100%"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="password"
+                          id="endpoint-password"
+                          placeholder="Password"
+                          style="width: 100%"
+                        />
+                      </div>
+                    </div>
+                    <div class="help-text" style="margin: 0">
+                      Basic authentication (username:password)
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        id="endpoint-bearer-token"
+                        placeholder="Bearer token"
+                        style="width: 100%"
+                      />
+                    </div>
+                    <div class="help-text" style="margin: 0">
+                      Bearer token auth (takes precedence over username/password)
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Page Cookies & Headers -->
+                <div class="form-group checkbox-group">
+                  <label>
+                    <input type="checkbox" id="endpoint-include-cookies" /> Page cookies<span
+                      class="help-icon"
+                      title="Send current page cookies with API request (requires cookies permission)."
+                      >ℹ</span
+                    >
+                  </label>
+                  <label>
+                    <input type="checkbox" id="endpoint-include-headers" /> Page headers<span
+                      class="help-icon"
+                      title="Capture and send HTTP request headers from the page (User-Agent, Accept, Referer, etc)."
+                      >ℹ</span
+                    >
+                  </label>
+                </div>
+
+                <!-- Custom Headers -->
+                <div class="form-group">
+                  <label>Custom headers (key/value pairs)</label>
+                  <div id="headers-rows" class="headers-rows"></div>
+                  <button id="add-header-row" class="btn-secondary" type="button">
+                    ＋ Add header
+                  </button>
+                </div>
+
+                <div class="button-group">
+                  <button id="clear-edit-btn" class="btn-secondary" type="button">🆕 Clear</button>
+                  <button id="preview-btn" class="btn-test" type="button">👁 Preview</button>
+                  <button id="call-btn" class="btn-action" type="button">📤 Call</button>
+                  <button id="open-tab-btn" class="btn-action" type="button">🌐 Open tab</button>
+                  <button id="save-endpoint-btn" class="btn-primary" type="submit">💾 Save</button>
+                  <button id="save-new-btn" class="btn-primary" type="button">➕ Save New</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- End left column -->
+
+        <!-- Right Column: Activity Log & About -->
+        <div class="column">
+          <!-- Activity Log -->
+          <div class="card" id="log-card">
+            <div class="card-header">
+              <div style="display: flex; align-items: center; gap: 16px; flex: 1">
+                <h2 class="card-title" style="margin: 0">Activity Log</h2>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px">
+                  <label style="display: flex; align-items: center; font-weight: normal; margin: 0">
+                    <input type="checkbox" class="log-level-filter" value="error" checked /> Error
+                  </label>
+                  <label style="display: flex; align-items: center; font-weight: normal; margin: 0">
+                    <input type="checkbox" class="log-level-filter" value="warn" checked /> Warn
+                  </label>
+                  <label style="display: flex; align-items: center; font-weight: normal; margin: 0">
+                    <input type="checkbox" class="log-level-filter" value="info" checked /> Info
+                  </label>
+                  <label style="display: flex; align-items: center; font-weight: normal; margin: 0">
+                    <input type="checkbox" class="log-level-filter" value="debug" /> Debug
+                  </label>
+                </div>
+              </div>
+              <div class="card-actions">
+                <button id="log-clear" class="btn-secondary">🗑 Clear</button>
+                <button id="log-export" class="btn-secondary">⬇ Export</button>
+              </div>
+            </div>
+            <!-- Log viewer -->
+            <div id="log-viewer" class="log-viewer scrollable-content">
+              <div class="log-empty">No logs yet</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Settings</h2>
+            <div class="form-group">
+              <label style="display: flex; align-items: center; cursor: pointer">
+                <input type="checkbox" id="enable-hover-panel" style="margin-right: 0.5rem" />
+                Enable in-page hover panel (experimental)<span
+                  class="help-icon"
+                  title="Shows a floating panel on the page with detected streams. Useful for mobile devices where browser action popup is hard to access."
+                  >ℹ</span
+                >
+              </label>
+              <p class="help-text">
+                When enabled, a floating toggle button (🎵) appears on pages with detected streams.
+                Click it to open an in-page overlay with the same functionality as the browser
+                popup.
+              </p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">About <em>Stream call</em></h2>
+            <p style="margin-bottom: 0.75rem">
+              A (mobile) Firefox extension to extract streaming media URLs (podcasts, radio
+              stations, live streams) and send to HTTP API endpoint(s).
+            </p>
+            <p style="margin-bottom: 0.75rem">
+              Supported: HLS (.m3u8), DASH (.mpd), HTTP audio, RTMP/RTSP, Icecast/Shoutcast.
+            </p>
+            <p id="about-version" style="color: #666; font-size: 0.8125rem">Version …</p>
+          </div>
+        </div>
+        <!-- End right column -->
+      </div>
+      <!-- End main-content -->
     </div>
+    <!-- End container -->
 
-    <!-- API Endpoint Editor -->
-    <div class="card" id="editor-card">
-      <h2 class="card-title" id="editor-title">API endpoint</h2>
-      <div class="scrollable-content">
-        <div class="form-grid">
-
-        <!-- Name & Description -->
-        <div class="form-group">
-          <label for="endpoint-name">Endpoint name *<span class="help-icon" title="Must be unique. Auto-suggested from endpoint host.">ℹ</span></label>
-          <input type="text" id="endpoint-name" placeholder="example.com POST" />
+    <!-- Import URL modal -->
+    <div id="import-url-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <h2>Import from URL</h2>
+        <div style="margin-bottom: 1rem">
+          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500"
+            >JSON URL or GitHub Gist:<span
+              class="help-icon"
+              title="Paste a URL to a JSON file or GitHub gist. For gists, use either the gist URL or the raw JSON URL."
+              >ℹ</span
+            ></label
+          >
+          <input
+            type="text"
+            id="import-url-input"
+            placeholder="https://example.com/endpoints.json or https://gist.github.com/..."
+            style="
+              width: 100%;
+              padding: 0.5rem;
+              border: 1px solid #ddd;
+              border-radius: 0.25rem;
+              font-family: monospace;
+              font-size: 0.8125rem;
+            "
+          />
         </div>
-
-        <div class="form-group">
-          <label for="endpoint-description">Description (optional)</label>
-          <input type="text" id="endpoint-description" placeholder="Brief description of this endpoint's purpose" />
-        </div>
-
-        <!-- URL & Body -->
-        <div class="form-group">
-          <label for="endpoint-endpoint">Endpoint URL *<span class="help-icon" title="Supports placeholders like {{streamUrl|url}}, {{PAGEURL}}, {{pageTitle|json}}, {{timestamp}}.">ℹ</span></label>
-          <textarea id="endpoint-endpoint" placeholder="https://api.example.com/stream"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="endpoint-body">Body template (optional)<span class="help-icon" title="Leave empty to send defaults (URL + timestamp, and page info if enabled).">ℹ</span></label>
-          <textarea id="endpoint-body" placeholder='{"url":"{{streamUrl}}"}' ></textarea>
-        </div>
-
-        <div class="template-help">
-          <strong>📋 Placeholders:</strong>
-          <code>{{streamUrl}}</code>
-          <code>{{streamUrl|url}}</code>
-          <code>{{pageUrl}}</code>
-          <code>{{pageTitle}}</code>
-          <code>{{pageTitle|json}}</code>
-          <code>{{timestamp}}</code>
-        </div>
-
-        <!-- Method & Content-Type -->
-        <div class="form-group" style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.75rem; align-items: start;">
-          <div>
-            <label for="endpoint-method">HTTP method *</label>
-            <select id="endpoint-method">
-              <option value="POST">POST</option>
-              <option value="GET">GET</option>
-              <option value="PUT">PUT</option>
-              <option value="PATCH">PATCH</option>
-              <option value="DELETE">DELETE</option>
-            </select>
-          </div>
-          <div>
-            <label for="endpoint-content-type">Content-Type</label>
-            <input type="text" id="endpoint-content-type" list="content-type-suggestions" placeholder="application/json" />
-            <datalist id="content-type-suggestions">
-              <option value="application/json">
-              <option value="application/x-www-form-urlencoded">
-              <option value="multipart/form-data">
-              <option value="text/plain">
-              <option value="application/xml">
-              <option value="text/xml">
-            </datalist>
-            <div class="help-text">Default: application/json</div>
-          </div>
-        </div>
-
-        <!-- Authentication -->
-        <div class="form-group">
-          <label>Authentication (optional)<span class="help-icon" title="Choose Bearer token OR username/password. Bearer takes precedence if both provided.">ℹ</span></label>
-          <div style="display: grid; gap: 0.5rem;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-              <div>
-                <input type="text" id="endpoint-username" placeholder="Username" style="width: 100%;" />
-              </div>
-              <div>
-                <input type="password" id="endpoint-password" placeholder="Password" style="width: 100%;" />
-              </div>
-            </div>
-            <div class="help-text" style="margin: 0;">Basic authentication (username:password)</div>
-            <div>
-              <input type="text" id="endpoint-bearer-token" placeholder="Bearer token" style="width: 100%;" />
-            </div>
-            <div class="help-text" style="margin: 0;">Bearer token auth (takes precedence over username/password)</div>
-          </div>
-        </div>
-
-        <!-- Page Cookies & Headers -->
-        <div class="form-group checkbox-group">
-          <label>
-            <input type="checkbox" id="endpoint-include-cookies" /> Page cookies<span class="help-icon" title="Send current page cookies with API request (requires cookies permission).">ℹ</span>
-          </label>
-          <label>
-            <input type="checkbox" id="endpoint-include-headers" /> Page headers<span class="help-icon" title="Capture and send HTTP request headers from the page (User-Agent, Accept, Referer, etc).">ℹ</span>
-          </label>
-        </div>
-
-        <!-- Custom Headers -->
-        <div class="form-group">
-          <label>Custom headers (key/value pairs)</label>
-          <div id="headers-rows" class="headers-rows"></div>
-          <button id="add-header-row" class="btn-secondary" type="button">＋ Add header</button>
-        </div>
-
         <div class="button-group">
-          <button id="clear-edit-btn" class="btn-secondary" type="button">🆕 Clear</button>
-          <button id="preview-btn" class="btn-test" type="button">👁 Preview</button>
-          <button id="call-btn" class="btn-action" type="button">📤 Call</button>
-          <button id="open-tab-btn" class="btn-action" type="button">🌐 Open tab</button>
-          <button id="save-endpoint-btn" class="btn-primary" type="submit">💾 Save</button>
-          <button id="save-new-btn" class="btn-primary" type="button">➕ Save New</button>
-        </div>
+          <button id="import-url-fetch-btn" class="btn-primary">⬇ Fetch</button>
+          <button id="import-url-cancel-btn" class="btn-secondary">Cancel</button>
         </div>
       </div>
     </div>
-      </div> <!-- End left column -->
 
-      <!-- Right Column: Activity Log & About -->
-      <div class="column">
-    <!-- Activity Log -->
-    <div class="card" id="log-card">
-      <div class="card-header">
-        <div style="display:flex; align-items:center; gap:16px; flex:1;">
-          <h2 class="card-title" style="margin:0;">Activity Log</h2>
-          <div style="display:flex; gap:8px; flex-wrap:wrap; font-size:12px;">
-            <label style="display:flex; align-items:center; font-weight:normal; margin:0;">
-              <input type="checkbox" class="log-level-filter" value="error" checked /> Error
-            </label>
-            <label style="display:flex; align-items:center; font-weight:normal; margin:0;">
-              <input type="checkbox" class="log-level-filter" value="warn" checked /> Warn
-            </label>
-            <label style="display:flex; align-items:center; font-weight:normal; margin:0;">
-              <input type="checkbox" class="log-level-filter" value="info" checked /> Info
-            </label>
-            <label style="display:flex; align-items:center; font-weight:normal; margin:0;">
-              <input type="checkbox" class="log-level-filter" value="debug" /> Debug
-            </label>
-          </div>
-        </div>
-        <div class="card-actions">
-          <button id="log-clear" class="btn-secondary">🗑 Clear</button>
-          <button id="log-export" class="btn-secondary">⬇ Export</button>
+    <!-- Import preview modal -->
+    <div id="import-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <h2>Import endpoints</h2>
+        <div id="import-preview" class="import-preview"></div>
+        <div class="button-group">
+          <button id="import-merge-btn" class="btn-primary">Merge</button>
+          <button id="import-replace-btn" class="btn-test">Replace all</button>
+          <button id="import-cancel-btn" class="btn-secondary">Cancel</button>
         </div>
       </div>
-      <!-- Log viewer -->
-      <div id="log-viewer" class="log-viewer scrollable-content">
-        <div class="log-empty">No logs yet</div>
-      </div>
     </div>
+    <input type="file" id="import-file-input" accept=".json" style="display: none" />
 
-    <div class="card">
-      <h2 class="card-title">Settings</h2>
-      <div class="form-group">
-        <label style="display: flex; align-items: center; cursor: pointer;">
-          <input type="checkbox" id="enable-hover-panel" style="margin-right: 0.5rem;" />
-          Enable in-page hover panel (experimental)<span class="help-icon" title="Shows a floating panel on the page with detected streams. Useful for mobile devices where browser action popup is hard to access.">ℹ</span>
-        </label>
-        <p class="help-text">
-          When enabled, a floating toggle button (🎵) appears on pages with detected streams.
-          Click it to open an in-page overlay with the same functionality as the browser popup.
-        </p>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2 class="card-title">About <em>Stream call</em></h2>
-      <p style="margin-bottom: 0.75rem;">
-        A (mobile) Firefox extension to extract streaming media URLs (podcasts, radio
-        stations, live streams) and send to HTTP API endpoint(s).
-      </p>
-      <p style="margin-bottom: 0.75rem;">
-        Supported: HLS (.m3u8), DASH (.mpd), HTTP audio, RTMP/RTSP, Icecast/Shoutcast.
-      </p>
-      <p id="about-version" style="color: #666; font-size: 0.8125rem;">Version …</p>
-    </div>
-      </div> <!-- End right column -->
-    </div> <!-- End main-content -->
-  </div> <!-- End container -->
-
-  <!-- Import URL modal -->
-  <div id="import-url-modal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <h2>Import from URL</h2>
-      <div style="margin-bottom: 1rem;">
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">JSON URL or GitHub Gist:<span class="help-icon" title="Paste a URL to a JSON file or GitHub gist. For gists, use either the gist URL or the raw JSON URL.">ℹ</span></label>
-        <input type="text" id="import-url-input" placeholder="https://example.com/endpoints.json or https://gist.github.com/..." style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 0.25rem; font-family: monospace; font-size: 0.8125rem;" />
-      </div>
-      <div class="button-group">
-        <button id="import-url-fetch-btn" class="btn-primary">⬇ Fetch</button>
-        <button id="import-url-cancel-btn" class="btn-secondary">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Import preview modal -->
-  <div id="import-modal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <h2>Import endpoints</h2>
-      <div id="import-preview" class="import-preview"></div>
-      <div class="button-group">
-        <button id="import-merge-btn" class="btn-primary">Merge</button>
-        <button id="import-replace-btn" class="btn-test">Replace all</button>
-        <button id="import-cancel-btn" class="btn-secondary">Cancel</button>
-      </div>
-    </div>
-  </div>
-  <input type="file" id="import-file-input" accept=".json" style="display: none;" />
-
-  <script src="options-pane.js"></script>
-</body>
+    <script src="options-pane.js"></script>
+  </body>
 </html>
