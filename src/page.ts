@@ -50,6 +50,18 @@ import { Logger, LogLevel } from './logger';
     detectedStreams.add(url);
     logger.info('page', 'Detected stream:', url);
 
+    // Inject hover panel button when first stream is detected
+    // (if enabled and not already present)
+    if (detectedStreams.size === 1) {
+      injectHoverPanel().catch((err) => {
+        logger.warn(
+          'page',
+          'Failed to inject hover panel after stream detection',
+          err,
+        );
+      });
+    }
+
     browser.runtime
       .sendMessage({
         type: 'STREAM_DETECTED',
@@ -286,11 +298,11 @@ import { Logger, LogLevel } from './logger';
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         startDetection();
-        injectHoverPanel();
+        // Hover panel button now injected only when first stream detected
       });
     } else {
       startDetection();
-      injectHoverPanel();
+      // Hover panel button now injected only when first stream detected
     }
   }
 
