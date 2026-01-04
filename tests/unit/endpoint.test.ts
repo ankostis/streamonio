@@ -158,23 +158,31 @@ test('parseEndpoints: preserves optional fields', () => {
       method: 'POST',
       headers: { 'X-Custom': 'value' },
       bodyTemplate: '{"url":"{{streamUrl}}"}',
+      contentType: 'application/x-www-form-urlencoded',
+      username: 'user',
+      password: 'pass',
+      bearerToken: 'token123',
       includeCookies: true,
       includePageHeaders: true,
-    },
-    {
-      name: 'simple',
-      endpointTemplate: 'https://api.example.com/stream2',
+      active: false,
     },
   ]);
 
   const endpoints = parseEndpoints(raw);
-  assert.strictEqual(endpoints.length, 2);
+  assert.strictEqual(endpoints.length, 1);
   assert.strictEqual(endpoints[0].method, 'POST');
   assert.deepStrictEqual(endpoints[0].headers, { 'X-Custom': 'value' });
   assert.strictEqual(endpoints[0].bodyTemplate, '{"url":"{{streamUrl}}"}');
+  assert.strictEqual(
+    endpoints[0].contentType,
+    'application/x-www-form-urlencoded',
+  );
+  assert.strictEqual(endpoints[0].username, 'user');
+  assert.strictEqual(endpoints[0].password, 'pass');
+  assert.strictEqual(endpoints[0].bearerToken, 'token123');
   assert.strictEqual(endpoints[0].includeCookies, true);
   assert.strictEqual(endpoints[0].includePageHeaders, true);
-  assert.strictEqual(endpoints[1].method, undefined);
+  assert.strictEqual(endpoints[0].active, false);
 });
 
 test('validateEndpoints: rejects non-array JSON', () => {

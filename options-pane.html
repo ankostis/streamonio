@@ -999,16 +999,7 @@
       <div class="scrollable-content">
         <div class="form-grid">
 
-        <div class="template-help">
-          <strong>📋 Placeholders:</strong>
-          <code>{{streamUrl}}</code>
-          <code>{{streamUrl|url}}</code>
-          <code>{{pageUrl}}</code>
-          <code>{{pageTitle}}</code>
-          <code>{{pageTitle|json}}</code>
-          <code>{{timestamp}}</code>
-        </div>
-
+        <!-- Name & Description -->
         <div class="form-group">
           <label for="endpoint-name">Endpoint name *<span class="help-icon" title="Must be unique. Auto-suggested from endpoint host.">ℹ</span></label>
           <input type="text" id="endpoint-name" placeholder="example.com POST" />
@@ -1019,15 +1010,10 @@
           <input type="text" id="endpoint-description" placeholder="Brief description of this endpoint's purpose" />
         </div>
 
+        <!-- URL & Body -->
         <div class="form-group">
           <label for="endpoint-endpoint">Endpoint URL *<span class="help-icon" title="Supports placeholders like {{streamUrl|url}}, {{PAGEURL}}, {{pageTitle|json}}, {{timestamp}}.">ℹ</span></label>
           <textarea id="endpoint-endpoint" placeholder="https://api.example.com/stream"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Headers (key/value pairs)</label>
-          <div id="headers-rows" class="headers-rows"></div>
-          <button id="add-header-row" class="btn-secondary" type="button">＋ Add header</button>
         </div>
 
         <div class="form-group">
@@ -1035,21 +1021,78 @@
           <textarea id="endpoint-body" placeholder='{"url":"{{streamUrl}}"}' ></textarea>
         </div>
 
+        <div class="template-help">
+          <strong>📋 Placeholders:</strong>
+          <code>{{streamUrl}}</code>
+          <code>{{streamUrl|url}}</code>
+          <code>{{pageUrl}}</code>
+          <code>{{pageTitle}}</code>
+          <code>{{pageTitle|json}}</code>
+          <code>{{timestamp}}</code>
+        </div>
+
+        <!-- Method & Content-Type -->
+        <div class="form-group" style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.75rem; align-items: start;">
+          <div>
+            <label for="endpoint-method">HTTP method *</label>
+            <select id="endpoint-method">
+              <option value="POST">POST</option>
+              <option value="GET">GET</option>
+              <option value="PUT">PUT</option>
+              <option value="PATCH">PATCH</option>
+              <option value="DELETE">DELETE</option>
+            </select>
+          </div>
+          <div>
+            <label for="endpoint-content-type">Content-Type</label>
+            <input type="text" id="endpoint-content-type" list="content-type-suggestions" placeholder="application/json" />
+            <datalist id="content-type-suggestions">
+              <option value="application/json">
+              <option value="application/x-www-form-urlencoded">
+              <option value="multipart/form-data">
+              <option value="text/plain">
+              <option value="application/xml">
+              <option value="text/xml">
+            </datalist>
+            <div class="help-text">Default: application/json</div>
+          </div>
+        </div>
+
+        <!-- Authentication -->
+        <div class="form-group">
+          <label>Authentication (optional)<span class="help-icon" title="Choose Bearer token OR username/password. Bearer takes precedence if both provided.">ℹ</span></label>
+          <div style="display: grid; gap: 0.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+              <div>
+                <input type="text" id="endpoint-username" placeholder="Username" style="width: 100%;" />
+              </div>
+              <div>
+                <input type="password" id="endpoint-password" placeholder="Password" style="width: 100%;" />
+              </div>
+            </div>
+            <div class="help-text" style="margin: 0;">Basic authentication (username:password)</div>
+            <div>
+              <input type="text" id="endpoint-bearer-token" placeholder="Bearer token" style="width: 100%;" />
+            </div>
+            <div class="help-text" style="margin: 0;">Bearer token auth (takes precedence over username/password)</div>
+          </div>
+        </div>
+
+        <!-- Page Cookies & Headers -->
         <div class="form-group checkbox-group">
-          <label for="endpoint-method">HTTP method *</label>
-          <select id="endpoint-method">
-            <option value="POST">POST</option>
-            <option value="GET">GET</option>
-            <option value="PUT">PUT</option>
-            <option value="PATCH">PATCH</option>
-            <option value="DELETE">DELETE</option>
-          </select>
           <label>
             <input type="checkbox" id="endpoint-include-cookies" /> Page cookies<span class="help-icon" title="Send current page cookies with API request (requires cookies permission).">ℹ</span>
           </label>
           <label>
             <input type="checkbox" id="endpoint-include-headers" /> Page headers<span class="help-icon" title="Capture and send HTTP request headers from the page (User-Agent, Accept, Referer, etc).">ℹ</span>
           </label>
+        </div>
+
+        <!-- Custom Headers -->
+        <div class="form-group">
+          <label>Custom headers (key/value pairs)</label>
+          <div id="headers-rows" class="headers-rows"></div>
+          <button id="add-header-row" class="btn-secondary" type="button">＋ Add header</button>
         </div>
 
         <div class="button-group">

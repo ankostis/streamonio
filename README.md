@@ -65,14 +65,19 @@ See [MOBILE_TESTING.md](MOBILE_TESTING.md)
 
 #### Endpoint Fields
 
-- **id** (required): Unique identifier
 - **name** (required): Display name shown in popup
 - **endpointTemplate** (required): API URL (supports _placeholders_)
-- **method** (optional): HTTP method (defaults to POST)
+- **description** (optional): Description shown in options
+- **method** (optional): HTTP method (GET, POST, PUT, DELETE; defaults to POST)
+- **contentType** (optional): Content-Type header (defaults to application/json)
+- **username** (optional): Username for Basic authentication
+- **password** (optional): Password for Basic authentication
+- **bearerToken** (optional): Bearer token for token-based authentication (takes precedence over username/password)
 - **headers** (optional): Custom headers object
 - **bodyTemplate** (optional): Request body template (supports _placeholders_)
-- **includePageInfo** (optional): Include page URL/title in context (defaults
-  to false)
+- **includeCookies** (optional): Include page cookies in request (defaults to false)
+- **includePageHeaders** (optional): Include page headers in request (defaults to false)
+- **active** (optional): Enable/disable endpoint (defaults to true)
 
 The payload sent to your API endpoint depends on your endpoint configuration:
 

@@ -42,6 +42,14 @@ const els = {
   description: () =>
     document.getElementById('endpoint-description') as HTMLInputElement,
   method: () => document.getElementById('endpoint-method') as HTMLSelectElement,
+  contentType: () =>
+    document.getElementById('endpoint-content-type') as HTMLInputElement,
+  username: () =>
+    document.getElementById('endpoint-username') as HTMLInputElement,
+  password: () =>
+    document.getElementById('endpoint-password') as HTMLInputElement,
+  bearerToken: () =>
+    document.getElementById('endpoint-bearer-token') as HTMLInputElement,
   endpoint: () =>
     document.getElementById('endpoint-endpoint') as HTMLInputElement,
   body: () => document.getElementById('endpoint-body') as HTMLTextAreaElement,
@@ -280,6 +288,10 @@ function fillForm(endpoint: ApiEndpoint) {
   els.name().value = endpoint.name || '';
   els.description().value = endpoint.description || '';
   els.method().value = (endpoint.method || 'POST').toUpperCase();
+  els.contentType().value = endpoint.contentType || '';
+  els.username().value = endpoint.username || '';
+  els.password().value = endpoint.password || '';
+  els.bearerToken().value = endpoint.bearerToken || '';
   els.endpoint().value = endpoint.endpointTemplate || '';
   els.body().value = endpoint.bodyTemplate || '';
   els.includeCookies().checked = endpoint.includeCookies === true;
@@ -293,6 +305,10 @@ function newEndpointDefaults(): ApiEndpoint {
     description: '',
     endpointTemplate: '',
     method: 'POST',
+    contentType: '',
+    username: '',
+    password: '',
+    bearerToken: '',
     headers: {},
     bodyTemplate: '',
     includeCookies: false,
@@ -305,6 +321,10 @@ function buildEndpointFromForm(): ApiEndpoint | null {
   const description = els.description().value.trim();
   const endpoint = els.endpoint().value.trim();
   const method = els.method().value.trim().toUpperCase() || 'POST';
+  const contentType = els.contentType().value.trim();
+  const username = els.username().value.trim();
+  const password = els.password().value.trim();
+  const bearerToken = els.bearerToken().value.trim();
   const bodyTemplate = els.body().value.trim();
   const includeCookies = els.includeCookies().checked;
   const includePageHeaders = els.includeHeaders().checked;
@@ -334,6 +354,10 @@ function buildEndpointFromForm(): ApiEndpoint | null {
     endpointTemplate: endpoint,
     description: description || undefined,
     method,
+    contentType: contentType || undefined,
+    username: username || undefined,
+    password: password || undefined,
+    bearerToken: bearerToken || undefined,
     headers: Object.keys(headers).length ? headers : undefined,
     bodyTemplate: bodyTemplate || undefined,
     includeCookies,

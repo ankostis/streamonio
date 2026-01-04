@@ -12,6 +12,10 @@ export type ApiEndpoint = {
   method?: string;
   headers?: Record<string, string>;
   bodyTemplate?: string;
+  contentType?: string;
+  username?: string;
+  password?: string;
+  bearerToken?: string;
   includeCookies?: boolean;
   includePageHeaders?: boolean;
   active?: boolean;
@@ -42,16 +46,24 @@ export const DEFAULT_CONFIG = {
         active: false,
       },
       {
-        name: 'httpbingo POST + headers',
-        description:
-          'Example showing custom headers and authentication patterns',
+        name: 'httpbingo POST + auth',
+        description: 'Example with Basic authentication (username/password)',
         endpointTemplate: 'https://httpbingo.org/anything',
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Custom-Header': 'stream-call',
-        },
+        contentType: 'application/json',
+        username: 'user',
+        password: 'pass',
         bodyTemplate: '{"streamUrl":"{{streamUrl}}","timestamp":{{timestamp}}}',
+        active: false,
+      },
+      {
+        name: 'httpbingo Bearer token',
+        description: 'Example with Bearer token authentication',
+        endpointTemplate: 'https://httpbingo.org/anything',
+        method: 'POST',
+        contentType: 'application/json',
+        bearerToken: 'your-token-here',
+        bodyTemplate: '{"streamUrl":"{{streamUrl}}","pageUrl":"{{pageUrl}}"}',
         active: false,
       },
     ],
@@ -101,6 +113,10 @@ export function parseEndpoints(raw: string): ApiEndpoint[] {
       method: p.method,
       headers: p.headers,
       bodyTemplate: p.bodyTemplate,
+      contentType: p.contentType,
+      username: p.username,
+      password: p.password,
+      bearerToken: p.bearerToken,
       includeCookies: p.includeCookies,
       includePageHeaders: p.includePageHeaders,
       active: p.active !== undefined ? p.active : true,
@@ -212,6 +228,10 @@ export function validateEndpoints(raw: string): {
           method: p.method,
           headers: p.headers,
           bodyTemplate: p.bodyTemplate,
+          contentType: p.contentType,
+          username: p.username,
+          password: p.password,
+          bearerToken: p.bearerToken,
           includeCookies: p.includeCookies,
           includePageHeaders: p.includePageHeaders,
           active: p.active,
@@ -523,10 +543,20 @@ export async function callEndpoint({
     method = (selectedEndpoint.method || 'POST').toUpperCase();
 
     let headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      'Content-Type': selectedEndpoint.contentType || 'application/json',
     };
     if (selectedEndpoint.headers) {
       headers = { ...headers, ...selectedEndpoint.headers };
+    }
+
+    // Add authentication headers
+    if (selectedEndpoint.bearerToken) {
+      headers['Authorization'] = `Bearer ${selectedEndpoint.bearerToken}`;
+    } else if (selectedEndpoint.username && selectedEndpoint.password) {
+      const credentials = btoa(
+        `${selectedEndpoint.username}:${selectedEndpoint.password}`,
+      );
+      headers['Authorization'] = `Basic ${credentials}`;
     }
 
     // Add cookies to headers if flag is enabled
