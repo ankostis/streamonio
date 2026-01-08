@@ -14,6 +14,7 @@ import {
   formatResponseBody,
   parseEndpoints,
   previewCall,
+  sortEndpointsByMRU,
 } from './endpoint';
 import { applyLogFiltering } from './logger-ui';
 import type { StreamInfo } from './types';
@@ -110,6 +111,8 @@ async function loadEndpoints() {
 
   try {
     apiEndpoints = parseEndpoints(apiEndpointsStr);
+    // Sort by MRU (most recently used first)
+    apiEndpoints = sortEndpointsByMRU(apiEndpoints);
     logger.debug(`Loaded ${apiEndpoints.length} API endpoints`);
   } catch (error: any) {
     // Parse error is expected if config is corrupted - show to user via logger
@@ -219,8 +222,6 @@ function populatePanel(
   _index: number,
   _allStreams: StreamInfo[],
 ) {
-  const activeEndpoints = apiEndpoints.filter((ep) => ep.active !== false);
-
   const handlers: StreamActionHandlers = {
     onPreview: (stream, endpointName) => handlePreview(stream, endpointName),
     onCopy: (url) => handleCopyUrl(url),
@@ -228,7 +229,7 @@ function populatePanel(
       handleCallEndpoint(mode, stream, endpointName),
   };
 
-  populateStreamPanel(stream, activeEndpoints, handlers);
+  populateStreamPanel(stream, apiEndpoints, handlers);
 }
 
 /**
@@ -302,6 +303,20 @@ async function handleCallEndpoint(
         ? `✅ ${endpoint}: ${response.status || 'OK'}`
         : `✅ Opened in tab: ${response.details || stream.url}`;
     logger.info(successMsg);
+
+    // Update lastUsedAt for the called endpoint and save to storage
+    const calledEndpoint =
+      endpoints.find((ep) => ep.name === endpointName) || endpoints[0];
+    if (calledEndpoint) {
+      calledEndpoint.lastUsedAt = Date.now();
+      // Re-sort and save to storage
+      const sorted = sortEndpointsByMRU(endpoints);
+      await browser.storage.sync.set({
+        apiEndpoints: JSON.stringify(sorted, null, 2),
+      });
+      // Update in-memory cache
+      apiEndpoints = sorted;
+    }
 
     // Log response body separately in debug (keep it out of status bar)
     if (response.response) {

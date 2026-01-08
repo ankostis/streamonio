@@ -10,6 +10,7 @@ import {
   formatResponseBody,
   getBuiltInEndpoints,
   previewCall,
+  sortEndpointsByMRU,
   suggestEndpointName,
   validateEndpoints,
 } from './endpoint';
@@ -117,6 +118,8 @@ function loadSettings() {
         (config as Config).apiEndpoints || '[]',
       );
       endpoints = validated.valid ? validated.parsed : [];
+      // Sort by MRU (most recently used first)
+      endpoints = sortEndpointsByMRU(endpoints);
       els.enableHoverPanel().checked =
         (config as Config).enableHoverPanel ?? false;
       renderList();
@@ -149,7 +152,6 @@ function renderList() {
   endpoints.forEach((endpoint, index) => {
     const item = document.createElement('div');
     item.className = 'endpoint-item';
-    if (endpoint.active === false) item.classList.add('inactive');
     if (editingIndex === index) item.classList.add('selected');
     item.style.cursor = 'pointer';
     item.title = 'Click to edit';
@@ -168,25 +170,14 @@ function renderList() {
     const contentWrapper = document.createElement('div');
     contentWrapper.className = 'endpoint-content';
 
-    // Header row: active checkbox + name
+    // Header row: name only (no active checkbox)
     const header = document.createElement('div');
     header.className = 'endpoint-header';
-
-    const activeCheckbox = document.createElement('input');
-    activeCheckbox.type = 'checkbox';
-    activeCheckbox.className = 'endpoint-active';
-    activeCheckbox.checked = endpoint.active !== false;
-    activeCheckbox.title = 'Active (shown in popup)';
-    activeCheckbox.addEventListener('change', (e) => {
-      e.stopPropagation();
-      toggleEndpointActive(index);
-    });
 
     const name = document.createElement('span');
     name.className = 'endpoint-name';
     name.textContent = endpoint.name;
 
-    header.appendChild(activeCheckbox);
     header.appendChild(name);
 
     // Add description as tooltip to entire item
@@ -233,26 +224,6 @@ function renderList() {
     item.appendChild(actionsSpan);
     list.appendChild(item);
   });
-}
-
-function toggleEndpointActive(index: number) {
-  const currentState = endpoints[index].active !== false; // undefined or true = active
-  endpoints[index].active = !currentState;
-  const validated = validateEndpoints(JSON.stringify(endpoints));
-  if (!validated.valid) {
-    logger.error('Failed to update endpoint state');
-    return;
-  }
-  browser.storage.sync
-    .set({ apiEndpoints: validated.formatted })
-    .then(() => {
-      renderList();
-      const status = endpoints[index].active ? '✅ Activated' : '⏸️ Deactivated';
-      logger.infoFlash(1400, 'endpoint', `${status}: ${endpoints[index].name}`);
-    })
-    .catch((error) => {
-      logger.error('Failed to save endpoint state', error);
-    });
 }
 
 function openEditor(index: number | null) {
@@ -360,7 +331,6 @@ function buildEndpointFromForm(): ApiEndpoint | null {
     bodyTemplate: bodyTemplate || undefined,
     includeCookies,
     includePageHeaders,
-    active: editingIndex !== null ? endpoints[editingIndex].active : true,
   };
 
   return apiEndpoint;

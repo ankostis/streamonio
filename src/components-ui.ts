@@ -182,10 +182,11 @@ export function populateStreamPanel(
       select.title = selectedEndpoint?.description || '';
     };
 
-    activeEndpoints.forEach((endpoint) => {
+    activeEndpoints.forEach((endpoint, index) => {
       const option = document.createElement('option');
       option.value = endpoint.name;
       option.textContent = endpoint.name;
+      option.selected = index === 0; // Select first (MRU) endpoint
       select.appendChild(option);
     });
 

@@ -18,7 +18,7 @@ export type ApiEndpoint = {
   bearerToken?: string;
   includeCookies?: boolean;
   includePageHeaders?: boolean;
-  active?: boolean;
+  lastUsedAt?: number;
 };
 
 /**
@@ -35,7 +35,6 @@ export const DEFAULT_CONFIG = {
         description: 'Simple GET request to just test the call ',
         endpointTemplate: 'https://httpbingo.org/anything',
         method: 'GET',
-        active: true,
       },
       {
         name: 'WiiM play',
@@ -43,7 +42,7 @@ export const DEFAULT_CONFIG = {
           'WiiM streamers support a GET API call that can play arbitrary streams, see PDF: https://www.wiimhome.com/pdf/HTTP%20API%20for%20WiiM%20Mini.pdf',
         endpointTemplate:
           'https://your.wiim.hostOrIP/httpapi.asp?command=setPlayerCmd:play:{{streamUrl}}',
-        active: false,
+        method: 'GET',
       },
       {
         name: 'httpbingo POST + auth',
@@ -54,7 +53,6 @@ export const DEFAULT_CONFIG = {
         username: 'user',
         password: 'pass',
         bodyTemplate: '{"streamUrl":"{{streamUrl}}","timestamp":{{timestamp}}}',
-        active: false,
       },
       {
         name: 'httpbingo Bearer token',
@@ -64,7 +62,6 @@ export const DEFAULT_CONFIG = {
         contentType: 'application/json',
         bearerToken: 'your-token-here',
         bodyTemplate: '{"streamUrl":"{{streamUrl}}","pageUrl":"{{pageUrl}}"}',
-        active: false,
       },
     ],
     null,
@@ -119,7 +116,7 @@ export function parseEndpoints(raw: string): ApiEndpoint[] {
       bearerToken: p.bearerToken,
       includeCookies: p.includeCookies,
       includePageHeaders: p.includePageHeaders,
-      active: p.active !== undefined ? p.active : true,
+      lastUsedAt: p.lastUsedAt,
     }))
     .filter((p) => {
       // Require endpoint and unique name
@@ -134,6 +131,29 @@ export function parseEndpoints(raw: string): ApiEndpoint[] {
       names.add(p.name);
       return true;
     });
+}
+
+/**
+ * Sort endpoints by Most Recently Used (MRU)
+ * Endpoints with lastUsedAt are sorted first (most recent first), then never-used endpoints alphabetically
+ */
+export function sortEndpointsByMRU(endpoints: ApiEndpoint[]): ApiEndpoint[] {
+  return [...endpoints].sort((a, b) => {
+    const aUsed = a.lastUsedAt ?? 0;
+    const bUsed = b.lastUsedAt ?? 0;
+
+    // Both used: sort by timestamp (most recent first)
+    if (aUsed > 0 && bUsed > 0) {
+      return bUsed - aUsed;
+    }
+
+    // Only one used: used endpoint comes first
+    if (aUsed > 0) return -1;
+    if (bUsed > 0) return 1;
+
+    // Neither used: alphabetical by name
+    return a.name.localeCompare(b.name);
+  });
 }
 
 /**
@@ -234,7 +254,7 @@ export function validateEndpoints(raw: string): {
           bearerToken: p.bearerToken,
           includeCookies: p.includeCookies,
           includePageHeaders: p.includePageHeaders,
-          active: p.active,
+          lastUsedAt: p.lastUsedAt,
         };
       })
       .filter(Boolean);

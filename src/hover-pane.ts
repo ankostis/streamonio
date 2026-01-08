@@ -10,7 +10,12 @@ import {
   populateStreamPanel,
   type StreamActionHandlers,
 } from './components-ui';
-import { type ApiEndpoint, formatResponseBody, previewCall } from './endpoint';
+import {
+  type ApiEndpoint,
+  formatResponseBody,
+  previewCall,
+  sortEndpointsByMRU,
+} from './endpoint';
 import { applyLogFiltering } from './logger-ui';
 import type { RuntimeMessage, StreamInfo } from './types';
 
@@ -86,7 +91,7 @@ async function loadEndpoints() {
       type: 'GET_ENDPOINTS',
     } as RuntimeMessage);
     if (response?.endpoints) {
-      apiEndpoints = response.endpoints;
+      apiEndpoints = sortEndpointsByMRU(response.endpoints);
       logger.debug(`Loaded ${apiEndpoints.length} endpoints`);
     } else {
       logger.warn('No endpoints configured');
@@ -183,8 +188,6 @@ function populatePanel(
   _index: number,
   _allStreams: StreamInfo[],
 ) {
-  const activeEndpoints = apiEndpoints.filter((ep) => ep.active !== false);
-
   const handlers: StreamActionHandlers = {
     onPreview: (stream, endpointName) => handlePreview(stream, endpointName),
     onCopy: (url) => handleCopyUrl(url),
@@ -192,7 +195,7 @@ function populatePanel(
       handleCallEndpoint(mode, stream, endpointName),
   };
 
-  populateStreamPanel(stream, activeEndpoints, handlers);
+  populateStreamPanel(stream, apiEndpoints, handlers);
 }
 
 /**
@@ -272,6 +275,9 @@ async function handleCallEndpoint(
           ? `✅ ${endpoint}: ${response.status || 'OK'}`
           : `✅ Opened in tab`;
       logger.info(successMsg);
+
+      // Update endpoint MRU and reload (broker handles storage update)
+      await loadEndpoints();
 
       // Log response body separately in debug (keep it out of status bar)
       if (response.response) {

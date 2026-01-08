@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   applyTemplate,
   parseEndpoints,
+  sortEndpointsByMRU,
   suggestEndpointName,
   validateEndpoints,
 } from '../../src/endpoint';
@@ -164,7 +165,7 @@ test('parseEndpoints: preserves optional fields', () => {
       bearerToken: 'token123',
       includeCookies: true,
       includePageHeaders: true,
-      active: false,
+      lastUsedAt: 1234567890,
     },
   ]);
 
@@ -182,7 +183,7 @@ test('parseEndpoints: preserves optional fields', () => {
   assert.strictEqual(endpoints[0].bearerToken, 'token123');
   assert.strictEqual(endpoints[0].includeCookies, true);
   assert.strictEqual(endpoints[0].includePageHeaders, true);
-  assert.strictEqual(endpoints[0].active, false);
+  assert.strictEqual(endpoints[0].lastUsedAt, 1234567890);
 });
 
 test('validateEndpoints: rejects non-array JSON', () => {
@@ -421,4 +422,58 @@ test('Header rows: empty headers object when no valid headers', () => {
     0,
     'No headers should be added',
   );
+});
+
+test('sortEndpointsByMRU: sorts by most recently used first', () => {
+  const endpoints = [
+    { name: 'old', endpointTemplate: 'https://a.com', lastUsedAt: 100 },
+    { name: 'newest', endpointTemplate: 'https://b.com', lastUsedAt: 300 },
+    { name: 'middle', endpointTemplate: 'https://c.com', lastUsedAt: 200 },
+  ];
+
+  const sorted = sortEndpointsByMRU(endpoints);
+  assert.strictEqual(sorted.length, 3);
+  assert.strictEqual(sorted[0].name, 'newest');
+  assert.strictEqual(sorted[1].name, 'middle');
+  assert.strictEqual(sorted[2].name, 'old');
+});
+
+test('sortEndpointsByMRU: never-used endpoints sorted alphabetically at end', () => {
+  const endpoints = [
+    { name: 'zebra', endpointTemplate: 'https://a.com' },
+    { name: 'used', endpointTemplate: 'https://b.com', lastUsedAt: 100 },
+    { name: 'apple', endpointTemplate: 'https://c.com' },
+  ];
+
+  const sorted = sortEndpointsByMRU(endpoints);
+  assert.strictEqual(sorted.length, 3);
+  assert.strictEqual(sorted[0].name, 'used', 'Used endpoint first');
+  assert.strictEqual(sorted[1].name, 'apple', 'Never-used alphabetically');
+  assert.strictEqual(sorted[2].name, 'zebra', 'Never-used alphabetically');
+});
+
+test('sortEndpointsByMRU: all never-used sorted alphabetically', () => {
+  const endpoints = [
+    { name: 'zebra', endpointTemplate: 'https://a.com' },
+    { name: 'banana', endpointTemplate: 'https://b.com' },
+    { name: 'apple', endpointTemplate: 'https://c.com' },
+  ];
+
+  const sorted = sortEndpointsByMRU(endpoints);
+  assert.strictEqual(sorted.length, 3);
+  assert.strictEqual(sorted[0].name, 'apple');
+  assert.strictEqual(sorted[1].name, 'banana');
+  assert.strictEqual(sorted[2].name, 'zebra');
+});
+
+test('sortEndpointsByMRU: does not mutate original array', () => {
+  const endpoints = [
+    { name: 'a', endpointTemplate: 'https://a.com', lastUsedAt: 100 },
+    { name: 'b', endpointTemplate: 'https://b.com', lastUsedAt: 200 },
+  ];
+
+  const sorted = sortEndpointsByMRU(endpoints);
+  assert.notStrictEqual(sorted, endpoints, 'Should return new array');
+  assert.strictEqual(endpoints[0].name, 'a', 'Original array unchanged');
+  assert.strictEqual(sorted[0].name, 'b', 'Sorted has MRU first');
 });

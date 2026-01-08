@@ -4,7 +4,12 @@
  * manages detected streams, and triggers API calls
  */
 
-import { callEndpoint, DEFAULT_CONFIG } from './endpoint';
+import {
+  callEndpoint,
+  DEFAULT_CONFIG,
+  parseEndpoints,
+  sortEndpointsByMRU,
+} from './endpoint';
 import { Logger } from './logger';
 import type { RuntimeMessage, StreamInfo } from './types';
 
@@ -12,6 +17,28 @@ const logger = new Logger('broker');
 
 // Limit streams per tab to prevent unbounded memory growth
 const MAX_STREAMS_PER_TAB = 200;
+
+/**
+ * Update lastUsedAt for an endpoint and save to storage
+ */
+async function updateEndpointLastUsed(endpointName: string): Promise<void> {
+  try {
+    const stored = await browser.storage.sync.get('apiEndpoints');
+    const endpoints = parseEndpoints(stored.apiEndpoints || '[]');
+
+    const endpoint = endpoints.find((ep) => ep.name === endpointName);
+    if (endpoint) {
+      endpoint.lastUsedAt = Date.now();
+      const sorted = sortEndpointsByMRU(endpoints);
+      await browser.storage.sync.set({
+        apiEndpoints: JSON.stringify(sorted, null, 2),
+      });
+      logger.debug(`Updated lastUsedAt for endpoint: ${endpointName}`);
+    }
+  } catch (error: unknown) {
+    logger.warn(`Failed to update lastUsedAt for ${endpointName}`, error);
+  }
+}
 
 // Initialize storage with default config on first install
 browser.runtime.onInstalled.addListener(async (details) => {
@@ -107,7 +134,7 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
       logger.info(
         `OPEN_IN_TAB: endpoint=${message.endpointName || 'default'}, url=${message.streamUrl}`,
       );
-      return callEndpoint({
+      const response = await callEndpoint({
         mode: 'tab',
         streamUrl: message.streamUrl,
         pageUrl: message.pageUrl,
@@ -115,6 +142,13 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
         endpointName: message.endpointName,
         logger,
       });
+
+      // Update lastUsedAt after successful call
+      if (response.success && message.endpointName) {
+        await updateEndpointLastUsed(message.endpointName);
+      }
+
+      return response;
     }
 
     if (message.type === 'CALL_API') {
@@ -130,7 +164,7 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
       logger.info(
         `CALL_API: endpoint=${message.endpointName || 'default'}, url=${message.streamUrl}`,
       );
-      return callEndpoint({
+      const response = await callEndpoint({
         mode: 'fetch',
         streamUrl: message.streamUrl,
         pageUrl: message.pageUrl,
@@ -139,6 +173,13 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
         tabHeaders: pageHeaders,
         logger,
       });
+
+      // Update lastUsedAt after successful call
+      if (response.success && message.endpointName) {
+        await updateEndpointLastUsed(message.endpointName);
+      }
+
+      return response;
     }
 
     if (message.type === 'PING') {
