@@ -82,11 +82,33 @@ import { Logger } from './logger';
   }
 
   /**
+   * Recursively find all media elements, including those in shadow roots
+   */
+  function getAllMediaElements(
+    root: Document | ShadowRoot = document,
+  ): HTMLMediaElement[] {
+    const elements: HTMLMediaElement[] = [];
+
+    // Get direct media elements
+    const directMedia = root.querySelectorAll<HTMLMediaElement>('audio, video');
+    elements.push(...Array.from(directMedia));
+
+    // Recursively search shadow roots
+    const allElements = root.querySelectorAll('*');
+    allElements.forEach((element) => {
+      if (element.shadowRoot) {
+        elements.push(...getAllMediaElements(element.shadowRoot));
+      }
+    });
+
+    return elements;
+  }
+
+  /**
    * Monitor media elements (audio/video)
    */
   function monitorMediaElements() {
-    const mediaElements =
-      document.querySelectorAll<HTMLMediaElement>('audio, video');
+    const mediaElements = getAllMediaElements();
 
     mediaElements.forEach((element) => {
       if (element.src && isStreamUrl(element.src)) {

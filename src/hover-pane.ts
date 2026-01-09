@@ -350,3 +350,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (els.loading) els.loading.style.display = 'none';
   }
 });
+// Listen for new stream detections from any frame
+browser.runtime.onMessage.addListener((message: RuntimeMessage) => {
+  if (message.type === 'STREAM_DETECTED') {
+    logger.debug('New stream detected, refreshing panel');
+    loadStreams().catch((err) => {
+      logger.error('Failed to reload streams after detection', err);
+    });
+  }
+});
