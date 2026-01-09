@@ -1,7 +1,7 @@
-# Copilot Instructions for *Stream call*
+# Copilot Instructions for *Streamonio*
 
 ## Project coordinates
-- **Project name**: *Stream call*
+- **Project name**: *Streamonio*
 - **Blip**: Send page streams to API calls
 - **Short description**: A (mobile) Firefox extension to extract streaming media URLs (podcasts, radio stations, live streams) and send to HTTP API endpoint(s)
 
@@ -11,7 +11,7 @@
 - TypeScript sources in `src/` (`broker.ts`, `page.ts`, `popup.ts`,
   `options.ts`); `popup.html` and `options.html` are copied to `dist/`.
 - Build: `npm install` then `npm run build` (clean + tsc + copy HTML). Package:
-  `npm run build && zip -r stream-call.zip manifest.json dist icons -x
+  `npm run build && zip -r streamonio.zip manifest.json dist icons -x
   "icons/generate-icons.html"`.
 - APIs: `browser` namespace with `@types/firefox-webext-browser`; no framework/
   bundler.
@@ -78,7 +78,7 @@
 
 ## Quick references
 - Build: `npm run build` (clean + tsc + copy HTML)
-- Package: `npm run build && zip -r stream-call.zip manifest.json dist icons -x
+- Package: `npm run build && zip -r streamonio.zip manifest.json dist icons -x
   "icons/generate-icons.html"`
 - Tests: `npm test`; `npm run test:integration`
 - Quality: `npm run lint`; `npm run dupes`; `npm run dead-code`

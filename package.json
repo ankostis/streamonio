@@ -1,5 +1,5 @@
 {
-  "name": "stream-call",
+  "name": "streamonio",
   "version": "0.4.1",
   "license": "GPL-3.0",
   "private": true,
@@ -13,7 +13,7 @@
     "test:integration:options": "node tests/integration/options-crud.js",
     "test:integration:real": "node tests/integration/real-stream.js",
     "test:integration:httpbin": "node tests/integration/httpbin-full.js --puppeteer",
-    "package": "zip -r stream-call-$npm_package_version.zip manifest.json dist icons -x 'icons/generate-icons.html'",
+    "package": "zip -r streamonio-$npm_package_version.zip manifest.json dist icons -x 'icons/generate-icons.html'",
     "lint": "biome check src/ tests/",
     "lint:fix": "biome check --write src/ tests/",
     "format": "biome format --write src/ tests/ && prettier --write '*.html'",

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Validate httpbin API response for stream-call integration testing
+// Validate httpbin API response for Streamonio integration testing
 // Usage: node validate-response.js <httpbin-response.json>
 
 const fs = require('node:fs');
@@ -141,7 +141,7 @@ if (require.main === module) {
     console.log('Usage: node validate-response.js <httpbin-response.json>');
     console.log('');
     console.log(
-      'Validates httpbin.org/anything response for stream-call integration.',
+      'Validates httpbin.org/anything response for Streamonio integration.',
     );
     console.log('');
     console.log('Example:');

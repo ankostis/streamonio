@@ -1,8 +1,8 @@
-# Testing Stream call on Mobile Firefox
+# Testing Streamonio on Mobile Firefox
 
 ## Quick Start
 
-1. **Package ready**: `stream-call-mobile.zip` (48KB) in project root
+1. **Package ready**: `streamonio-mobile.zip` (48KB) in project root
 2. **Transfer to mobile**: USB, cloud, or local server (see below)
 3. **Install in Firefox Nightly**: Method A (remote debug) or B (direct install)
 4. **Test both UIs**: Browser action (🎵 icon) vs Hover panel (🎵 button on page)
@@ -18,23 +18,23 @@
 ### 1. Package the Extension
 
 ```bash
-cd /path/to/stream-call
+cd /path/to/streamonio
 npm run build
-zip -r stream-call-mobile.zip manifest.json dist icons -x "icons/generate-icons.html"
+zip -r streamonio-mobile.zip manifest.json dist icons -x "icons/generate-icons.html"
 ```
 
-This creates `stream-call-mobile.zip` (48KB) in the project root.
+This creates `streamonio-mobile.zip` (48KB) in the project root.
 
 ### 2. Transfer to Mobile Device
 
 #### Option A: Direct USB transfer
 ```bash
 # Connect phone via USB, enable File Transfer mode
-adb push stream-call-mobile.zip /sdcard/Download/
+adb push streamonio-mobile.zip /sdcard/Download/
 ```
 
 #### Option B: Cloud storage
-- Upload `stream-call-mobile.zip` to Google Drive / Dropbox / Telegram / etc
+- Upload `streamonio-mobile.zip` to Google Drive / Dropbox / Telegram / etc
 - Download on mobile device
 
 #### Option C: Local web server
@@ -43,7 +43,7 @@ adb push stream-call-mobile.zip /sdcard/Download/
 npx serve -l 9090
 
 # On mobile Firefox, navigate to:
-http://<your-desktop-ip>:9090/stream-call-mobile.zip
+http://<your-desktop-ip>:9090/streamonio-mobile.zip
 ```
 
 ### 3. Enable Firefox Debugging
@@ -63,7 +63,7 @@ http://<your-desktop-ip>:9090/stream-call-mobile.zip
 #### Method B: Via about:debugging (Mobile)
 1. On mobile Firefox Nightly, navigate to `about:debugging#/runtime/this-firefox`
 2. Click "Load Temporary Add-on"
-3. Select `stream-call-mobile.zip` from Downloads
+3. Select `streamonio-mobile.zip` from Downloads
 4. Grant permissions
 
 
@@ -74,7 +74,7 @@ http://<your-desktop-ip>:9090/stream-call-mobile.zip
 2. Look for floating 🎵 button in bottom-right corner
 3. Tap button → panel slides in from right edge
 4. Compare UX with browser action popup:
-   - Browser action: Tap menu → Extensions → Stream call
+   - Browser action: Tap menu → Extensions → Streamonio
    - Hover panel: Tap floating button
 
 ### What to Test:
@@ -121,7 +121,7 @@ http://<your-desktop-ip>:9090/stream-call-mobile.zip
 
 Temporary extensions auto-remove on browser restart. To remove manually:
 1. Firefox menu → Add-ons
-2. Find "Stream call"
+2. Find "Streamonio"
 3. Remove
 
 ## Testing Checklist

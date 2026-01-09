@@ -1,5 +1,5 @@
 /**
- * stream-call Content Script (page-context)
+ * Streamonio Content Script (page-context)
  * Detects streaming media on web pages
  */
 
@@ -100,8 +100,8 @@ import { Logger } from './logger';
         }
       });
 
-      if (!element.dataset.streamCallMonitored) {
-        element.dataset.streamCallMonitored = 'true';
+      if (!element.dataset.streamonioMonitored) {
+        element.dataset.streamonioMonitored = 'true';
 
         const observer = new MutationObserver(() => {
           if (element.src && isStreamUrl(element.src)) {
@@ -206,7 +206,7 @@ import { Logger } from './logger';
    */
   async function injectHoverPanel() {
     // Only inject once
-    if (document.getElementById('stream-call-toggle-btn')) return;
+    if (document.getElementById('streamonio-toggle-btn')) return;
 
     // Check if hover panel is enabled in settings
     const config = await browser.storage.sync.get({ enableHoverPanel: false });
@@ -218,7 +218,7 @@ import { Logger } from './logger';
     }
 
     const iframe = document.createElement('iframe');
-    iframe.id = 'stream-call-hover-frame';
+    iframe.id = 'streamonio-hover-frame';
     iframe.src = browser.runtime.getURL('dist/hover-pane.html');
     iframe.style.cssText = `
       position: fixed;
@@ -256,9 +256,9 @@ import { Logger } from './logger';
 
     // Add toggle button - fixed position, always visible
     const toggleBtn = document.createElement('button');
-    toggleBtn.id = 'stream-call-toggle-btn';
+    toggleBtn.id = 'streamonio-toggle-btn';
     toggleBtn.innerHTML = '🎵';
-    toggleBtn.title = 'Toggle Stream call panel';
+    toggleBtn.title = 'Toggle Streamonio panel';
     toggleBtn.style.cssText = `
       position: fixed;
       top: 10px;

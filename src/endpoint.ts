@@ -1,5 +1,5 @@
 /**
- * Configuration and templating utilities for stream-call
+ * Configuration and templating utilities for Streamonio
  * Centralized endpoint parsing, validation, normalization, and template interpolation
  */
 
@@ -502,7 +502,7 @@ export async function callEndpoint({
       form.method = 'POST';
       form.action = finalUrl;
       // Use consistent window name per endpoint for tab reuse
-      const windowName = `stream-call-${selectedEndpoint.name.replace(/[^a-zA-Z0-9]/g, '-')}`;
+      const windowName = `streamonio-${selectedEndpoint.name.replace(/[^a-zA-Z0-9]/g, '-')}`;
       form.target = windowName;
       form.style.display = 'none';
 

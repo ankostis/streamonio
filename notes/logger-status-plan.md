@@ -20,7 +20,7 @@
 3. ✅ Added comprehensive unit tests (77 tests, all passing)
 4. ✅ Updated `options.html` with status bar + log viewer + filter panel + polished CSS
 5. ✅ Integrated Logger + StatusBar into `src/options.ts` with live rendering
-6. ✅ Extracted reusable UI helpers into `src/logging-ui.ts`
+6. ✅ Extracted reusable UI helpers into `src/logger-ui.ts`
 7. ✅ Added log level filter controls with toggle panel
 8. ✅ Polished status bar and log viewer styling (dark theme, level-based colors)
 
@@ -224,7 +224,7 @@ Implemented:
 - Activity log viewer with filter panel (level checkboxes: Error, Warn, Info, Debug)
 - Filter toggle button, clear button, export button
 - Dark theme log viewer with monospace font, scrollable (max-height 300px)
-- Live filtering via `applyLogFilter()` helper from `src/logging-ui.ts`
+- Live filtering via `applyLogFilter()` helper from `src/logger-ui.ts`
 
 **CSS**:
 - **Status bar**: Border-left color based on level, icon selection (❌ error, ⚠️ warn, ℹ️ info)
@@ -236,7 +236,7 @@ Implemented:
 **File**: `src/options.ts` ✅ COMPLETED
 
 Implemented:
-- Created `src/logging-ui.ts` with reusable UI helpers: `createStatusRenderer()`, `createLogAppender()`, `applyLogFilter()`, `setupLogFiltering()`
+- Created `src/logger-ui.ts` with reusable UI helpers: `createStatusRenderer()`, `createLogAppender()`, `applyLogFilter()`, `setupLogFiltering()`
 - Instantiated Logger and StatusBar, wired `statusBar.setLogger(logger)`
 - Replaced all `showAlert()` calls with direct `statusBar.post()`/`statusBar.flash()` calls
 - Added live status bar rendering and log appending via subscriptions
@@ -303,8 +303,7 @@ try {
 } catch (error: any) {
   const available = Object.keys(context).filter(k => context[k] !== undefined).join(', ');
   const message = `🔴 Template error: ${error?.message}. Available: ${available}`;
-  statusBar.post('interpolation-error', 'error', message);
-  logger.error('api-test', `Template error in endpoint: ${error?.message}; available: ${available}`);
+  statusBar.errorFlash('api-test', `Template error in endpoint: ${error?.message}; available: ${available}`);
   return;
 }
 ```
@@ -329,8 +328,7 @@ try {
     message = '❌ Sync unavailable. Check browser sync settings.';
   }
 
-  statusBar.post('storage-error', 'error', message);
-  logger.error('storage', `Load failed: ${message}`);
+  statusBar.errorFlash('storage', `Load failed: ${message}`);
 }
 ```
 
@@ -360,7 +358,7 @@ try {
 - Logging integration: messages logged to logger (slot used as category)
 - Zero-timeout transients, stacked transient behavior
 
-**Logging UI** (`tests/unit/logging-ui.test.ts`): ✅ 6 tests passing
+**Logging UI** (`tests/unit/logger-ui.test.ts`): ✅ 6 tests passing
 - `applyLogFilter()`: shows/hides log lines based on selected levels
 - Handles all-selected and empty filter arrays
 - Ignores `.log-empty` placeholder
@@ -586,14 +584,14 @@ Rationale:
 
 ## Logging Pattern Analysis (Codebase Scan)
 
-**Scanned files**: `src/background.ts`, `src/page.ts`, `src/popup.ts`, `src/options.ts`
+**Scanned files**: `src/broker.ts`, `src/page.ts`, `src/popup.ts`, `src/options.ts`
 
 ### Discovered Logging Categories by Context
 
-**Background Service Worker** (`src/background.ts`):
+**Broker Service Worker** (`src/broker.ts`):
 - `Stream detected` (info) - Stream captured from content script
 - `API call failed` (error) - Network/fetch failure or template error
-- Background worker loaded (debug)
+- Broker worker loaded (debug)
 
 **Content Script** (`src/page.ts`):
 - `Detected stream` (info) - URL found via media element or player library

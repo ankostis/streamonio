@@ -1,5 +1,5 @@
 /**
- * Shared type definitions for stream-call
+ * Shared type definitions for Streamonio
  * Single source of truth for domain types used across multiple modules
  */
 

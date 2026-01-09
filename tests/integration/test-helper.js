@@ -25,7 +25,7 @@ function generateTestConfig(options = {}) {
           pageUrl: '{{pageUrl}}',
           pageTitle: '{{pageTitle}}',
           timestamp: '{{timestamp}}',
-          test: 'stream-call-integration',
+          test: 'streamonio-integration',
         }),
         includeCookies,
         includePageHeaders,

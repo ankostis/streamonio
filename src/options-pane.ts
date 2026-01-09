@@ -1,5 +1,5 @@
 /**
- * stream-call options Script to define & CRUD endpoints (extension-context)
+ * Streamonio options Script to define & CRUD endpoints (extension-context)
  */
 
 import { initLogging } from './components-ui';
@@ -467,7 +467,7 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab') {
 
   const testUrl = 'https://example.com/test-stream.m3u8';
   const pageUrl = 'https://example.com/test-page';
-  const pageTitle = 'Test Page - stream-call';
+  const pageTitle = 'Test Page - Streamonio';
 
   const action = mode === 'fetch' ? 'Validating endpoint' : 'Opening in tab';
   logger.info(`${action}: ${candidate.name} → ${testUrl}`, { endpoint: candidate });
@@ -561,7 +561,7 @@ function exportEndpoints() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `stream-call-endpoints-${new Date().toISOString().split('T')[0]}.json`;
+  link.download = `streamonio-endpoints-${new Date().toISOString().split('T')[0]}.json`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -834,7 +834,7 @@ function initialize() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `stream-call-logs-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `streamonio-logs-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

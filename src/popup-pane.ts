@@ -1,5 +1,5 @@
 /**
- * stream-call Popup Script that calls the API endpoint (extension-context)
+ * Streamonio Popup Script that calls the API endpoint (extension-context)
  */
 
 import {

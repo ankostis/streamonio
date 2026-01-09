@@ -375,10 +375,10 @@ test('Import file format: replace strategy discards existing', () => {
 test('Export filename format: includes ISO date', () => {
   const date = new Date('2025-12-14T12:00:00Z');
   const isoDate = date.toISOString().split('T')[0]; // "2025-12-14"
-  const filename = `stream-call-endpoints-${isoDate}.json`;
+  const filename = `streamonio-endpoints-${isoDate}.json`;
 
-  assert.strictEqual(filename, 'stream-call-endpoints-2025-12-14.json');
-  assert.match(filename, /stream-call-endpoints-\d{4}-\d{2}-\d{2}\.json/);
+  assert.strictEqual(filename, 'streamonio-endpoints-2025-12-14.json');
+  assert.match(filename, /streamonio-endpoints-\d{4}-\d{2}-\d{2}\.json/);
 });
 
 test('Header rows: builds record from key-value pairs', () => {

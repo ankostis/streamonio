@@ -152,7 +152,7 @@ Expected response structure:
     "pageUrl": "https://www.ertecho.gr/radio/trito/",
     "pageTitle": "ΕΡΤ Τρίτο Πρόγραμμα",
     "timestamp": "2025-12-14T...",
-    "test": "stream-call-integration"
+    "test": "streamonio-integration"
   }
 }
 ```

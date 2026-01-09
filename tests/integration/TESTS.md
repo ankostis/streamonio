@@ -1,7 +1,7 @@
 # Integration Test Suite Summary
 
 ## Overview
-Comprehensive integration tests for stream-call extension validating:
+Comprehensive integration tests for Streamonio extension validating:
 - Stream detection on real webpages
 - API calls to httpbin.org
 - Cookie header capture

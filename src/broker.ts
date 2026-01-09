@@ -1,5 +1,5 @@
 /**
- * stream-call Broker Service Worker (extension-context)
+ * Streamonio Broker Service Worker (extension-context)
  * Handles communication between content scripts and popup,
  * manages detected streams, and triggers API calls
  */

@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Stream call",
+  "name": "Streamonio",
   "version": "0.4.1",
   "description": "A (mobile) Firefox extension to extract streaming media URLs (podcasts, radio stations, live streams) and send to HTTP API endpoint(s)",
   "author": "Kostis Anagnostopoulos",
-  "homepage_url": "https://github.com/ankostis/stream-call",
+  "homepage_url": "https://github.com/ankostis/streamonio",
   "developer": {
     "name": "Kostis Anagnostopoulos",
     "url": "https://github.com/ankostis"
@@ -36,7 +36,7 @@
       "48": "icons/icon-48.png",
       "128": "icons/icon-128.png"
     },
-    "default_title": "Stream call"
+    "default_title": "Streamonio"
   },
   "options_ui": {
     "page": "dist/options-pane.html",
@@ -56,7 +56,7 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "stream-call@dev.ankostis.com",
+      "id": "streamonio@dev.ankostis.com",
       "strict_min_version": "115.0"
     }
   }

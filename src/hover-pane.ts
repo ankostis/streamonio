@@ -1,5 +1,5 @@
 /**
- * stream-call Hover Panel UI (page/iframe context)
+ * Streamonio Hover Panel UI (page/iframe context)
  * In-page overlay for mobile UX. Mirrors popup.ts structure.
  * Uses browser.runtime.sendMessage - broker gets sender.tab.id automatically.
  */

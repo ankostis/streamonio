@@ -42,7 +42,7 @@
 - Preset templates (GET with query, POST JSON, httpbin) to bootstrap non-technical users.
 
 ## Import/Export (Bulk)
-- **Export**: Button to download all patterns as a JSON file (array of objects). Filename suggestion: `stream-call-patterns.json`.
+- **Export**: Button to download all patterns as a JSON file (array of objects). Filename suggestion: `streamonio-patterns.json`.
 - **Import**: Button to select a JSON file, parse, validate, and **merge by Name**:
   - If a pattern with the same Name exists, **overwrite** it.
   - If Name is new, **append** it.
@@ -57,13 +57,13 @@
 
 ## Code Audit: `id` vs `name`
 - `popup.ts`: Uses `id` for `<select>` option values and passes `patternId` in `CALL_API`.
-- `background.ts`: Selects pattern via `patterns.find(p => p.id === patternId)`.
+- `broker.ts`: Selects pattern via `patterns.find(p => p.id === patternId)`.
 - `config.ts`: Autogenerates `id` in `parsePatterns()` and `validatePatterns()`.
 - `options.ts`: Validates/normalizes patterns; currently generates `id`.
 
 **Recommendation**: Use `name` as the unique identifier across the codebase.
 - Update `popup.ts` to set `<option value=pattern.name>` and pass `patternName` in `CALL_API`.
-- Update `background.ts` to select with `patterns.find(p => p.name === patternName)`.
+- Update `broker.ts` to select with `patterns.find(p => p.name === patternName)`.
 - Update `config.ts` to stop generating `id`; enforce required `name` and uniqueness.
 - Update `options.ts` validation to require `name`; show error if missing/duplicate.
 - Migration: For existing stored patterns that include `id`, ignore `id` and derive uniqueness by `name`. If duplicates occur, keep the first and prompt the user to rename.
@@ -74,7 +74,7 @@
   - Add helper `mergePatternsByName(existing, imported)` to support bulk import.
 - **Phase 2: Popup & Background alignment**
   - Change `popup.ts` select to key by `name` and send `patternName`.
-  - Change `background.ts` `RuntimeMessage` to accept `patternName`; select by name.
+  - Change `broker.ts` `RuntimeMessage` to accept `patternName`; select by name.
 - **Phase 3: Options UI**
   - Replace textarea with list + form (Minimal/Advanced, Headers rows, Body textarea).
   - Add **Export** (download JSON) and **Import** (merge-by-name) buttons with progress feedback.

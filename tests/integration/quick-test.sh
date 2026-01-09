@@ -1,10 +1,10 @@
 #!/bin/bash
-# Quick test runner for stream-call integration tests
+# Quick test runner for Streamonio integration tests
 # Usage: ./quick-test.sh [test-type]
 
 set -e
 
-echo "🧪 Stream-call Integration Test Suite"
+echo "🧪 Streamonio Integration Test Suite"
 echo "======================================"
 echo ""
 

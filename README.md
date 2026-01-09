@@ -1,4 +1,4 @@
-# 🎵 *Stream call*
+# 🎵 *Streamonio*
 
 A (mobile) Firefox extension to extract streaming media URLs (podcasts, radio
 stations, live streams) and send to HTTP API endpoint(s).
@@ -24,7 +24,7 @@ stations, live streams) and send to HTTP API endpoint(s).
 
 ### From Source (Development)
 
-1. Clone or download this repository (folder slug: `stream-call`)
+1. Clone or download this repository (folder slug: `streamonio`)
 2. Install deps (TypeScript build):
 
   ```bash
@@ -44,7 +44,7 @@ stations, live streams) and send to HTTP API endpoint(s).
 Build and package (includes dist + manifest + icons):
 ```bash
 npm run build
-zip -r stream-call.zip manifest.json dist icons -x "icons/generate-icons.html"
+zip -r streamonio.zip manifest.json dist icons -x "icons/generate-icons.html"
 ```
 
 Then submit to [Firefox Add-ons](https://addons.mozilla.org/).
@@ -57,7 +57,7 @@ See [MOBILE_TESTING.md](MOBILE_TESTING.md)
 
 ### 1. Configure API Endpoints
 
-1. Click the *Stream call* icon in your Firefox toolbar
+1. Click the *Streamonio* icon in your Firefox toolbar
 2. Click the "⚙️ Options" button
 3. Define one or more API endpoints as a JSON array
 4. Click "💾 Save Settings"
@@ -132,7 +132,7 @@ endpoints from stream-dependent ones.
 ### Project Structure
 
 ```
-stream-call/
+streamonio/
 ├── manifest.json              # Extension manifest
 ├── tsconfig.json             # TypeScript configuration
 ├── package.json              # Node.js dependencies & scripts
@@ -350,7 +350,7 @@ Logger provides audit trail (ring buffer) + UI status (slot-based):
 
 ## Privacy
 
-*Stream call*:
+*Streamonio*:
 - Only sends data to **your configured API endpoint**
 - Does not track browsing history, neither collect or transmit data to 3rd parties
 - Stores configuration locally in Firefox sync storage
