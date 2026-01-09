@@ -10,6 +10,9 @@ web-ext-artifacts/
 node_modules/
 dist/
 
+# Generated files
+src/build-info.json
+
 # Temporary files
 *.tmp
 *.temp

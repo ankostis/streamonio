@@ -2,6 +2,7 @@
  * Streamonio options Script to define & CRUD endpoints (extension-context)
  */
 
+import buildInfo from './build-info.json';
 import { initLogging } from './components-ui';
 import {
   type ApiEndpoint,
@@ -807,7 +808,11 @@ function wireEvents() {
 function initialize() {
   // Display version from manifest
   const manifest = browser.runtime.getManifest();
-  els.aboutVersion().textContent = `Version ${manifest.version}`;
+  const versionText = `Version ${manifest.version}`;
+  const dateText = buildInfo.commitDate
+    ? ` • Released ${new Date(buildInfo.commitDate).toLocaleDateString()}`
+    : '';
+  els.aboutVersion().textContent = versionText + dateText;
 
   loadSettings();
   wireEvents();
