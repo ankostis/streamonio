@@ -39,6 +39,13 @@ let els: {
  * Initialize hover panel
  */
 async function initialize() {
+  // Display version
+  const manifest = browser.runtime.getManifest();
+  const versionEl = document.getElementById('hover-version');
+  if (versionEl) {
+    versionEl.textContent = `v${manifest.version}`;
+  }
+
   // Initialize logging infrastructure
   const logging = initLogging('hover', {
     statusBar: document.getElementById('status-bar') as HTMLDivElement,

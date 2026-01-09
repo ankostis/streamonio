@@ -58,6 +58,13 @@ async function initialize() {
 
   currentTabId = tabs[0].id ?? null;
 
+  // Display version
+  const manifest = browser.runtime.getManifest();
+  const versionEl = document.getElementById('popup-version');
+  if (versionEl) {
+    versionEl.textContent = `v${manifest.version}`;
+  }
+
   // Initialize logging infrastructure
   const logging = initLogging('popup', {
     statusBar: document.getElementById('status-bar') as HTMLDivElement,
