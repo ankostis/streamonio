@@ -267,6 +267,11 @@ function fillForm(endpoint: ApiEndpoint) {
   els.includeCookies().checked = endpoint.includeCookies === true;
   els.includeHeaders().checked = endpoint.includePageHeaders === true;
   setHeadersRows(endpoint.headers);
+
+  // Update body field state based on method
+  if (window.updateBodyState) {
+    window.updateBodyState();
+  }
 }
 
 function newEndpointDefaults(): ApiEndpoint {
@@ -746,6 +751,20 @@ function performImport(merge: boolean) {
 }
 
 function wireEvents() {
+  // Disable body field for methods that don't support request body
+  const methodSelect = els.method();
+  const bodyField = els.body();
+  window.updateBodyState = () => {
+    const method = methodSelect.value;
+    const hasBody = !['GET', 'HEAD', 'DELETE'].includes(method);
+    bodyField.disabled = !hasBody;
+    bodyField.style.opacity = hasBody ? '1' : '0.5';
+    bodyField.style.cursor = hasBody ? 'text' : 'not-allowed';
+  };
+  methodSelect.addEventListener('change', window.updateBodyState);
+  // Initial state
+  window.updateBodyState();
+
   document
     .getElementById('save-endpoint-btn')
     ?.addEventListener('click', saveEndpoint);

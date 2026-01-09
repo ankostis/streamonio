@@ -1014,6 +1014,16 @@
                 </div>
 
                 <!-- URL & Body -->
+                <div class="template-help" style="margin-bottom: 0.75rem;">
+                  <strong>📋 Placeholders:</strong>
+                  <code>{{streamUrl}}</code>
+                  <code>{{streamUrl|url}}</code>
+                  <code>{{pageUrl}}</code>
+                  <code>{{pageTitle}}</code>
+                  <code>{{pageTitle|json}}</code>
+                  <code>{{timestamp}}</code>
+                </div>
+
                 <div class="form-group">
                   <label for="endpoint-endpoint"
                     >Endpoint URL *<span
@@ -1037,16 +1047,6 @@
                     ></label
                   >
                   <textarea id="endpoint-body" placeholder='{"url":"{{streamUrl}}"}'></textarea>
-                </div>
-
-                <div class="template-help">
-                  <strong>📋 Placeholders:</strong>
-                  <code>{{streamUrl}}</code>
-                  <code>{{streamUrl|url}}</code>
-                  <code>{{pageUrl}}</code>
-                  <code>{{pageTitle}}</code>
-                  <code>{{pageTitle|json}}</code>
-                  <code>{{timestamp}}</code>
                 </div>
 
                 <!-- Method & Content-Type -->
