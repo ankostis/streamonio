@@ -4,6 +4,7 @@
  */
 
 import { debounce } from './debounce';
+import { DEFAULT_CONFIG } from './endpoint';
 import {
   getStreamType as getStreamTypeShared,
   isStreamUrl as isStreamUrlShared,
@@ -169,10 +170,15 @@ import { Logger } from './logger';
   /**
    * Monitor DOM for new media elements
    */
-  function monitorDOMChanges() {
+  async function monitorDOMChanges() {
+    const config = await browser.storage.sync.get({
+      detectionDebounceMs: DEFAULT_CONFIG.detectionDebounceMs,
+    });
+    const debounceMs = config.detectionDebounceMs ?? DEFAULT_CONFIG.detectionDebounceMs;
+
     const debouncedMonitor = debounce(() => {
       monitorMediaElements();
-    }, 500);
+    }, debounceMs);
 
     const observer = new MutationObserver(() => {
       debouncedMonitor();
@@ -207,20 +213,27 @@ import { Logger } from './logger';
     }
   }
 
-  function startDetection() {
+  async function startDetection() {
+    const config = await browser.storage.sync.get({
+      detectionDebounceMs: DEFAULT_CONFIG.detectionDebounceMs,
+      detectionIntervalMs: DEFAULT_CONFIG.detectionIntervalMs,
+    });
+    const intervalMs = config.detectionIntervalMs ?? DEFAULT_CONFIG.detectionIntervalMs;
+    const debounceMs = Math.min(config.detectionDebounceMs ?? DEFAULT_CONFIG.detectionDebounceMs, intervalMs / 2);
+
     checkStreamingFrameworks();
     interceptNetworkRequests();
     monitorMediaElements();
     monitorDOMChanges();
 
-    // Debounce periodic media element scan (2s interval, 1s delay)
+    // Periodic media element scan with configurable interval
     const debouncedMediaScan = debounce(() => {
       monitorMediaElements();
-    }, 1000);
+    }, debounceMs);
 
     setInterval(() => {
       debouncedMediaScan();
-    }, 2000);
+    }, intervalMs);
   }
 
   /**

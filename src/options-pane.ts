@@ -64,6 +64,10 @@ const els = {
   logExport: () => document.getElementById('log-export') as HTMLButtonElement,
   enableHoverPanel: () =>
     document.getElementById('enable-hover-panel') as HTMLInputElement,
+  detectionDebounce: () =>
+    document.getElementById('detection-debounce') as HTMLInputElement,
+  detectionInterval: () =>
+    document.getElementById('detection-interval') as HTMLInputElement,
   aboutVersion: () => document.getElementById('about-version') as HTMLElement,
   importModal: () => els.importModal() as HTMLDivElement,
   importPreview: () => els.importPreview() as HTMLDivElement,
@@ -123,6 +127,12 @@ function loadSettings() {
       endpoints = sortEndpointsByMRU(endpoints);
       els.enableHoverPanel().checked =
         (config as Config).enableHoverPanel ?? false;
+      els.detectionDebounce().value = String(
+        (config as Config).detectionDebounceMs ?? DEFAULT_CONFIG.detectionDebounceMs,
+      );
+      els.detectionInterval().value = String(
+        (config as Config).detectionIntervalMs ?? DEFAULT_CONFIG.detectionIntervalMs,
+      );
       renderList();
       if (endpoints.length === 0) {
         logger.info(
@@ -875,6 +885,38 @@ function initialize() {
       })
       .catch((err) => {
         logger.error('Failed to save hover panel setting:', err);
+      });
+  });
+
+  els.detectionDebounce().addEventListener('change', () => {
+    const value = Number.parseInt(els.detectionDebounce().value, 10);
+    if (Number.isNaN(value) || value < 100 || value > 5000) {
+      logger.warn('storage', '⚠️ Debounce must be 100-5000ms');
+      return;
+    }
+    browser.storage.sync
+      .set({ detectionDebounceMs: value })
+      .then(() => {
+        logger.infoFlash(3000, 'storage', `✅ Detection debounce set to ${value}ms`);
+      })
+      .catch((err) => {
+        logger.error('Failed to save debounce setting:', err);
+      });
+  });
+
+  els.detectionInterval().addEventListener('change', () => {
+    const value = Number.parseInt(els.detectionInterval().value, 10);
+    if (Number.isNaN(value) || value < 500 || value > 10000) {
+      logger.warn('storage', '⚠️ Interval must be 500-10000ms');
+      return;
+    }
+    browser.storage.sync
+      .set({ detectionIntervalMs: value })
+      .then(() => {
+        logger.infoFlash(3000, 'storage', `✅ Detection interval set to ${value}ms`);
+      })
+      .catch((err) => {
+        logger.error('Failed to save interval setting:', err);
       });
   });
 

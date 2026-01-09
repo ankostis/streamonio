@@ -28,6 +28,8 @@ export type ApiEndpoint = {
  */
 export const DEFAULT_CONFIG = {
   enableHoverPanel: false,
+  detectionDebounceMs: 1000,
+  detectionIntervalMs: 3000,
   apiEndpoints: JSON.stringify(
     [
       {
