@@ -237,7 +237,7 @@ function handlePreview(stream: StreamInfo, endpointName?: string) {
     pageTitle: stream.pageTitle,
   } as Record<string, unknown>;
 
-  logger.infoFlash(2100, 'hover', 'Generating preview:');
+  logger.infoFlash(2100, 'Generating preview:');
   previewCall(endpoint, context, logger);
 }
 
@@ -299,8 +299,7 @@ async function handleCallEndpoint(
 async function handleCopyUrl(url: string) {
   try {
     await navigator.clipboard.writeText(url);
-    logger.infoFlash(2000, 'clipboard', '📋 URL copied');
-    logger.debug(`Copied: ${url}`);
+    logger.infoFlash(2000, `📋 Copied URL: ${url}`);
   } catch (error) {
     logger.warn('Failed to copy URL', error);
   }

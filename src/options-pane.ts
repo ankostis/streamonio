@@ -349,7 +349,7 @@ function saveEndpoint() {
 
   const validated = validateEndpoints(JSON.stringify(updated));
   if (!validated.valid) {
-    logger.error('endpoint', validated.errorMessage || 'Invalid API endpoint');
+    logger.error(validated.errorMessage || 'Invalid API endpoint');
     return;
   }
 
@@ -362,7 +362,7 @@ function saveEndpoint() {
       logger.info(`Endpoint saved: ${endpoints[editingIndex!].name}`);
     })
     .catch((error) => {
-      logger.error('storage', 'Failed to save API endpoint', error);
+      logger.error('Failed to save API endpoint', error);
     });
 }
 
@@ -392,7 +392,7 @@ function saveAsNew() {
 
   const validated = validateEndpoints(JSON.stringify(updated));
   if (!validated.valid) {
-    logger.error('endpoint', validated.errorMessage || 'Invalid API endpoint');
+    logger.error(validated.errorMessage || 'Invalid API endpoint');
     return;
   }
 
@@ -405,7 +405,7 @@ function saveAsNew() {
       logger.info(`Endpoint saved: ${newName}`);
     })
     .catch((error) => {
-      logger.error('storage', 'Failed to save API endpoint', error);
+      logger.error('Failed to save API endpoint', error);
     });
 }
 
@@ -421,7 +421,6 @@ function deleteEndpoint(index: number) {
   const validated = validateEndpoints(JSON.stringify(updated));
   if (!validated.valid) {
     logger.error(
-      'endpoint',
       validated.errorMessage || 'Failed to delete API endpoint',
     );
     return;
@@ -437,7 +436,7 @@ function deleteEndpoint(index: number) {
       logger.info(`Endpoint deleted: ${endpoint.name}`);
     })
     .catch((error) => {
-      logger.error('storage', 'Failed to delete API endpoint', error);
+      logger.error('Failed to delete API endpoint', error);
     });
 }
 
@@ -462,7 +461,7 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab') {
   // Get current form endpoint
   const candidate = buildEndpointFromForm();
   if (!candidate) {
-    logger.error('endpoint', 'Invalid endpoint configuration');
+    logger.error('Invalid endpoint configuration');
     return;
   }
 
@@ -471,8 +470,7 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab') {
   const pageTitle = 'Test Page - stream-call';
 
   const action = mode === 'fetch' ? 'Validating endpoint' : 'Opening in tab';
-  logger.info('apicall', `${action}: ${candidate.name} → ${testUrl}`);
-  logger.info(`${action}: ${candidate.name}`, { endpoint: candidate });
+  logger.info(`${action}: ${candidate.name} → ${testUrl}`, { endpoint: candidate });
 
   // Direct call (options runs in extension context)
   const response = await callEndpoint({
@@ -519,7 +517,7 @@ function resetBuiltIns() {
 
   const validated = validateEndpoints(JSON.stringify(merged));
   if (!validated.valid) {
-    logger.error('endpoint', 'Failed to validate merged endpoints');
+    logger.error('Failed to validate merged endpoints');
     return;
   }
 
@@ -533,7 +531,7 @@ function resetBuiltIns() {
       );
     })
     .catch((error) => {
-      logger.error('endpoint', 'Failed to reset built-ins', error);
+      logger.error('Failed to reset built-ins', error);
     });
 }
 
@@ -548,13 +546,13 @@ function clearAllEndpoints() {
       logger.info('All endpoints cleared');
     })
     .catch((error) => {
-      logger.error('endpoint', 'Failed to clear endpoints', error);
+      logger.error('Failed to clear endpoints', error);
     });
 }
 
 function exportEndpoints() {
   if (endpoints.length === 0) {
-    logger.warn('endpoint', 'No API endpoints to export');
+    logger.warn('No API endpoints to export');
     return;
   }
 
@@ -584,7 +582,7 @@ function handleFileSelect(e: Event) {
       const validated = validateEndpoints(JSON.stringify(parsed));
 
       if (!validated.valid) {
-        logger.error('endpoint', `Invalid file: ${validated.errorMessage}`);
+        logger.error(`Invalid file: ${validated.errorMessage}`);
         return;
       }
 
@@ -592,7 +590,6 @@ function handleFileSelect(e: Event) {
       showImportModal();
     } catch (error: any) {
       logger.error(
-        'endpoint',
         `Failed to read file: ${error?.message ?? 'Invalid JSON'}`,
       );
     }
@@ -650,7 +647,7 @@ async function fetchFromUrl() {
   }
 
   const fetchUrl = convertGistUrl(url);
-  logger.infoFlash(2000, 'storage', `Fetching from URL...`);
+  logger.infoFlash(2000, `Fetching from URL...`);
 
   try {
     const response = await fetch(fetchUrl);
@@ -727,7 +724,6 @@ function performImport(merge: boolean) {
   const validated = validateEndpoints(JSON.stringify(updated));
   if (!validated.valid) {
     logger.error(
-      'endpoint',
       `Invalid endpoints import: ${validated.errorMessage}`,
     );
     return;
@@ -744,7 +740,7 @@ function performImport(merge: boolean) {
       logger.info(`${validated.parsed.length} endpoint(s) ${action}`);
     })
     .catch((error) => {
-      logger.error('storage', 'Failed to import endpoints', error);
+      logger.error('Failed to import endpoints', error);
     });
 }
 
@@ -851,7 +847,7 @@ function initialize() {
       .set({ enableHoverPanel: els.enableHoverPanel().checked })
       .then(() => {
         const status = els.enableHoverPanel().checked ? 'enabled' : 'disabled';
-        logger.info('storage', `Hover panel ${status}`);
+        logger.info(`Hover panel ${status}`);
       })
       .catch((err) => {
         logger.error('Failed to save hover panel setting:', err);

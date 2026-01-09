@@ -117,7 +117,6 @@ async function loadEndpoints() {
   } catch (error: any) {
     // Parse error is expected if config is corrupted - show to user via logger
     logger.error(
-      'endpoint',
       'Invalid API endpoints configured. Check options.',
       error,
     );
@@ -155,7 +154,7 @@ async function loadStreams() {
     });
   } catch (error) {
     // Message passing error - log and display
-    logger.error('messaging', 'Failed to fetch streams from broker', error);
+    logger.error('Failed to fetch streams from broker', error);
     if (els.loading) els.loading.style.display = 'none';
     return;
   }
@@ -275,7 +274,7 @@ async function handleCallEndpoint(
   }
 
   if (endpoints.length === 0) {
-    logger.warn('endpoint', 'Please configure API endpoints in options first');
+    logger.warn('Please configure API endpoints in options first');
     setTimeout(async () => {
       const optionsUrl = browser.runtime.getURL('dist/options-pane.html');
       await openOrSwitchToTab(optionsUrl);
@@ -335,8 +334,7 @@ async function handleCallEndpoint(
 async function handleCopyUrl(url: string) {
   try {
     await navigator.clipboard.writeText(url);
-    logger.infoFlash(2000, 'clipboard', '📋 URL copied');
-    logger.debug(`Copied: ${url}`);
+    logger.infoFlash(2000, `📋 Copied URL: ${url}`);
   } catch (error) {
     // Clipboard write may fail due to permissions.
     logger.warn('Failed to copy URL', error);
@@ -355,7 +353,7 @@ async function handleRefresh() {
     await loadStreams();
   } catch (error) {
     // Unexpected error in refresh - log and display
-    logger.error('popup', 'Failed to refresh streams', error);
+    logger.error('Failed to refresh streams', error);
     if (els.loading) els.loading.style.display = 'none';
   }
 }
@@ -380,7 +378,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await initialize();
   } catch (error) {
     // Top-level exception handler - log and display to user
-    logger.error('popup', 'Failed to initialize popup', error);
+    logger.error('Failed to initialize popup', error);
     if (els.loading) els.loading.style.display = 'none';
   }
 });

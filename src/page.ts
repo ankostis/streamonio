@@ -46,14 +46,13 @@ import { Logger } from './logger';
     if (detectedStreams.has(url)) return;
 
     detectedStreams.add(url);
-    logger.info('page', 'Detected stream:', url);
+    logger.info('Detected stream:', url);
 
     // Inject hover panel button when first stream is detected
     // (if enabled and not already present)
     if (detectedStreams.size === 1) {
       injectHoverPanel().catch((err) => {
         logger.warn(
-          'page',
           'Failed to inject hover panel after stream detection',
           err,
         );
@@ -75,7 +74,6 @@ import { Logger } from './logger';
       .catch((err) => {
         // Message send can fail during page navigation/unload - this is expected
         logger.warn(
-          'page',
           `Failed to report stream '${url}' to broker worker`,
           err,
         );
@@ -183,7 +181,7 @@ import { Logger } from './logger';
       .filter((fw) => anyWindow[fw.key])
       .map((fw) => fw.name);
     if (detected.length > 0) {
-      logger.debug('page', `Frameworks detected: ${detected.join(', ')}`);
+      logger.debug(`Frameworks detected: ${detected.join(', ')}`);
     }
   }
 
@@ -214,7 +212,6 @@ import { Logger } from './logger';
     const config = await browser.storage.sync.get({ enableHoverPanel: false });
     if (!config.enableHoverPanel) {
       logger.info(
-        'page',
         'Hover panel disabled in settings, skipping injection',
       );
       return;
@@ -238,7 +235,7 @@ import { Logger } from './logger';
     `;
 
     document.body.appendChild(iframe);
-    logger.debug('page', 'Hover panel iframe injected');
+    logger.debug('Hover panel iframe injected');
 
     // Toggle function shared by button and iframe close
     const togglePanel = (forceClose = false) => {
@@ -287,11 +284,11 @@ import { Logger } from './logger';
     toggleBtn.addEventListener('click', () => togglePanel());
 
     document.body.appendChild(toggleBtn);
-    logger.debug('page', 'Toggle button added');
+    logger.debug('Toggle button added');
   }
 
   function initialize() {
-    logger.info('page', 'Page script initialized at', window.location.href);
+    logger.info('Page script initialized at', window.location.href);
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {

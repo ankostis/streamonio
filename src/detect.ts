@@ -8,6 +8,10 @@
  * - Stability: Pattern evolution independent of content-script implementation
  * - Single source of truth: Avoids regex duplication across components
  */
+import { Logger } from './logger';
+
+const logger = new Logger('detect');
+
 export const STREAM_PATTERNS: RegExp[] = [
   /\.(m3u8|m3u|pls|asx|ram|mp3|aac|ogg|opus|flac|wav|m4a|wma)(\?.*)?$/i,
   /\/manifest\.(m3u8|mpd)/i,
@@ -24,12 +28,9 @@ export function isStreamUrl(
     const urlObj = new URL(url, base ?? 'http://localhost');
     const fullUrl = urlObj.href;
     return STREAM_PATTERNS.some((pattern) => pattern.test(fullUrl));
-  } catch (e: any) {
-    console.debug(
-      '[stream-call] URL parse error in isStreamUrl:',
-      url,
-      e.message,
-    );
+  } catch (error) {
+    // URL parse errors are expected for relative URLs without base
+    logger.debug('URL parse failed', { url, base, error });
     return false;
   }
 }
