@@ -53,12 +53,17 @@ if (isNode) {
     },
   };
 } else {
-  // Real browser extension context (Firefox/Chrome)
-  // This module is bundled by esbuild and polyfill is inlined
-  // We MUST use require() for esbuild to bundle it properly
-  // The trick: import is hoisted, but bundler will inline it into the else branch
-  const polyfill = require('webextension-polyfill');
-  browser = polyfill.default || polyfill;
+  // Real browser extension context
+  // Firefox has native browser API, Chrome needs polyfill
+  if (typeof globalThis.browser !== 'undefined' && globalThis.browser.runtime) {
+    // Firefox: use native browser API (no polyfill overhead)
+    browser = globalThis.browser;
+  } else {
+    // Chrome: load polyfill to convert chrome.* to browser.*
+    // We MUST use require() for esbuild to bundle it properly
+    const polyfill = require('webextension-polyfill');
+    browser = polyfill.default || polyfill;
+  }
 }
 
 export default browser;
