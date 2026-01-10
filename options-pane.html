@@ -1023,7 +1023,9 @@
                     ></label
                   >
                   <input type="text" id="endpoint-name" placeholder="example.com POST" />
-                  <div class="help-text help-text-mobile">Must be unique. Auto-suggested from endpoint host.</div>
+                  <div class="help-text help-text-mobile">
+                    Must be unique. Auto-suggested from endpoint host.
+                  </div>
                 </div>
 
                 <div class="form-group">
@@ -1058,7 +1060,10 @@
                     id="endpoint-endpoint"
                     placeholder="https://api.example.com/stream"
                   ></textarea>
-                  <div class="help-text help-text-mobile">Supports placeholders like {{streamUrl|url}}, {{PAGEURL}}, {{pageTitle|json}}, {{timestamp}}.</div>
+                  <div class="help-text help-text-mobile">
+                    Supports placeholders like {{streamUrl|url}}, {{PAGEURL}}, {{pageTitle|json}},
+                    {{timestamp}}.
+                  </div>
                 </div>
 
                 <div class="form-group">
@@ -1070,7 +1075,9 @@
                     ></label
                   >
                   <textarea id="endpoint-body" placeholder='{"url":"{{streamUrl}}"}'></textarea>
-                  <div class="help-text help-text-mobile">Leave empty to send defaults (URL + timestamp, and page info if enabled).</div>
+                  <div class="help-text help-text-mobile">
+                    Leave empty to send defaults (URL + timestamp, and page info if enabled).
+                  </div>
                 </div>
 
                 <!-- Method & Content-Type -->
@@ -1122,7 +1129,10 @@
                       >ℹ</span
                     ></label
                   >
-                  <div class="help-text help-text-mobile">Choose Bearer token OR username/password. Bearer takes precedence if both provided.</div>
+                  <div class="help-text help-text-mobile">
+                    Choose Bearer token OR username/password. Bearer takes precedence if both
+                    provided.
+                  </div>
                   <div style="display: grid; gap: 0.5rem">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem">
                       <div>
@@ -1168,7 +1178,12 @@
                       >ℹ</span
                     >
                   </label>
-                  <div class="help-text help-text-mobile" style="margin-left: 1.5rem; margin-top: 0.25rem;">Send current page cookies with API request (requires cookies permission).</div>
+                  <div
+                    class="help-text help-text-mobile"
+                    style="margin-left: 1.5rem; margin-top: 0.25rem"
+                  >
+                    Send current page cookies with API request (requires cookies permission).
+                  </div>
                   <label>
                     <input type="checkbox" id="endpoint-include-headers" /> Page headers<span
                       class="help-icon"
@@ -1176,7 +1191,13 @@
                       >ℹ</span
                     >
                   </label>
-                  <div class="help-text help-text-mobile" style="margin-left: 1.5rem; margin-top: 0.25rem;">Capture and send HTTP request headers from the page (User-Agent, Accept, Referer, etc).</div>
+                  <div
+                    class="help-text help-text-mobile"
+                    style="margin-left: 1.5rem; margin-top: 0.25rem"
+                  >
+                    Capture and send HTTP request headers from the page (User-Agent, Accept,
+                    Referer, etc).
+                  </div>
                 </div>
 
                 <!-- Custom Headers -->
@@ -1247,18 +1268,21 @@
                 >
               </label>
               <p class="help-text help-text-mobile">
-                Shows a floating panel on the page with detected streams. When enabled, a floating toggle button (🎵) appears on pages with detected streams.
-                Click it to open an in-page overlay with the same functionality as the browser
-                popup. Useful for mobile devices where browser action popup is hard to access.
+                Shows a floating panel on the page with detected streams. When enabled, a floating
+                toggle button (🎵) appears on pages with detected streams. Click it to open an
+                in-page overlay with the same functionality as the browser popup. Useful for mobile
+                devices where browser action popup is hard to access.
               </p>
             </div>
 
             <div class="form-group">
-              <label for="detection-debounce">DOM Change Debounce (ms)<span
+              <label for="detection-debounce"
+                >DOM Change Debounce (ms)<span
                   class="help-icon"
                   title="Wait time after page changes before scanning for streams. Lower values give faster response to new media but use more CPU. Higher values are better for battery life. Use 200-300ms for fast-updating sites (e.g., single-page apps, live feeds). Use 500-1000ms for better battery life on mobile devices."
                   >ℹ</span
-                ></label>
+                ></label
+              >
               <input
                 type="number"
                 id="detection-debounce"
@@ -1268,18 +1292,21 @@
                 placeholder="500"
               />
               <p class="help-text help-text-mobile">
-                Wait time after page changes before scanning for streams. Lower values give faster response to new media but use more CPU. Higher values are better for battery life.
-                Use <strong>200-300ms</strong> for fast-updating sites (e.g., single-page apps, live feeds).
-                Use <strong>500-1000ms</strong> for better battery life on mobile devices.
+                Wait time after page changes before scanning for streams. Lower values give faster
+                response to new media but use more CPU. Higher values are better for battery life.
+                Use <strong>200-300ms</strong> for fast-updating sites (e.g., single-page apps, live
+                feeds). Use <strong>500-1000ms</strong> for better battery life on mobile devices.
               </p>
             </div>
 
             <div class="form-group">
-              <label for="detection-interval">Periodic Scan Interval (ms)<span
+              <label for="detection-interval"
+                >Periodic Scan Interval (ms)<span
                   class="help-icon"
                   title="How often to rescan the entire page for streams. Lower values mean more frequent checks but higher CPU usage. Higher values improve performance. Use 1000-2000ms for sites with dynamically loaded streams (e.g., video platforms). Use 3000-5000ms to reduce CPU usage on static pages."
                   >ℹ</span
-                ></label>
+                ></label
+              >
               <input
                 type="number"
                 id="detection-interval"
@@ -1289,9 +1316,10 @@
                 placeholder="2000"
               />
               <p class="help-text help-text-mobile">
-                How often to rescan the entire page for streams. Lower values mean more frequent checks but higher CPU usage. Higher values improve performance.
-                Use <strong>1000-2000ms</strong> for sites with dynamically loaded streams (e.g., video platforms).
-                Use <strong>3000-5000ms</strong> to reduce CPU usage on static pages.
+                How often to rescan the entire page for streams. Lower values mean more frequent
+                checks but higher CPU usage. Higher values improve performance. Use
+                <strong>1000-2000ms</strong> for sites with dynamically loaded streams (e.g., video
+                platforms). Use <strong>3000-5000ms</strong> to reduce CPU usage on static pages.
               </p>
             </div>
           </div>
@@ -1299,8 +1327,8 @@
           <div class="card">
             <h2 class="card-title">About <em>Streamonio</em></h2>
             <p style="margin-bottom: 0.75rem">
-              A (mobile-)Firefox & Chrome extension to extract streaming media URLs
-              (podcasts, radio stations, live streams) and send them to HTTP API endpoint(s).
+              A (mobile-)Firefox & Chrome extension to extract streaming media URLs (podcasts, radio
+              stations, live streams) and send them to HTTP API endpoint(s).
             </p>
             <p style="margin-bottom: 0.75rem">
               Supported: HLS (.m3u8), DASH (.mpd), HTTP audio, RTMP/RTSP, Icecast/Shoutcast.
@@ -1344,7 +1372,10 @@
               >ℹ</span
             ></label
           >
-          <div class="help-text help-text-mobile">Paste a URL to a JSON file or GitHub gist. For gists, use either the gist URL or the raw JSON URL.</div>
+          <div class="help-text help-text-mobile">
+            Paste a URL to a JSON file or GitHub gist. For gists, use either the gist URL or the raw
+            JSON URL.
+          </div>
           <input
             type="text"
             id="import-url-input"

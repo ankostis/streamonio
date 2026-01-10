@@ -129,10 +129,12 @@ function loadSettings() {
       els.enableHoverPanel().checked =
         (config as Config).enableHoverPanel ?? false;
       els.detectionDebounce().value = String(
-        (config as Config).detectionDebounceMs ?? DEFAULT_CONFIG.detectionDebounceMs,
+        (config as Config).detectionDebounceMs ??
+          DEFAULT_CONFIG.detectionDebounceMs,
       );
       els.detectionInterval().value = String(
-        (config as Config).detectionIntervalMs ?? DEFAULT_CONFIG.detectionIntervalMs,
+        (config as Config).detectionIntervalMs ??
+          DEFAULT_CONFIG.detectionIntervalMs,
       );
       renderList();
       if (endpoints.length === 0) {
@@ -894,7 +896,11 @@ function initialize() {
     browser.storage.sync
       .set({ detectionDebounceMs: value })
       .then(() => {
-        logger.infoFlash(3000, 'storage', `✅ Detection debounce set to ${value}ms`);
+        logger.infoFlash(
+          3000,
+          'storage',
+          `✅ Detection debounce set to ${value}ms`,
+        );
       })
       .catch((err) => {
         logger.error('Failed to save debounce setting:', err);
@@ -910,7 +916,11 @@ function initialize() {
     browser.storage.sync
       .set({ detectionIntervalMs: value })
       .then(() => {
-        logger.infoFlash(3000, 'storage', `✅ Detection interval set to ${value}ms`);
+        logger.infoFlash(
+          3000,
+          'storage',
+          `✅ Detection interval set to ${value}ms`,
+        );
       })
       .catch((err) => {
         logger.error('Failed to save interval setting:', err);

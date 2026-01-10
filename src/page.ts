@@ -169,7 +169,8 @@ import { Logger } from './logger';
     const config = await browser.storage.sync.get({
       detectionDebounceMs: DEFAULT_CONFIG.detectionDebounceMs,
     });
-    const debounceMs = config.detectionDebounceMs ?? DEFAULT_CONFIG.detectionDebounceMs;
+    const debounceMs =
+      config.detectionDebounceMs ?? DEFAULT_CONFIG.detectionDebounceMs;
 
     const debouncedMonitor = debounce(() => {
       monitorMediaElements();
@@ -213,8 +214,12 @@ import { Logger } from './logger';
       detectionDebounceMs: DEFAULT_CONFIG.detectionDebounceMs,
       detectionIntervalMs: DEFAULT_CONFIG.detectionIntervalMs,
     });
-    const intervalMs = config.detectionIntervalMs ?? DEFAULT_CONFIG.detectionIntervalMs;
-    const debounceMs = Math.min(config.detectionDebounceMs ?? DEFAULT_CONFIG.detectionDebounceMs, intervalMs / 2);
+    const intervalMs =
+      config.detectionIntervalMs ?? DEFAULT_CONFIG.detectionIntervalMs;
+    const debounceMs = Math.min(
+      config.detectionDebounceMs ?? DEFAULT_CONFIG.detectionDebounceMs,
+      intervalMs / 2,
+    );
 
     checkStreamingFrameworks();
     interceptNetworkRequests();
