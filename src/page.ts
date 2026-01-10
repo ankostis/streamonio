@@ -248,6 +248,7 @@ import { Logger } from './logger';
     const iframe = document.createElement('iframe');
     iframe.id = 'streamonio-hover-frame';
     iframe.src = browser.runtime.getURL('dist/hover-pane.html');
+    iframe.allow = 'clipboard-write'; // Required for Clipboard API in iframe (Chrome)
     iframe.style.cssText = `
       position: fixed;
       top: 0;
