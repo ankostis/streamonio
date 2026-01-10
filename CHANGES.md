@@ -1,13 +1,33 @@
 ## Changes
 
+## v0.5.0 - (2026-01-09) STREAMONIO: +Chrome, Authed APIs, ShadowDOM streams, call page's url alone
+
+- Renamed _Stream call_ → **Streamonio**
+- FEAT: CHROME support
+- FEAT(endp) Authentication support - username/password (Basic auth) and bearer token, plus content-type field
+- FEAT(ui) Endpoint editor restructured - organized sections for name/desc, URL/body, method/content-type, auth, cookies/headers, custom headers
+- FEAT(page) Detect streams in ShadowDOMs inside IFrames (eg Lifegate)
+- FEAT(ui) Extension/Hover now functional even when no streams detected; it shows '0' badge but endpoint selector remains available (acts like "share" for mobile apps).
+- FIX(ui) Hover panel sizing consistent across pages
+- Feat(detect) Configurable DOM rescan intervals
+- Feat/drop: MRU Endpoint Sorting;  drop enable flag.
+- Feat(ui) disable endpoint Body area on GET, HEAD, DELETE methods.
+- Fix: logger areas don't wrap lines
+- Feat/STYLE(BUILD) Linting, FORMATting, Dedupe(PMD), Dead code elimination
+- Fix(ui) usability fixes on hover-panel
+- feat(ui): github home & Lic & Date in About
+- refact: `logger` accepts category only on its constructor.
+- refact: de-dupe getElementById; fix Stuck Tests
+- Doc: Trim and correct README (not yet prime time).
+
 ## v0.4.1 - (2025-12-24) lost close hover button fix
 
 - Fix(ui) Show/hide hover-pane button no longer moves outside screen panel, it remains fixed in its original position instead.
 
-## v0.4.0 - (2025-12-23) GUI beauty, Hover pane
+## v0.4.0 - (2025-12-23) GUI beauty, Hover pane, open in Tab POST
 
 - FEAT: Hover pane now works (opt-in from preferences).
-- FEAT(apicall) POST/PUT/etc can open new Tab (not just GET).
+- FEAT(apicall) POST/PUT/etc can "Open in Tab" (not just GET) button with dynamic `<form>` submission.
 - Fix(ui) fixes for mobile
 - feat(ui) consistent API-calling buttons in popup vs options; added preview in popup.
 - Feat(endp) add "Description" field.
@@ -32,8 +52,8 @@
 - feat(build) include version in zip fname when packaging the extension.
 - drop(broker) minor messaging dead code
 - chore: my project coordinates in `manifest.json`
-- [ ] TODO/Enh(API): support POST for "Open in Tab" button with dynamic `<form>` submission.
-- [ ] TODO/FEAT: hover panel full implementation (WIP since v0.1.0)
+- [x] TODO/Enh(API): support POST for "Open in Tab" button with dynamic `<form>` submission.
+- [x] TODO/FEAT: hover panel full implementation (WIP since v0.1.0)
 
 ## v0.2.0 - (2025-12-15) FIXED and ENHANCED
 
@@ -66,16 +86,16 @@
 - enh: 2400+ line delta — 24 files changed, 2422 insertions, 900 deletions since
   v0.1.0
 - FIX: `GET` requests fail because they include an (empty) body.
-- FIX: had duplicate endpoint DEFAULTS.
-- Feat: Refactored options UI for mobile-friendly experience:
+lg- FIX: had duplicate endpoint DEFAULTS.
+plb- Feat: Refactored options UI for mobile-friendly experience:
 - Enhanced API validation with real calls and detailed logging
 - Logger architecture hardening (required logger, no console.* calls)
 - Fix(mobile): options button in popup not quite working:
   opens new tab without switching to it, filling up the tab list.  Reuse tab??
 - doc: improve README.
 - [ ] TODO/CHORE: prepare for Mozilla extension site submission.
-- [ ] TODO: transfer popup logs from extension-context -> page's console.
-- [ ] TODO/BUG: popup cannot see responses from fetch-calls.
+- [x] TODO: transfer popup logs from extension-context -> page's console.
+- [x] TODO/BUG: popup cannot see responses from fetch-calls.
 - [ ] TODO/BUG: persist popup logs & logbox-expanded choice in popup panel.
 - [x] TODO: logging message texts, levels & timeout in status bar
 - [ ] TODO: improve icons
