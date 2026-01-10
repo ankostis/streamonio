@@ -854,7 +854,7 @@ function initialize() {
   applyLogFiltering(logViewer, levelCheckboxes);
 
   els.logClear()?.addEventListener('click', () => {
-    logger.clear();
+    logger.clearLogs();
     const viewer = els.logViewer();
     viewer.innerHTML = '<div class="log-empty">No logs yet</div>';
   });
