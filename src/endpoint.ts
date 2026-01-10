@@ -3,6 +3,7 @@
  * Centralized endpoint parsing, validation, normalization, and template interpolation
  */
 
+import browser from './browser-api.js';
 import type { Logger } from './logger';
 
 export type ApiEndpoint = {

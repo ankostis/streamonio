@@ -1,9 +1,10 @@
 # 🎵 *Streamonio*
 
-A (mobile) Firefox extension to extract streaming media URLs (podcasts, radio
-stations, live streams) and send to HTTP API endpoint(s).
+A cross-browser extension (Firefox & Chrome) to extract streaming media URLs
+(podcasts, radio stations, live streams) and send to HTTP API endpoint(s).
 
-**Platform**: Works on desktop Firefox and mobile Firefox Nightly
+**Platform**: Works on desktop browsers (Firefox, Chrome, Chromium) and mobile
+Firefox Nightly.
 
 ## Features
 
@@ -32,12 +33,24 @@ stations, live streams) and send to HTTP API endpoint(s).
   npm run build
   ```
 
+#### Firefox
+
 1. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`
 2. Click "Load Temporary Add-on"
 3. Navigate to the extension folder and select the `manifest.json` file
   (expects built assets in `dist/`)
-1. Generate icons by opening `icons/generate-icons.html` in a browser and
-  downloading them (only needed if you change the icon)
+
+#### Chrome
+
+1. Open Chrome and navigate to `chrome://extensions/`
+2. Enable "Developer mode" (toggle in top-right)
+3. Click "Load unpacked"
+4. Navigate to and select the extension folder (containing `manifest.json`)
+
+#### Icon Generation
+
+Generate icons by opening `icons/generate-icons.html` in a browser and
+downloading them (only needed if you change the icon)
 
 ### For Production
 
@@ -47,7 +60,11 @@ npm run build
 zip -r streamonio.zip manifest.json dist icons -x "icons/generate-icons.html"
 ```
 
-Then submit to [Firefox Add-ons](https://addons.mozilla.org/).
+**Single package works for both browsers!** The same `.zip` can be submitted to:
+- [Firefox Add-ons](https://addons.mozilla.org/)
+- [Chrome Web Store](https://chrome.google.com/webstore/devconsole/)
+
+Chrome ignores the Firefox-specific `browser_specific_settings` section in the manifest.
 
 ### Mobile Installation
 
@@ -57,7 +74,7 @@ See [MOBILE_TESTING.md](MOBILE_TESTING.md)
 
 ### 1. Configure API Endpoints
 
-1. Click the *Streamonio* icon in your Firefox toolbar
+1. Click the *Streamonio* icon in your browser toolbar
 2. Click the "⚙️ Options" button
 3. Define one or more API endpoints as a JSON array
 4. Click "💾 Save Settings"
@@ -206,9 +223,15 @@ npm run dead-code    # Find unused exports
 
 ### Live testing
 
+**Firefox:**
 1. Open `about:debugging#/runtime/this-firefox`
 2. Load the extension
-3. Visit test sites like:
+
+**Chrome:**
+1. Open `chrome://extensions/`
+2. Load the extension
+
+**Test sites:**
    - BBC iPlayer Radio
    - TuneIn Radio
    - Any podcast website

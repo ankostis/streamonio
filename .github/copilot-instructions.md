@@ -3,10 +3,10 @@
 ## Project coordinates
 - **Project name**: *Streamonio*
 - **Blip**: Send page streams to API calls
-- **Short description**: A (mobile) Firefox extension to extract streaming media URLs (podcasts, radio stations, live streams) and send to HTTP API endpoint(s)
+- **Short description**: A cross-browser extension (Firefox & Chrome) to extract streaming media URLs (podcasts, radio stations, live streams) and send to HTTP API endpoint(s)
 
 ## Project essentials
-- Firefox WebExtension; manifest points to built assets in `dist/` (tsc + copy,
+- Cross-browser WebExtension; manifest points to built assets in `dist/` (tsc + copy,
   no bundler). Keep manifest paths in sync with `dist` outputs.
 - TypeScript sources in `src/` (`broker.ts`, `page.ts`, `popup.ts`,
   `options.ts`); `popup.html` and `options.html` are copied to `dist/`.
@@ -95,7 +95,7 @@
 - Prefer `rem` units.
 
 ## Ask when unclear
-- Confirm target browser (Firefox vs Chrome) before changing APIs or types.
+- Extension supports both Firefox and Chrome via webextension-polyfill - no browser-specific code needed.
 - Verify new permissions/host permissions before adding to manifest.
 - If touching shared utilities (`config.ts`, `template.ts`, `detect.ts`), update
   related tests.

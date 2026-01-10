@@ -2,6 +2,7 @@
  * Streamonio Popup Script that calls the API endpoint (extension-context)
  */
 
+import browser from './browser-api.js';
 import {
   displayStreams,
   initLogging,
@@ -123,10 +124,7 @@ async function loadEndpoints() {
     logger.debug(`Loaded ${apiEndpoints.length} API endpoints`);
   } catch (error: any) {
     // Parse error is expected if config is corrupted - show to user via logger
-    logger.error(
-      'Invalid API endpoints configured. Check options.',
-      error,
-    );
+    logger.error('Invalid API endpoints configured. Check options.', error);
     apiEndpoints = [];
   }
   endpointsCached = true;

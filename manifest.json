@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Streamonio",
   "version": "0.4.1",
-  "description": "A (mobile) Firefox extension to extract streaming media URLs (podcasts, radio stations, live streams) and send to HTTP API endpoint(s)",
+  "description": "Browser extension to extract streaming media URLs (podcasts, radio stations, live streams) and send to HTTP API endpoint(s)",
   "author": "Kostis Anagnostopoulos",
   "homepage_url": "https://github.com/ankostis/streamonio",
   "developer": {
@@ -19,7 +19,9 @@
     "<all_urls>"
   ],
   "background": {
-    "scripts": ["dist/broker.js"]
+    "scripts": ["dist/broker.js"],
+    "service_worker": "dist/broker.js",
+    "type": "module"
   },
   "content_scripts": [
     {

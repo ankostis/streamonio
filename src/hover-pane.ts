@@ -4,6 +4,7 @@
  * Uses browser.runtime.sendMessage - broker gets sender.tab.id automatically.
  */
 
+import browser from './browser-api.js';
 import {
   displayStreams,
   initLogging,

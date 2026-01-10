@@ -49,7 +49,6 @@ Uses Puppeteer to control Firefox and validate full API workflow.
 
 **Prerequisites:**
 - Firefox with CDP: `firefox --remote-debugging-port=9222`
-- Or web-ext with custom Firefox binary
 
 **Validates:**
 - Stream detection on real page

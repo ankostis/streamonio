@@ -3,6 +3,7 @@
  * Detects streaming media on web pages
  */
 
+import browser from './browser-api.js';
 import { debounce } from './debounce';
 import { DEFAULT_CONFIG } from './endpoint';
 import {
@@ -53,10 +54,7 @@ import { Logger } from './logger';
     // (if enabled and not already present)
     if (detectedStreams.size === 1) {
       injectHoverPanel().catch((err) => {
-        logger.warn(
-          'Failed to inject hover panel after stream detection',
-          err,
-        );
+        logger.warn('Failed to inject hover panel after stream detection', err);
       });
     }
 
@@ -74,10 +72,7 @@ import { Logger } from './logger';
       })
       .catch((err) => {
         // Message send can fail during page navigation/unload - this is expected
-        logger.warn(
-          `Failed to report stream '${url}' to broker worker`,
-          err,
-        );
+        logger.warn(`Failed to report stream '${url}' to broker worker`, err);
         // In a future enhancement, could track failure count and surface via a UI overlay.
       });
   }
@@ -246,9 +241,7 @@ import { Logger } from './logger';
     // Check if hover panel is enabled in settings
     const config = await browser.storage.sync.get({ enableHoverPanel: false });
     if (!config.enableHoverPanel) {
-      logger.info(
-        'Hover panel disabled in settings, skipping injection',
-      );
+      logger.info('Hover panel disabled in settings, skipping injection');
       return;
     }
 

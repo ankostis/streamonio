@@ -2,6 +2,7 @@
  * Streamonio options Script to define & CRUD endpoints (extension-context)
  */
 
+import browser from './browser-api.js';
 import buildInfo from './build-info.json';
 import { initLogging } from './components-ui';
 import {
@@ -436,9 +437,7 @@ function deleteEndpoint(index: number) {
   const updated = endpoints.filter((_, i) => i !== index);
   const validated = validateEndpoints(JSON.stringify(updated));
   if (!validated.valid) {
-    logger.error(
-      validated.errorMessage || 'Failed to delete API endpoint',
-    );
+    logger.error(validated.errorMessage || 'Failed to delete API endpoint');
     return;
   }
 
@@ -486,7 +485,9 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab') {
   const pageTitle = 'Test Page - Streamonio';
 
   const action = mode === 'fetch' ? 'Validating endpoint' : 'Opening in tab';
-  logger.info(`${action}: ${candidate.name} → ${testUrl}`, { endpoint: candidate });
+  logger.info(`${action}: ${candidate.name} → ${testUrl}`, {
+    endpoint: candidate,
+  });
 
   // Direct call (options runs in extension context)
   const response = await callEndpoint({
@@ -605,9 +606,7 @@ function handleFileSelect(e: Event) {
       pendingImportEndpoints = validated.parsed;
       showImportModal();
     } catch (error: any) {
-      logger.error(
-        `Failed to read file: ${error?.message ?? 'Invalid JSON'}`,
-      );
+      logger.error(`Failed to read file: ${error?.message ?? 'Invalid JSON'}`);
     }
   };
   reader.readAsText(file);
@@ -739,9 +738,7 @@ function performImport(merge: boolean) {
 
   const validated = validateEndpoints(JSON.stringify(updated));
   if (!validated.valid) {
-    logger.error(
-      `Invalid endpoints import: ${validated.errorMessage}`,
-    );
+    logger.error(`Invalid endpoints import: ${validated.errorMessage}`);
     return;
   }
 

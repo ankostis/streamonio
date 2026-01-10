@@ -4,6 +4,7 @@
  * manages detected streams, and triggers API calls
  */
 
+import browser from './browser-api.js';
 import {
   callEndpoint,
   DEFAULT_CONFIG,

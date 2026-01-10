@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "prebuild": "node scripts/gen-build-info.js",
-    "build:ts": "esbuild src/broker.ts src/page.ts src/popup-pane.ts src/options-pane.ts src/hover-pane.ts --bundle --outdir=dist --format=iife --target=firefox115 --platform=browser",
+    "build:ts": "esbuild src/broker.ts src/page.ts src/popup-pane.ts src/options-pane.ts src/hover-pane.ts --bundle --outdir=dist --format=iife --target=es2020 --platform=browser",
     "copy:static": "mkdir -p dist && cp popup-pane.html options-pane.html hover-pane.html dist/",
     "build": "npm run clean && npm run build:ts && npm run copy:static",
     "test": "node --test --import tsx tests/unit/*.test.ts",
@@ -27,6 +27,7 @@
     "@types/firefox-webext-browser": "^143.0.0",
     "@types/jsdom": "^27.0.0",
     "@types/node": "^22.9.0",
+    "@types/webextension-polyfill": "^0.12.4",
     "chai": "^4.3.10",
     "esbuild": "^0.27.1",
     "jscpd": "^4.0.5",
@@ -37,5 +38,8 @@
     "tsx": "^4.7.2",
     "typescript": "^5.4.0",
     "web-ext": "^7.12.0"
+  },
+  "dependencies": {
+    "webextension-polyfill": "^0.12.0"
   }
 }
