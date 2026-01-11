@@ -1,7 +1,6 @@
 # 🎵 *Streamonio*
 
-A cross-browser extension to extract streaming media URLs
-(podcasts, radio stations, live streams) and send to HTTP API endpoint(s).
+A browser-extension to call HTTP endpoints with page's media URLs (podcasts, radios & live streams).
 
 **Platform**: Works on desktop browsers (Firefox, Chrome, Chromium) and
 on *mobile Firefox Nightly*.
