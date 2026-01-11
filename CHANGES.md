@@ -1,5 +1,9 @@
 ## Changes
 
+## v0.5.1 - (2026-01-10)
+
+- REFACT(CSS) DRY between popup & hover panes
+
 ## v0.5.0 - (2026-01-09) STREAMONIO: +Chrome, Authed APIs, ShadowDOM streams, call page's url alone
 
 - Renamed _Stream call_ → **Streamonio**

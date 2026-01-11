@@ -73,7 +73,6 @@ async function initialize() {
     logViewer: document.getElementById('log-viewer') as HTMLDivElement,
   });
   logger = logging.logger;
-  _appendLog = logging.appendLog;
 
   // Cache DOM elements
   els = {
@@ -121,7 +120,7 @@ async function loadEndpoints() {
     apiEndpoints = parseEndpoints(apiEndpointsStr);
     // Sort by MRU (most recently used first)
     apiEndpoints = sortEndpointsByMRU(apiEndpoints);
-    logger.debug(`Loaded ${apiEndpoints.length} API endpoints`);
+    logger.infoFlash(3000, `Loaded ${apiEndpoints.length} API endpoints`);
   } catch (error: any) {
     // Parse error is expected if config is corrupted - show to user via logger
     logger.error('Invalid API endpoints configured. Check options.', error);
