@@ -836,11 +836,16 @@ function wireEvents() {
 function initialize() {
   // Display version from manifest
   const manifest = browser.runtime.getManifest();
-  const versionText = `Version ${manifest.version}`;
+  const devSuffix = buildInfo.isDev ? '-dev' : '';
+  const versionText = `Version ${manifest.version}${devSuffix}`;
   const dateText = buildInfo.commitDate
     ? ` • Released ${new Date(buildInfo.commitDate).toLocaleDateString()}`
     : '';
-  els.aboutVersion().textContent = versionText + dateText;
+  const versionEl = els.aboutVersion();
+  versionEl.textContent = versionText + dateText;
+  if (buildInfo.isDev) {
+    versionEl.style.color = '#ff9800'; // Orange for dev builds
+  }
 
   loadSettings();
   wireEvents();

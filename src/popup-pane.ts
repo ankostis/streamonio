@@ -3,6 +3,7 @@
  */
 
 import browser from './browser-api.js';
+import buildInfo from './build-info.json';
 import {
   displayStreams,
   initLogging,
@@ -63,7 +64,11 @@ async function initialize() {
   const manifest = browser.runtime.getManifest();
   const versionEl = document.getElementById('popup-version');
   if (versionEl) {
-    versionEl.textContent = `v${manifest.version}`;
+    const devSuffix = buildInfo.isDev ? '-dev' : '';
+    versionEl.textContent = `v${manifest.version}${devSuffix}`;
+    if (buildInfo.isDev) {
+      versionEl.style.color = '#ff9800'; // Orange for dev builds
+    }
   }
 
   // Initialize logging infrastructure

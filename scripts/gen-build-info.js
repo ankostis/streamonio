@@ -13,10 +13,22 @@ try {
   const commitDate = execSync('git log -1 --format=%cI', { encoding: 'utf8' }).trim();
   const commitHash = execSync('git log -1 --format=%h', { encoding: 'utf8' }).trim();
 
+  // Check if this is a dev build (no version tag on HEAD, or NODE_ENV=development)
+  let isDev = process.env.NODE_ENV === 'development';
+  if (!isDev) {
+    try {
+      const tagOnHead = execSync('git tag --points-at HEAD', { encoding: 'utf8' }).trim();
+      isDev = !tagOnHead || !tagOnHead.match(/^v?\d+\.\d+\.\d+$/);
+    } catch {
+      isDev = true; // If git tag fails, assume dev
+    }
+  }
+
   const buildInfo = {
     commitDate,
     commitHash,
     buildDate: new Date().toISOString(),
+    isDev,
   };
 
   const outputPath = path.join(__dirname, '../src/build-info.json');
@@ -28,6 +40,9 @@ try {
   // Create fallback build info
   const buildInfo = {
     commitDate: null,
+    commitHash: null,
+    buildDate: new Date().toISOString(),
+    isDev: true, // Assume dev if not in git
     commitHash: null,
     buildDate: new Date().toISOString(),
   };
