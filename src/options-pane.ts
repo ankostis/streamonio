@@ -70,10 +70,13 @@ const els = {
   detectionInterval: () =>
     document.getElementById('detection-interval') as HTMLInputElement,
   aboutVersion: () => document.getElementById('about-version') as HTMLElement,
-  importModal: () => els.importModal() as HTMLDivElement,
-  importPreview: () => els.importPreview() as HTMLDivElement,
-  importUrlModal: () => els.importUrlModal() as HTMLDivElement,
-  importUrlInput: () => els.importUrlInput() as HTMLInputElement,
+  importModal: () => document.getElementById('import-modal') as HTMLDivElement,
+  importPreview: () =>
+    document.getElementById('import-preview') as HTMLDivElement,
+  importUrlModal: () =>
+    document.getElementById('import-url-modal') as HTMLDivElement,
+  importUrlInput: () =>
+    document.getElementById('import-url-input') as HTMLInputElement,
 };
 
 // Initialize logging infrastructure
@@ -246,11 +249,11 @@ function openEditor(index: number | null) {
   fillForm(endpoint);
 
   if (index === null) {
-    els.editorTitle().textContent = 'Add API endpoint';
+    els.editorTitle().textContent = 'Add endpoint';
     els.saveBtn().textContent = '💾 Save';
     els.saveNewBtn().style.display = 'none';
   } else {
-    els.editorTitle().textContent = 'Edit API endpoint';
+    els.editorTitle().textContent = 'Edit endpoint';
     els.saveBtn().textContent = '💾 Save';
     els.saveNewBtn().style.display = 'inline-block';
   }
@@ -261,7 +264,7 @@ function openEditor(index: number | null) {
 function closeEditor() {
   editingIndex = null;
   fillForm(newEndpointDefaults());
-  els.editorTitle().textContent = 'Add API endpoint';
+  els.editorTitle().textContent = 'Add new endpoint';
   els.saveBtn().textContent = '💾 Save';
   els.saveNewBtn().style.display = 'none';
   renderList(); // Clear selected state in UI
@@ -802,12 +805,21 @@ function wireEvents() {
   document
     .getElementById('export-btn')
     ?.addEventListener('click', exportEndpoints);
-  document.getElementById('import-file-btn')?.addEventListener('click', () => {
-    (document.getElementById('import-file-input') as HTMLInputElement).click();
+
+  // Split button import handler
+  document.getElementById('import-btn')?.addEventListener('click', () => {
+    const importType = (
+      document.getElementById('import-type-select') as HTMLSelectElement
+    ).value;
+    if (importType === 'file') {
+      (
+        document.getElementById('import-file-input') as HTMLInputElement
+      ).click();
+    } else {
+      showImportUrlModal();
+    }
   });
-  document
-    .getElementById('import-url-btn')
-    ?.addEventListener('click', showImportUrlModal);
+
   document
     .getElementById('import-url-cancel-btn')
     ?.addEventListener('click', hideImportUrlModal);
