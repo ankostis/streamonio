@@ -5,11 +5,11 @@
 
 import browser from './browser-api.js';
 import { debounce } from './debounce';
-import { DEFAULT_CONFIG } from './endpoint';
 import {
   getStreamType as getStreamTypeShared,
   isStreamUrl as isStreamUrlShared,
 } from './detect';
+import { DEFAULT_CONFIG } from './endpoint';
 import { Logger } from './logger';
 
 // Module content script (no exports needed)

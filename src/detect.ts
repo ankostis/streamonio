@@ -13,8 +13,9 @@ import { Logger } from './logger';
 const logger = new Logger('detect');
 
 export const STREAM_PATTERNS: RegExp[] = [
-  /\.(m3u8|m3u|pls|asx|ram|mp3|aac|ogg|opus|flac|wav|m4a|wma)(\?.*)?$/i,
+  /\.(m3u8|m3u|pls|asx|ram|mp3|aac|ogg|opus|flac|wav|m4a|wma|mpd)(\?.*)?$/i,
   /\/manifest\.(m3u8|mpd)/i,
+  /^blob:/i, // MSE blob URLs (informational only - can't be sent to APIs)
   /^(https?|rtmp|rtsp|mms):\/\/.*(stream|radio|live|cast|audio|podcast)/i,
   /\/(listen|stream|;\?|dyn\/)\/?.*/i,
 ];
