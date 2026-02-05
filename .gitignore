@@ -22,3 +22,4 @@ src/build-info.json
 .idea/
 *.swp
 *.swo
+SUMMARY.md
