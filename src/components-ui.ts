@@ -86,6 +86,14 @@ export function createStreamListItem(
   if (isSelected) item.classList.add('selected');
   item.setAttribute('data-index', index.toString());
 
+  // Mark blob URLs as non-functional
+  const isBlob = stream.url.startsWith('blob:');
+  if (isBlob) {
+    item.style.background = '#e0e0e0';
+    item.style.cursor = 'default';
+    item.title = 'Blob URLs cannot be sent to APIs (memory-only references)';
+  }
+
   const type = document.createElement('span');
   type.className = 'stream-type';
   type.textContent = stream.type;
@@ -93,11 +101,15 @@ export function createStreamListItem(
   const url = document.createElement('div');
   url.className = 'stream-url';
   url.textContent = stream.url;
-  url.title = stream.url;
+  url.title = isBlob ? 'Blob URL - cannot be sent to APIs' : stream.url;
 
   item.appendChild(type);
   item.appendChild(url);
-  item.addEventListener('click', onSelect);
+
+  // Only add click handler for non-blob URLs
+  if (!isBlob) {
+    item.addEventListener('click', onSelect);
+  }
 
   return item;
 }
