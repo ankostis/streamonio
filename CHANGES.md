@@ -1,6 +1,21 @@
 ## Changes
 
-## v0.5.1 - (2026-01-10)
+- [ ] Chromecast
+- [ ] Music Assistant
+
+## v0.6.0 - (2026-02-08) MSE & blob(informational) Support
+
+- FEAT(detect): Intercepts MediaSource Extensions (MSE) usually originating from blob URLs
+ (eg youtube). Hook fetch, XMLHttpRequest, and MediaSource constructor.
+ Blob URLs are grey background, unselectable, with a tooltip explaining limitation.
+- Drop(detect): `interceptNetworkRequests()` that ran in isolated extension context
+  and never intercepted page's fetch/XHR calls from day one, out of missunderstanding
+  of the various contexts involved.
+- FIX(options.ui): Endpoint list was not scrollable.
+- Feat(options.ui): Split-button imports to fit better in mobile.
+- FEAT(version): DEV build indicator in `manifest.json::version_name`.
+
+## v0.5.1 - (2026-01-10) unreleased
 
 - REFACT(CSS) DRY between popup & hover panes
 
