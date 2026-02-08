@@ -142,7 +142,7 @@ import { Logger } from './logger';
    */
   function interceptMediaSource() {
     // Inject script into page's main world (where YouTube's JS runs)
-    const script = document.createElement("script");
+    const script = document.createElement('script');
     script.textContent = `
       (function() {
         console.log('[Streamonio MSE] Intercepting MediaSource in main world');
@@ -202,7 +202,7 @@ import { Logger } from './logger';
     script.remove(); // Clean up after injection
 
     // Listen for events from injected script
-    window.addEventListener("streamonio-stream-url", (event: Event) => {
+    window.addEventListener('streamonio-stream-url', (event: Event) => {
       const customEvent = event as CustomEvent;
       const { url, source } = customEvent.detail;
       logger.info(`stream-url`, `MSE ${source}: ${url}`);
@@ -210,36 +210,9 @@ import { Logger } from './logger';
       reportStream(url);
     });
 
-    window.addEventListener("streamonio-mse-created", () => {
-      logger.debug(`mse`, "MediaSource instance created");
+    window.addEventListener('streamonio-mse-created', () => {
+      logger.debug(`mse`, 'MediaSource instance created');
     });
-  }
-
-  /**
-   * Intercept network requests
-   */
-  function interceptNetworkRequests() {
-    const originalFetch = window.fetch.bind(window);
-    window.fetch = (...args: Parameters<typeof window.fetch>) => {
-      const urlString = getUrlString(args[0]);
-      if (isStreamUrl(urlString)) {
-        reportStream(urlString as string);
-      }
-      return originalFetch(...args);
-    };
-
-    const originalOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function (
-      method: string,
-      url?: string | URL,
-      ...rest: any[]
-    ) {
-      const urlString = typeof url === 'string' ? url : url?.toString();
-      if (isStreamUrl(urlString)) {
-        reportStream(urlString as string);
-      }
-      return originalOpen.call(this, method, url as any, ...rest);
-    };
   }
 
   /**
@@ -303,7 +276,6 @@ import { Logger } from './logger';
 
     checkStreamingFrameworks();
     interceptMediaSource();
-    interceptNetworkRequests();
     monitorMediaElements();
     monitorDOMChanges();
 
