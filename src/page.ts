@@ -136,6 +136,86 @@ import { Logger } from './logger';
   }
 
   /**
+   * Intercept MediaSource Extensions (MSE)
+   * MUST run in page's main world, not content script isolated world.
+   * Injects hooks via <script> tag to access page's MediaSource global.
+   */
+  function interceptMediaSource() {
+    // Inject script into page's main world (where YouTube's JS runs)
+    const script = document.createElement("script");
+    script.textContent = `
+      (function() {
+        console.log('[Streamonio MSE] Intercepting MediaSource in main world');
+
+        // Hook fetch to capture manifest/segment URLs
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+          const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+          if (url && (
+            url.includes('.m3u8') ||
+            url.includes('.mpd') ||
+            url.includes('/manifest') ||
+            url.includes('videoplayback') ||
+            url.includes('segment')
+          )) {
+            console.log('[Streamonio MSE] Fetching stream URL:', url);
+            // Dispatch event to content script
+            window.dispatchEvent(new CustomEvent('streamonio-stream-url', {
+              detail: { url, source: 'fetch' }
+            }));
+          }
+          return originalFetch.apply(this, args);
+        };
+
+        // Hook XMLHttpRequest
+        const originalOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+          if (typeof url === 'string' && (
+            url.includes('.m3u8') ||
+            url.includes('.mpd') ||
+            url.includes('/manifest') ||
+            url.includes('videoplayback') ||
+            url.includes('segment')
+          )) {
+            console.log('[Streamonio MSE] XHR opening stream URL:', url);
+            window.dispatchEvent(new CustomEvent('streamonio-stream-url', {
+              detail: { url, source: 'xhr' }
+            }));
+          }
+          return originalOpen.call(this, method, url, ...rest);
+        };
+
+        // Hook MediaSource creation
+        const OriginalMediaSource = window.MediaSource;
+        window.MediaSource = class extends OriginalMediaSource {
+          constructor() {
+            super();
+            console.log('[Streamonio MSE] MediaSource created');
+            window.dispatchEvent(new CustomEvent('streamonio-mse-created'));
+          }
+        };
+        Object.setPrototypeOf(window.MediaSource, OriginalMediaSource);
+        Object.setPrototypeOf(window.MediaSource.prototype, OriginalMediaSource.prototype);
+      })();
+    `;
+    (document.head || document.documentElement).prepend(script);
+    script.remove(); // Clean up after injection
+
+    // Listen for events from injected script
+    window.addEventListener("streamonio-stream-url", (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { url, source } = customEvent.detail;
+      logger.info(`stream-url`, `MSE ${source}: ${url}`);
+      // Treat it like a detected stream
+      reportStream(url);
+    });
+
+    window.addEventListener("streamonio-mse-created", () => {
+      logger.debug(`mse`, "MediaSource instance created");
+    });
+  }
+
+  /**
    * Intercept network requests
    */
   function interceptNetworkRequests() {
@@ -222,6 +302,7 @@ import { Logger } from './logger';
     );
 
     checkStreamingFrameworks();
+    interceptMediaSource();
     interceptNetworkRequests();
     monitorMediaElements();
     monitorDOMChanges();
