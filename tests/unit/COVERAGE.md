@@ -3,7 +3,7 @@
 ## Yes! Here's the proof:
 
 ### The Bug
-**File:** `src/background.ts` lines 54-62
+**File:** `src/broker.ts` lines 54-62
 
 **Buggy Code:**
 ```typescript
@@ -13,7 +13,7 @@ if (message.type === 'STREAM_DETECTED') {
     return { success: false, error: 'No tab context...' };
     tabStreams.set(tabId, []);  // ❌ WRONG: Inside error block!
   }
-  
+
   const streams = tabStreams.get(tabId)!;  // ❌ Crashes! undefined
   const exists = streams.some(...);        // ❌ Error: can't access "some"
 }
@@ -21,7 +21,7 @@ if (message.type === 'STREAM_DETECTED') {
 
 ### The Test That Would Catch It
 
-**File:** `tests/unit/background.test.ts`
+**File:** `tests/unit/broker.test.ts`
 
 ```typescript
 test('STREAM_DETECTED: initializes stream array on first detection', async () => {
@@ -38,7 +38,7 @@ test('STREAM_DETECTED: initializes stream array on first detection', async () =>
   };
 
   const result = await handleMessage(message, sender);
-  
+
   // ❌ WOULD FAIL WITH BUGGY CODE:
   // TypeError: can't access property "some", streams is undefined
   assert.equal(result.success, true);
@@ -60,12 +60,12 @@ test('STREAM_DETECTED: initializes stream array on first detection', async () =>
 ### Current Test Coverage
 
 **Before (87 tests):**
-- ❌ No background.ts tests
+- ❌ No broker.ts tests
 - ❌ Message handler logic untested
 - ❌ Stream storage untested
 
 **After (96 tests):**
-- ✅ 9 new background.ts tests
+- ✅ 9 new broker.ts tests
 - ✅ Message handler logic covered
 - ✅ Stream initialization tested
 - ✅ Duplicate detection tested
@@ -74,7 +74,7 @@ test('STREAM_DETECTED: initializes stream array on first detection', async () =>
 ### Test Commands
 
 ```bash
-# Run all tests (including new background tests)
+# Run all tests (including new broker tests)
 npm test
 
 # Tests now verify:
@@ -84,7 +84,6 @@ npm test
 ✓ STREAM_DETECTED: handles missing tab context
 ✓ GET_STREAMS: returns streams for tab
 ✓ GET_STREAMS: returns empty array for unknown tab
-✓ CLEAR_STREAMS: removes streams for tab
 ✓ PING: responds with pong
 ✓ STREAM_DETECTED: captures page context
 ```
@@ -102,11 +101,11 @@ This is why comprehensive unit test coverage is important—it catches bugs befo
 ### Test Coverage Gap Closed
 
 The bug existed because:
-1. Background script had no unit tests
+1. Broker script had no unit tests
 2. Message handlers were untested
 3. State initialization logic was untested
 
-Now with `background.test.ts`:
+Now with `broker.test.ts`:
 - ✅ All message handlers tested
 - ✅ State initialization verified
 - ✅ Error cases covered

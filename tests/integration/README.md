@@ -21,7 +21,24 @@ Launches Firefox with local `tests/test-page.html` (static HTML with test stream
 - ✅ Stream detection from static HTML elements
 - ✅ No storage API errors (requires explicit addon ID)
 
-### 2. Real Stream Page (`real-stream.js`)
+### 2. Hover Panel Initialization (`hover-panel.js`)
+```bash
+npm run test:integration:hover
+```
+Launches Firefox with test page to validate hover panel loads without errors.
+
+**Validates:**
+- ✅ Extension installs and injects content script
+- ✅ Hover panel iframe injection when streams detected
+- ✅ No initialization errors (buildInfo import, logger undefined, els undefined)
+- ✅ Logger initializes with console fallback before StatusBar ready
+
+**Prevents regressions:**
+- Missing buildInfo import → ReferenceError
+- Logger race condition → undefined property access
+- els undefined in error handlers → cascading failures
+
+### 3. Real Stream Page (`real-stream.js`)
 ```bash
 npm run test:integration:real
 ```
@@ -39,7 +56,7 @@ Launches Firefox with actual stream page: https://www.ertecho.gr/radio/trito/
 - Typically HLS (.m3u8) streams
 - May detect multiple quality variants
 
-### 3. Full Workflow with httpbin (`httpbin-full.js`)
+### 4. Full Workflow with httpbin (`httpbin-full.js`)
 ```bash
 npm run test:integration:httpbin
 ```
@@ -60,7 +77,7 @@ Uses Puppeteer to control Firefox and validate full API workflow.
 
 **Note:** Currently skipped in CI (requires manual CDP setup).
 
-### 4. Options CRUD Test (`options-crud.js`)
+### 5. Options CRUD Test (`options-crud.js`)
 ```bash
 npm run build
 npm run test:integration:options

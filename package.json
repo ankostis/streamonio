@@ -11,6 +11,7 @@
     "build": "npm run clean && npm run build:ts && npm run copy:static",
     "test": "node --test --import tsx tests/unit/*.test.ts",
     "test:integration": "node tests/integration/run.js",
+    "test:integration:hover": "node tests/integration/hover-panel.js",
     "test:integration:options": "node tests/integration/options-crud.js",
     "test:integration:real": "node tests/integration/real-stream.js",
     "test:integration:httpbin": "node tests/integration/httpbin-full.js --puppeteer",
