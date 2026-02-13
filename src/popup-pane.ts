@@ -55,6 +55,14 @@ async function openOrSwitchToTab(url: string): Promise<void> {
  * Initialize popup
  */
 async function initialize() {
+  // Initialize logging infrastructure FIRST to ensure logger available for all code paths
+  const logging = initLogging('popup', {
+    statusBar: document.getElementById('status-bar') as HTMLDivElement,
+    statusMsg: document.getElementById('status-message') as HTMLSpanElement,
+    logViewer: document.getElementById('log-viewer') as HTMLDivElement,
+  });
+  logger = logging.logger;
+
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   if (tabs.length === 0) return;
 
@@ -70,14 +78,6 @@ async function initialize() {
       versionEl.style.color = '#ff9800'; // Orange for dev builds
     }
   }
-
-  // Initialize logging infrastructure
-  const logging = initLogging('popup', {
-    statusBar: document.getElementById('status-bar') as HTMLDivElement,
-    statusMsg: document.getElementById('status-message') as HTMLSpanElement,
-    logViewer: document.getElementById('log-viewer') as HTMLDivElement,
-  });
-  logger = logging.logger;
 
   // Cache DOM elements
   els = {
@@ -388,6 +388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (error) {
     // Top-level exception handler - log and display to user
     logger.error('Failed to initialize popup', error);
-    if (els.loading) els.loading.style.display = 'none';
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) loadingEl.style.display = 'none';
   }
 });

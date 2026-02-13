@@ -5,6 +5,7 @@
  */
 
 import browser from './browser-api.js';
+import buildInfo from './build-info.json';
 import {
   displayStreams,
   initLogging,
@@ -40,6 +41,14 @@ let els: {
  * Initialize hover panel
  */
 async function initialize() {
+  // Initialize logging infrastructure FIRST to ensure logger available for all code paths
+  const logging = initLogging('hover', {
+    statusBar: document.getElementById('status-bar') as HTMLDivElement,
+    statusMsg: document.getElementById('status-message') as HTMLSpanElement,
+    logViewer: document.getElementById('log-viewer') as HTMLDivElement,
+  });
+  logger = logging.logger;
+
   // Display version
   const manifest = browser.runtime.getManifest();
   const versionEl = document.getElementById('hover-version');
@@ -50,14 +59,6 @@ async function initialize() {
       versionEl.style.color = '#ff9800'; // Orange for dev builds
     }
   }
-
-  // Initialize logging infrastructure
-  const logging = initLogging('hover', {
-    statusBar: document.getElementById('status-bar') as HTMLDivElement,
-    statusMsg: document.getElementById('status-message') as HTMLSpanElement,
-    logViewer: document.getElementById('log-viewer') as HTMLDivElement,
-  });
-  logger = logging.logger;
 
   // Cache DOM elements
   els = {
@@ -352,7 +353,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     await initialize();
   } catch (error) {
     logger.error('Failed to initialize:', error);
-    if (els.loading) els.loading.style.display = 'none';
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) loadingEl.style.display = 'none';
   }
 });
 // Listen for new stream detections from any frame
