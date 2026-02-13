@@ -617,17 +617,22 @@ export async function callEndpoint({
     if (method !== 'GET' && method !== 'HEAD') {
       fetchOptions.body = bodyJson;
     }
-
-    logger.info(`API Request: ${method} ${selectedEndpoint.name}`, {
-      endpoint: selectedEndpoint.name,
-      method,
-      url: finalUrl,
-      headers,
-      body: fetchOptions.body
-        ? fetchOptions.body.substring(0, 200) +
-          (fetchOptions.body.length > 200 ? '...' : '')
-        : '(none - GET/HEAD)',
-    });
+    logger.info(`API Request: ${selectedEndpoint.name}: ${method} ${finalUrl}`);
+    // Log actual HTTP request details in debug.
+    logger.debug(
+      [
+        `=== HTTP Request: ${selectedEndpoint.name} ===`,
+        `${method} ${finalUrl}`,
+        '',
+        'Headers:',
+        JSON.stringify(headers, null, 2),
+        '',
+        'Body:',
+        fetchOptions.body || '(none)',
+        'Placeholders:',
+        requestContext,
+      ].join('\n'),
+    );
 
     const response = await fetch(finalUrl, fetchOptions);
 
