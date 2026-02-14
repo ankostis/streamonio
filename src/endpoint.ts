@@ -620,7 +620,9 @@ export async function callEndpoint({
         {
           status: response.status,
           statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries()),
+          headers: Object.fromEntries(
+            Array.from(response.headers as any as Iterable<[string, string]>),
+          ),
           body:
             errorBody.substring(0, 500) + (errorBody.length > 500 ? '...' : ''),
         },
@@ -634,7 +636,9 @@ export async function callEndpoint({
       {
         status: response.status,
         statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
+        headers: Object.fromEntries(
+          Array.from(response.headers as any as Iterable<[string, string]>),
+        ),
         body: result.substring(0, 500) + (result.length > 500 ? '...' : ''),
       },
     );

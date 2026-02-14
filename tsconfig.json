@@ -4,13 +4,14 @@
     "module": "ES2020",
     "moduleResolution": "node",
     "lib": ["ES2020", "DOM"],
-    "types": ["firefox-webext-browser"],
+    "types": ["firefox-webext-browser", "node"],
     "rootDir": "src",
     "outDir": "dist",
     "strict": false,
     "noEmitOnError": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"]

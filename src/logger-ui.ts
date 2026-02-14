@@ -7,7 +7,7 @@ import type { LogLevel } from './logger';
 // Lightweight UI helpers for rendering StatusBar and Logger output
 
 export function createStatusRenderer(elements: {
-  bar: HTMLDivElement;
+  bar: HTMLElement;
   message: HTMLSpanElement;
 }) {
   return function renderStatus(
@@ -34,7 +34,7 @@ export function createStatusRenderer(elements: {
   };
 }
 
-export function createLogAppender(viewer: HTMLDivElement) {
+export function createLogAppender(viewer: HTMLElement) {
   return function appendLog(
     level: 'error' | 'warn' | 'info' | 'debug',
     category: string,

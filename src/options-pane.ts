@@ -19,6 +19,12 @@ import {
 import { applyLogFiltering } from './logger-ui';
 import type { StreamInfo } from './types';
 
+declare global {
+  interface Window {
+    updateBodyState?: () => void;
+  }
+}
+
 type Config = typeof DEFAULT_CONFIG;
 
 let endpoints: ApiEndpoint[] = [];
