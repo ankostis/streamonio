@@ -87,7 +87,7 @@ export function createStreamListItem(
   item.setAttribute('data-index', index.toString());
 
   // Mark blob URLs as non-functional
-  const isBlob = stream.url.startsWith('blob:');
+  const isBlob = stream.streamUrl.startsWith('blob:');
   if (isBlob) {
     item.style.background = '#e0e0e0';
     item.style.cursor = 'default';
@@ -96,12 +96,12 @@ export function createStreamListItem(
 
   const type = document.createElement('span');
   type.className = 'stream-type';
-  type.textContent = stream.type;
+  type.textContent = stream.streamType;
 
   const url = document.createElement('div');
   url.className = 'stream-url';
-  url.textContent = stream.url;
-  url.title = isBlob ? 'Blob URL - cannot be sent to APIs' : stream.url;
+  url.textContent = stream.streamUrl;
+  url.title = isBlob ? 'Blob URL - cannot be sent to APIs' : stream.streamUrl;
 
   item.appendChild(type);
   item.appendChild(url);
@@ -221,7 +221,7 @@ export function populateStreamPanel(
   const copyBtn = createButton({
     className: 'btn-secondary',
     text: '📋 Copy',
-    onClick: () => handlers.onCopy(stream.url),
+    onClick: () => handlers.onCopy(stream.streamUrl),
   });
 
   const callBtn = createButton({

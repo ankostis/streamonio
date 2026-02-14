@@ -190,11 +190,11 @@ async function loadStreams() {
     });
     if (tabs.length > 0 && tabs[0]) {
       const pageStream: StreamInfo = {
-        url: tabs[0].url || '',
-        type: 'PAGE',
-        pageUrl: tabs[0].url,
-        pageTitle: tabs[0].title,
-        timestamp: Date.now(),
+        streamUrl: tabs[0].url || '',
+        streamType: 'PAGE',
+        pageUrl: tabs[0].url || '',
+        pageTitle: tabs[0].title || '',
+        seekTimeSecs: 0,
       };
       populatePanel(pageStream, 0, [pageStream]);
     }
@@ -251,14 +251,8 @@ function handlePreview(stream: StreamInfo, endpointName?: string) {
 
   const endpoint =
     apiEndpoints.find((ep) => ep.name === endpointName) || apiEndpoints[0];
-  const context = {
-    streamUrl: stream.url,
-    timestamp: Date.now(),
-    pageUrl: stream.pageUrl,
-    pageTitle: stream.pageTitle,
-  } as Record<string, unknown>;
-
-  previewCall(endpoint, context, logger);
+  // Stream already has all fields, just pass it
+  previewCall(endpoint, stream, logger);
 }
 
 /**
@@ -293,14 +287,12 @@ async function handleCallEndpoint(
 
   const action = mode === 'fetch' ? 'API call' : 'Open in tab';
   const endpoint = endpointName || 'default';
-  logger.info(`${action} starting: ${endpoint} → ${stream.type}`);
+  logger.info(`${action} starting: ${endpoint} → ${stream.streamType}`);
 
   // Direct call (popup runs in extension context)
   const response = await callEndpoint({
     mode,
-    streamUrl: stream.url,
-    pageUrl: stream.pageUrl,
-    pageTitle: stream.pageTitle,
+    stream,
     endpointName,
     logger,
   });
@@ -309,7 +301,7 @@ async function handleCallEndpoint(
     const successMsg =
       mode === 'fetch'
         ? `✅ ${endpoint}: ${response.status || 'OK'}`
-        : `✅ Opened in tab: ${response.details || stream.url}`;
+        : `✅ Opened in tab: ${response.details || stream.streamUrl}`;
     logger.info(successMsg);
 
     // Update lastUsedAt for the called endpoint and save to storage

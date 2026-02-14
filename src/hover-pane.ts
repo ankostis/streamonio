@@ -159,11 +159,11 @@ async function loadStreams() {
       if (list) list.innerHTML = '';
       // Create page-only stream object (use window location since no browser.tabs in iframe)
       const pageStream: StreamInfo = {
-        url: window.location.href,
-        type: 'PAGE',
+        streamUrl: window.location.href,
+        streamType: 'PAGE',
         pageUrl: window.location.href,
         pageTitle: document.title,
-        timestamp: Date.now(),
+        seekTimeSecs: 0,
       };
       populatePanel(pageStream, 0, [pageStream]);
       return;
@@ -243,15 +243,8 @@ function handlePreview(stream: StreamInfo, endpointName?: string) {
 
   const endpoint =
     apiEndpoints.find((ep) => ep.name === endpointName) || apiEndpoints[0];
-  const context = {
-    streamUrl: stream.url,
-    timestamp: Date.now(),
-    pageUrl: stream.pageUrl,
-    pageTitle: stream.pageTitle,
-  } as Record<string, unknown>;
-
-  logger.infoFlash(2100, 'Generating preview:');
-  previewCall(endpoint, context, logger);
+  // Stream already has all fields, just pass it
+  previewCall(endpoint, stream, logger);
 }
 
 /**
@@ -270,15 +263,13 @@ async function handleCallEndpoint(
 
   const action = mode === 'fetch' ? 'API call' : 'Open in tab';
   const endpoint = endpointName || 'default';
-  logger.info(`${action} starting: ${endpoint} → ${stream.type}`);
+  logger.info(`${action} starting: ${endpoint} → ${stream.streamType}`);
 
   // Delegate to broker via message
   try {
     const response = await browser.runtime.sendMessage({
       type: mode === 'fetch' ? 'CALL_API' : 'OPEN_IN_TAB',
-      streamUrl: stream.url,
-      pageUrl: stream.pageUrl,
-      pageTitle: stream.pageTitle,
+      stream,
       endpointName,
     } as RuntimeMessage);
 

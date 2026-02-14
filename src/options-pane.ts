@@ -17,6 +17,7 @@ import {
   validateEndpoints,
 } from './endpoint';
 import { applyLogFiltering } from './logger-ui';
+import type { StreamInfo } from './types';
 
 type Config = typeof DEFAULT_CONFIG;
 
@@ -464,12 +465,13 @@ function handlePreview() {
   const candidate = buildEndpointFromForm();
   if (!candidate) return;
 
-  const context = {
+  const context: StreamInfo = {
     streamUrl: 'https://example.com/stream.m3u8',
-    timestamp: new Date().toISOString(),
+    streamType: 'HLS',
     pageUrl: 'https://example.com/page',
     pageTitle: 'Example page',
-  } as Record<string, unknown>;
+    seekTimeSecs: 0, // Seek position (0 = unknown)
+  };
 
   previewCall(candidate, context, logger);
 }
@@ -497,9 +499,13 @@ async function handleCallEndpoint(mode: 'fetch' | 'tab') {
   // Direct call (options runs in extension context)
   const response = await callEndpoint({
     mode,
-    streamUrl: testUrl,
-    pageUrl,
-    pageTitle,
+    stream: {
+      streamUrl: testUrl,
+      streamType: 'HLS',
+      pageUrl: pageUrl || '',
+      pageTitle: pageTitle || '',
+      seekTimeSecs: 0,
+    },
     endpointName: candidate.name,
     apiEndpoints: [candidate],
     logger,

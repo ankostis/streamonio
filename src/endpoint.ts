@@ -5,6 +5,7 @@
 
 import browser from './browser-api.js';
 import type { Logger } from './logger';
+import type { StreamInfo } from './types';
 
 export type ApiEndpoint = {
   name: string;
@@ -55,7 +56,8 @@ export const DEFAULT_CONFIG = {
         contentType: 'application/json',
         username: 'user',
         password: 'pass',
-        bodyTemplate: '{"streamUrl":"{{streamUrl}}","timestamp":{{timestamp}}}',
+        bodyTemplate:
+          '{"streamUrl":"{{streamUrl}}","seekPosition":{{seekTimeSecs}}}',
       },
       {
         name: 'httpbingo Bearer token',
@@ -164,8 +166,8 @@ export function sortEndpointsByMRU(endpoints: ApiEndpoint[]): ApiEndpoint[] {
  */
 export function generatePreview(
   endpoint: ApiEndpoint,
-  context: Record<string, unknown>,
-  applyTemplate: (template: string, context: Record<string, unknown>) => string,
+  context: StreamInfo,
+  applyTemplate: (template: string, context: StreamInfo) => string,
 ): string {
   const url = applyTemplate(endpoint.endpointTemplate, context);
   const body = endpoint.bodyTemplate
@@ -190,7 +192,7 @@ export function generatePreview(
  */
 export function previewCall(
   endpoint: ApiEndpoint,
-  context: Record<string, unknown>,
+  context: StreamInfo,
   logger: { info: (message: string, ...args: unknown[]) => void },
 ): void {
   try {
@@ -284,7 +286,7 @@ export function validateEndpoints(raw: string): {
  */
 export function applyTemplate(
   template: string,
-  context: Record<string, unknown>,
+  context: StreamInfo,
   options: { onMissing?: 'leave' | 'empty' | 'throw' } = { onMissing: 'leave' },
 ): string {
   const onMissing = options.onMissing ?? 'leave';
@@ -319,31 +321,6 @@ export function applyTemplate(
 }
 
 /**
- * Build request context with stream metadata
- */
-function buildContext({
-  streamUrl,
-  pageUrl,
-  pageTitle,
-}: {
-  streamUrl: string;
-  pageUrl?: string;
-  pageTitle?: string;
-}) {
-  return {
-    streamUrl,
-    pageUrl,
-    pageTitle,
-    timestamp: Date.now(),
-  };
-}
-
-/**
- * Open endpoint URL in new tab with stream information
- * Handles template interpolation and opens the final URL in a new browser tab
- * Returns success/error result with detailed error messages
- */
-/**
  * Call API endpoint or open in tab with stream information
  * Handles template interpolation, headers, cookies, and HTTP methods
  *
@@ -353,18 +330,14 @@ function buildContext({
  */
 export async function callEndpoint({
   mode,
-  streamUrl,
-  pageUrl,
-  pageTitle,
+  stream,
   endpointName,
   tabHeaders,
   apiEndpoints,
   logger,
 }: {
   mode: 'fetch' | 'tab';
-  streamUrl: string;
-  pageUrl?: string;
-  pageTitle?: string;
+  stream: StreamInfo;
   endpointName?: string;
   tabHeaders?: Record<string, string>;
   apiEndpoints?: ApiEndpoint[];
@@ -407,20 +380,15 @@ export async function callEndpoint({
       };
     }
 
-    const requestContext = buildContext({ streamUrl, pageUrl, pageTitle });
-
     // Template interpolation
     let bodyJson: string | undefined;
     try {
-      finalUrl = applyTemplate(
-        selectedEndpoint.endpointTemplate,
-        requestContext,
-      );
+      finalUrl = applyTemplate(selectedEndpoint.endpointTemplate, stream);
       // Interpolate body template for both modes (fetch needs it, tab uses it for form fields)
       bodyJson = selectedEndpoint.bodyTemplate
-        ? applyTemplate(selectedEndpoint.bodyTemplate, requestContext)
+        ? applyTemplate(selectedEndpoint.bodyTemplate, stream)
         : mode === 'fetch'
-          ? JSON.stringify(requestContext)
+          ? JSON.stringify(stream)
           : undefined;
     } catch (templateError: any) {
       return {
@@ -583,9 +551,9 @@ export async function callEndpoint({
     }
 
     // Add cookies to headers if flag is enabled
-    if (selectedEndpoint.includeCookies && pageUrl) {
+    if (selectedEndpoint.includeCookies && stream.pageUrl) {
       try {
-        const cookies = await browser.cookies.getAll({ url: pageUrl });
+        const cookies = await browser.cookies.getAll({ url: stream.pageUrl });
         if (cookies.length > 0) {
           const cookieHeader = cookies
             .map((c) => `${c.name}=${c.value}`)
@@ -594,7 +562,7 @@ export async function callEndpoint({
         }
       } catch (cookieError: any) {
         logger.warn(`Failed to get cookies: ${cookieError}`, {
-          pageUrl,
+          pageUrl: stream.pageUrl,
           cookieError,
         });
       }
@@ -629,8 +597,8 @@ export async function callEndpoint({
         '',
         'Body:',
         fetchOptions.body || '(none)',
-        'Placeholders:',
-        requestContext,
+        'Context:',
+        stream,
       ].join('\n'),
     );
 

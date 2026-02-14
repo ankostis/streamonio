@@ -96,14 +96,14 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
 
       const streams = tabStreams.get(tabId)!;
       const streamInfo: StreamInfo = {
-        url: message.url,
-        type: message.streamType,
-        pageUrl: sender.tab?.url,
-        pageTitle: sender.tab?.title,
-        timestamp: Date.now(),
+        streamUrl: message.url,
+        streamType: message.streamType,
+        pageUrl: sender.tab?.url || '',
+        pageTitle: sender.tab?.title || '',
+        seekTimeSecs: 0, // Unknown seek position
       };
 
-      const exists = streams.some((s) => s.url === streamInfo.url);
+      const exists = streams.some((s) => s.streamUrl === streamInfo.streamUrl);
       if (!exists) {
         streams.push(streamInfo);
         // Enforce cap: remove oldest entry if limit exceeded
@@ -111,7 +111,7 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
           streams.shift();
           logger.debug(`Tab ${tabId}: stream cap reached, removed oldest`);
         }
-        logger.info(`Stream detected: ${streamInfo.url} (${streamInfo.type})`);
+        logger.info(`Stream detected: ${streamInfo.streamUrl}`, streamInfo);
         updateBadge(tabId, streams.length);
       }
 
@@ -133,13 +133,11 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
     if (message.type === 'OPEN_IN_TAB') {
       // Message handler for page/hover-panel contexts (popup/options call directly)
       logger.info(
-        `OPEN_IN_TAB: endpoint=${message.endpointName || 'default'}, url=${message.streamUrl}`,
+        `OPEN_IN_TAB: endpoint=${message.endpointName || 'default'}, url=${message.stream.streamUrl}`,
       );
       const response = await callEndpoint({
         mode: 'tab',
-        streamUrl: message.streamUrl,
-        pageUrl: message.pageUrl,
-        pageTitle: message.pageTitle,
+        stream: { ...message.stream, seekTimeSecs: 0 },
         endpointName: message.endpointName,
         logger,
       });
@@ -163,13 +161,11 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
         activeTab?.id !== undefined ? tabHeaders.get(activeTab.id) : undefined;
 
       logger.info(
-        `CALL_API: endpoint=${message.endpointName || 'default'}, url=${message.streamUrl}`,
+        `CALL_API: endpoint=${message.endpointName || 'default'}, url=${message.stream.streamUrl}`,
       );
       const response = await callEndpoint({
         mode: 'fetch',
-        streamUrl: message.streamUrl,
-        pageUrl: message.pageUrl,
-        pageTitle: message.pageTitle,
+        stream: { ...message.stream, seekTimeSecs: 0 },
         endpointName: message.endpointName,
         tabHeaders: pageHeaders,
         logger,

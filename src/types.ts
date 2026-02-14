@@ -4,16 +4,16 @@
  */
 
 /**
- * Stream information detected on pages
- * Used by: broker.ts (storage), popup.ts (UI), hover-panel.ts (UI), tests
- * Note: timestamp is optional in UI contexts, but broker always sets it
+ * Unified stream context for detection, storage, and API calls
+ * All fields required - callers provide empty strings/defaults for missing data
+ * Used by: broker (storage), UI (display), endpoint (templates)
  */
 export type StreamInfo = {
-  url: string;
-  type: string;
-  pageUrl?: string;
-  pageTitle?: string;
-  timestamp?: number;
+  streamUrl: string; // Detected stream URL
+  streamType: string; // Classification (HLS, DASH, MP4, etc)
+  pageUrl: string; // Page URL (empty string if unavailable)
+  pageTitle: string; // Page title (empty string if unavailable)
+  seekTimeSecs: number; // Seek position in stream (seconds), 0 if unknown
 };
 
 /**
@@ -25,16 +25,12 @@ export type RuntimeMessage =
   | { type: 'GET_STREAMS'; tabId?: number } // tabId optional - uses sender.tab.id if omitted
   | {
       type: 'CALL_API';
-      streamUrl: string;
-      pageUrl?: string;
-      pageTitle?: string;
+      stream: Omit<StreamInfo, 'currentTime'>; // currentTime added by broker
       endpointName?: string;
     }
   | {
       type: 'OPEN_IN_TAB';
-      streamUrl: string;
-      pageUrl?: string;
-      pageTitle?: string;
+      stream: Omit<StreamInfo, 'currentTime'>; // currentTime added by broker
       endpointName?: string;
     }
   | { type: 'GET_ENDPOINTS' }
