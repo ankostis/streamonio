@@ -342,32 +342,43 @@ import { Logger } from './logger';
       }
     });
 
-    // Add toggle button - fixed position, always visible
+    // Add toggle button - rhomboid shape pinned to right edge
     const toggleBtn = document.createElement('button');
     toggleBtn.id = 'streamonio-toggle-btn';
     toggleBtn.innerHTML = '🎵';
     toggleBtn.title = 'Toggle Streamonio panel';
     toggleBtn.style.cssText = `
       position: fixed;
-      top: 10px;
-      right: calc(100vw - 98vw);
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
+      top: 72px;
+      right: 0;
+      width: 24px;
+      height: 40px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
-      font-size: 16px;
-      line-height: 32px;
+      border-radius: 8px 0 0 8px;
+      font-size: 14px;
       cursor: pointer;
-      box-shadow: 0 2px 4px rgba(102, 126, 234, 0.4);
+      box-shadow: -2px 2px 8px rgba(102, 126, 234, 0.4);
       z-index: 1000001;
-      transition: box-shadow 0.2s;
+      transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 0;
+      transform: translateY(-50%);
+      clip-path: polygon(0 0, 100% 20%, 100% 80%, 0 100%);
     `;
+
+    toggleBtn.addEventListener('mouseenter', () => {
+      toggleBtn.style.width = '28px';
+      toggleBtn.style.boxShadow = '-4px 4px 12px rgba(102, 126, 234, 0.6)';
+    });
+
+    toggleBtn.addEventListener('mouseleave', () => {
+      toggleBtn.style.width = '24px';
+      toggleBtn.style.boxShadow = '-2px 2px 8px rgba(102, 126, 234, 0.4)';
+    });
 
     toggleBtn.addEventListener('click', () => togglePanel());
 
