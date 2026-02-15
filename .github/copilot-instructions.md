@@ -121,6 +121,8 @@ List epigrammatically the most significant changes since last release.
 
 ## SUMMARY.md - Git Commit Message Draft
 
+**IMPORTANT**: Whenever user asks to "summarize", do it in SUMMARY.md file as commit msg.
+
 Maintain in repo root as working doc for commits:
 - Clear when describing new changes (ask if unsure)
 - Document staged/uncommitted changes (specify which)

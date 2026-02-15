@@ -622,7 +622,7 @@ function handleFileSelect(e: Event) {
 
       pendingImportEndpoints = validated.parsed;
       showImportModal();
-    } catch (error: any) {
+    } catch (error) {
       logger.error(`Failed to read file: ${error?.message ?? 'Invalid JSON'}`);
     }
   };
@@ -703,7 +703,7 @@ async function fetchFromUrl() {
     hideImportUrlModal();
     showImportModal();
     logger.info(`Fetched ${validated.parsed.length} endpoint(s) from URL`);
-  } catch (error: any) {
+  } catch (error) {
     logger.error(
       `Failed to fetch: ${error?.message ?? 'Unknown error'}`,
       error,

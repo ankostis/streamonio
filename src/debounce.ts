@@ -2,7 +2,7 @@
  * Debounce utility: delays function execution until after a delay
  * with no further calls within that interval.
  */
-export function debounce<T extends (...args: any[]) => void>(
+export function debounce<T extends (...args: never[]) => void>(
   fn: T,
   delay: number,
 ): (...args: Parameters<T>) => void {

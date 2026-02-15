@@ -24,7 +24,9 @@ const MAX_STREAMS_PER_TAB = 200;
  */
 async function updateEndpointLastUsed(endpointName: string): Promise<void> {
   try {
-    const stored = await browser.storage.sync.get('apiEndpoints');
+    const stored = (await browser.storage.sync.get('apiEndpoints')) as {
+      apiEndpoints?: string;
+    };
     const endpoints = parseEndpoints(stored.apiEndpoints || '[]');
 
     const endpoint = endpoints.find((ep) => ep.name === endpointName);
@@ -36,7 +38,7 @@ async function updateEndpointLastUsed(endpointName: string): Promise<void> {
       });
       logger.debug(`Updated lastUsedAt for endpoint: ${endpointName}`);
     }
-  } catch (error: unknown) {
+  } catch (error) {
     logger.warn(`Failed to update lastUsedAt for ${endpointName}`, error);
   }
 }
@@ -94,7 +96,10 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
         tabStreams.set(tabId, []);
       }
 
-      const streams = tabStreams.get(tabId)!;
+      const streams = tabStreams.get(tabId);
+      if (!streams) {
+        return { success: false, error: 'No streams storage for tab' };
+      }
       const streamInfo: StreamInfo = {
         streamUrl: message.url,
         streamType: message.streamType,
@@ -197,13 +202,15 @@ browser.runtime.onMessage.addListener((message: RuntimeMessage, sender) => {
 
     if (message.type === 'GET_ENDPOINTS') {
       // Return endpoints from storage for hover-panel (can't access storage directly)
-      const stored = await browser.storage.sync.get('apiEndpoints');
+      const stored = (await browser.storage.sync.get('apiEndpoints')) as {
+        apiEndpoints?: string;
+      };
       const { parseEndpoints } = await import('./endpoint');
       try {
         const endpoints = parseEndpoints(stored.apiEndpoints || '[]');
         logger.debug(`GET_ENDPOINTS: ${endpoints.length} endpoints`);
         return { endpoints };
-      } catch (error: unknown) {
+      } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         logger.error('GET_ENDPOINTS: Failed to parse endpoints', error);
         return { endpoints: [], error: message };

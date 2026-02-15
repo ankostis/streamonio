@@ -198,7 +198,7 @@ export function previewCall(
   try {
     const preview = generatePreview(endpoint, context, applyTemplate);
     logger.info(preview, { endpoint, context });
-  } catch (error: any) {
+  } catch (error) {
     logger.info(
       `Interpolation error: ${error?.message ?? 'Invalid placeholder'}`,
       error,
@@ -229,17 +229,20 @@ export function validateEndpoints(raw: string): {
 
     const names = new Set<string>();
     const cleaned = parsed
-      .map((p: any, index: number) => {
+      .map((p: unknown, index: number) => {
+        const parsed = p as Record<string, unknown>;
         if (
           !p ||
-          typeof p.endpointTemplate !== 'string' ||
-          !p.endpointTemplate.trim()
+          typeof parsed.endpointTemplate !== 'string' ||
+          !parsed.endpointTemplate.trim()
         ) {
           throw new Error(
             `Endpoint ${index + 1} is missing an endpointTemplate.`,
           );
         }
-        const name = p.name || suggestEndpointName(p.endpointTemplate);
+        const name =
+          (parsed.name as string) ||
+          suggestEndpointName(parsed.endpointTemplate);
         if (names.has(name)) {
           throw new Error(
             `Duplicate endpoint name: "${name}" (Endpoint ${index + 1})`,
@@ -248,18 +251,18 @@ export function validateEndpoints(raw: string): {
         names.add(name);
         return {
           name,
-          endpointTemplate: p.endpointTemplate,
-          description: p.description,
-          method: p.method,
-          headers: p.headers,
-          bodyTemplate: p.bodyTemplate,
-          contentType: p.contentType,
-          username: p.username,
-          password: p.password,
-          bearerToken: p.bearerToken,
-          includeCookies: p.includeCookies,
-          includePageHeaders: p.includePageHeaders,
-          lastUsedAt: p.lastUsedAt,
+          endpointTemplate: parsed.endpointTemplate as string,
+          description: (parsed.description as string) || undefined,
+          method: (parsed.method as string) || 'GET',
+          headers: (parsed.headers as Record<string, string>) || undefined,
+          bodyTemplate: (parsed.bodyTemplate as string) || undefined,
+          contentType: (parsed.contentType as string) || undefined,
+          username: (parsed.username as string) || undefined,
+          password: (parsed.password as string) || undefined,
+          bearerToken: (parsed.bearerToken as string) || undefined,
+          includeCookies: (parsed.includeCookies as boolean) || false,
+          includePageHeaders: (parsed.includePageHeaders as boolean) || false,
+          lastUsedAt: (parsed.lastUsedAt as number) || undefined,
         };
       })
       .filter(Boolean);
@@ -269,7 +272,7 @@ export function validateEndpoints(raw: string): {
       parsed: cleaned,
       formatted: JSON.stringify(cleaned, null, 2),
     };
-  } catch (e: any) {
+  } catch (e) {
     return {
       valid: false,
       parsed: [],
@@ -360,6 +363,7 @@ export async function callEndpoint({
       )) as typeof defaults;
       try {
         endpoints = parseEndpoints(config.apiEndpoints);
+        // biome-ignore lint/suspicious/noExplicitAny: Standard error handling pattern
       } catch (parseError: any) {
         return {
           success: false,
@@ -368,8 +372,9 @@ export async function callEndpoint({
       }
     }
 
-    selectedEndpoint = endpointName
-      ? endpoints.find((e) => e.name === endpointName)
+    // Select endpoint
+    const selectedEndpoint = endpointName
+      ? endpoints.find((ep) => ep.name === endpointName)
       : endpoints[0];
 
     if (!selectedEndpoint) {
@@ -380,16 +385,20 @@ export async function callEndpoint({
       };
     }
 
+    // Interpolate placeholders in URL and body templates
+    let finalUrl: string;
+    let body: string | undefined;
+
     // Template interpolation
-    let bodyJson: string | undefined;
     try {
       finalUrl = applyTemplate(selectedEndpoint.endpointTemplate, stream);
       // Interpolate body template for both modes (fetch needs it, tab uses it for form fields)
-      bodyJson = selectedEndpoint.bodyTemplate
+      body = selectedEndpoint.bodyTemplate
         ? applyTemplate(selectedEndpoint.bodyTemplate, stream)
         : mode === 'fetch'
           ? JSON.stringify(stream)
           : undefined;
+      // biome-ignore lint/suspicious/noExplicitAny: Standard error handling
     } catch (templateError: any) {
       return {
         success: false,
@@ -402,6 +411,7 @@ export async function callEndpoint({
       // Validate URL format
       try {
         new URL(finalUrl);
+        // biome-ignore lint/suspicious/noExplicitAny: Standard error handling
       } catch (urlError: any) {
         logger.warn(`Invalid URL after interpolation: ${finalUrl}`, {
           endpoint: selectedEndpoint.name,
@@ -444,9 +454,9 @@ export async function callEndpoint({
                 details: finalUrl,
               };
             }
-          } catch (tabError: any) {
+          } catch (tabError: unknown) {
             logger.warn(
-              `Stored tab ${storedTabId} no longer exists, creating new tab: ${tabError.message}`,
+              `Stored tab ${storedTabId} no longer exists, creating new tab: ${tabError instanceof Error ? tabError.message : String(tabError)}`,
             );
           }
         }
@@ -478,10 +488,9 @@ export async function callEndpoint({
       form.style.display = 'none';
 
       // Parse body template and create hidden inputs
-      if (bodyJson) {
+      if (body) {
         try {
-          const bodyData =
-            typeof bodyJson === 'string' ? JSON.parse(bodyJson) : bodyJson;
+          const bodyData = typeof body === 'string' ? JSON.parse(body) : body;
           if (typeof bodyData === 'object' && bodyData !== null) {
             Object.entries(bodyData).forEach(([key, value]) => {
               const input = document.createElement('input');
@@ -491,6 +500,7 @@ export async function callEndpoint({
               form.appendChild(input);
             });
           }
+          // biome-ignore lint/suspicious/noExplicitAny: Standard error handling
         } catch (parseError: any) {
           logger.warn(
             `Could not parse body as JSON for form submission: ${parseError.message}. Sending as raw field.`,
@@ -498,7 +508,7 @@ export async function callEndpoint({
           const input = document.createElement('input');
           input.type = 'hidden';
           input.name = 'data';
-          input.value = String(bodyJson);
+          input.value = String(body);
           form.appendChild(input);
         }
       }
@@ -560,6 +570,7 @@ export async function callEndpoint({
             .join('; ');
           headers.Cookie = cookieHeader;
         }
+        // biome-ignore lint/suspicious/noExplicitAny: Standard error handling
       } catch (cookieError: any) {
         logger.warn(`Failed to get cookies: ${cookieError}`, {
           pageUrl: stream.pageUrl,
@@ -583,7 +594,7 @@ export async function callEndpoint({
     };
 
     if (method !== 'GET' && method !== 'HEAD') {
-      fetchOptions.body = bodyJson;
+      fetchOptions.body = body;
     }
     logger.info(`API Request: ${selectedEndpoint.name}: ${method} ${finalUrl}`);
     // Log actual HTTP request details in debug.
@@ -621,7 +632,9 @@ export async function callEndpoint({
           status: response.status,
           statusText: response.statusText,
           headers: Object.fromEntries(
-            Array.from(response.headers as any as Iterable<[string, string]>),
+            Array.from(
+              response.headers as unknown as Iterable<[string, string]>,
+            ),
           ),
           body:
             errorBody.substring(0, 500) + (errorBody.length > 500 ? '...' : ''),
@@ -649,6 +662,7 @@ export async function callEndpoint({
       status: response.status,
       response: result,
     };
+    // biome-ignore lint/suspicious/noExplicitAny: Standard error handling
   } catch (error: any) {
     const action = mode === 'tab' ? 'open URL' : 'API call';
     logger.error(`${action} failed: ${error?.message ?? 'Unknown error'}`, {

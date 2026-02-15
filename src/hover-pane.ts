@@ -15,6 +15,7 @@ import {
 import {
   type ApiEndpoint,
   formatResponseBody,
+  parseEndpoints,
   previewCall,
   sortEndpointsByMRU,
 } from './endpoint';
@@ -100,9 +101,11 @@ async function initialize() {
  */
 async function loadEndpoints() {
   try {
-    const response = await browser.runtime.sendMessage({
+    const response = (await browser.runtime.sendMessage({
       type: 'GET_ENDPOINTS',
-    } as RuntimeMessage);
+    } as RuntimeMessage)) as
+      | { endpoints?: ReturnType<typeof parseEndpoints> }
+      | undefined;
     if (response?.endpoints) {
       apiEndpoints = sortEndpointsByMRU(response.endpoints);
       logger.debug(`Loaded ${apiEndpoints.length} endpoints`);
@@ -110,7 +113,7 @@ async function loadEndpoints() {
       logger.warn('No endpoints configured');
       apiEndpoints = [];
     }
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Failed to load endpoints', error);
     apiEndpoints = [];
   }
@@ -132,9 +135,9 @@ async function loadStreams() {
 
   try {
     // Use GET_STREAMS without tabId - broker will use sender.tab.id
-    const response = await browser.runtime.sendMessage({
+    const response = (await browser.runtime.sendMessage({
       type: 'GET_STREAMS',
-    } as RuntimeMessage);
+    } as RuntimeMessage)) as { streams?: StreamInfo[] } | undefined;
 
     if (!response?.streams) {
       showEmptyState();
@@ -178,7 +181,7 @@ async function loadStreams() {
       els.streamCount.textContent = streams.length.toString();
 
     displayStreamsHover(streams);
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Failed to load streams', error);
     showEmptyState('❌ Error loading streams', error.message);
   }
@@ -267,11 +270,18 @@ async function handleCallEndpoint(
 
   // Delegate to broker via message
   try {
-    const response = await browser.runtime.sendMessage({
+    const response = (await browser.runtime.sendMessage({
       type: mode === 'fetch' ? 'CALL_API' : 'OPEN_IN_TAB',
       stream,
       endpointName,
-    } as RuntimeMessage);
+    } as RuntimeMessage)) as
+      | {
+          success: boolean;
+          status?: number;
+          response?: unknown;
+          error?: string;
+        }
+      | undefined;
 
     if (response?.success) {
       const successMsg =
@@ -292,6 +302,7 @@ async function handleCallEndpoint(
       const errorMsg = response?.error ?? 'Unknown error';
       logger.error(`${action} failed: ${endpoint} - ${errorMsg}`, response);
     }
+    // biome-ignore lint/suspicious/noExplicitAny: Standard error handling
   } catch (error: any) {
     logger.error(`Message failed: ${error.message}`, error);
   }

@@ -18,13 +18,6 @@ import { Logger } from './logger';
   const logger = new Logger('page');
   const detectedStreams = new Set<string>();
 
-  const getUrlString = (input: RequestInfo | URL): string | null => {
-    if (typeof input === 'string') return input;
-    if (input instanceof URL) return input.href;
-    if (input instanceof Request) return input.url;
-    return null;
-  };
-
   /**
    * Check if a URL is likely a stream
    */
@@ -66,8 +59,11 @@ import { Logger } from './logger';
       })
       .then(() => {
         // Relay detection status to a test ping if needed
-        if ((window as any).testIntegrationPingHandler) {
-          (window as any).testIntegrationPingHandler({ detected: true });
+        const win = window as Window & {
+          testIntegrationPingHandler?: (msg: { detected: boolean }) => void;
+        };
+        if (win.testIntegrationPingHandler) {
+          win.testIntegrationPingHandler({ detected: true });
         }
       })
       .catch((err) => {
@@ -219,9 +215,9 @@ import { Logger } from './logger';
    * Monitor DOM for new media elements
    */
   async function monitorDOMChanges() {
-    const config = await browser.storage.sync.get({
+    const config = (await browser.storage.sync.get({
       detectionDebounceMs: DEFAULT_CONFIG.detectionDebounceMs,
-    });
+    })) as { detectionDebounceMs?: number };
     const debounceMs =
       config.detectionDebounceMs ?? DEFAULT_CONFIG.detectionDebounceMs;
 
@@ -245,7 +241,7 @@ import { Logger } from './logger';
    * Check common streaming player frameworks
    */
   function checkStreamingFrameworks() {
-    const anyWindow = window as any;
+    const anyWindow = window;
 
     const frameworks = [
       { name: 'HLS.js', key: 'Hls' },
@@ -263,10 +259,13 @@ import { Logger } from './logger';
   }
 
   async function startDetection() {
-    const config = await browser.storage.sync.get({
+    const config = (await browser.storage.sync.get({
       detectionDebounceMs: DEFAULT_CONFIG.detectionDebounceMs,
       detectionIntervalMs: DEFAULT_CONFIG.detectionIntervalMs,
-    });
+    })) as {
+      detectionDebounceMs?: number;
+      detectionIntervalMs?: number;
+    };
     const intervalMs =
       config.detectionIntervalMs ?? DEFAULT_CONFIG.detectionIntervalMs;
     const debounceMs = Math.min(
@@ -297,7 +296,9 @@ import { Logger } from './logger';
     if (document.getElementById('streamonio-toggle-btn')) return;
 
     // Check if hover panel is enabled in settings
-    const config = await browser.storage.sync.get({ enableHoverPanel: false });
+    const config = (await browser.storage.sync.get({
+      enableHoverPanel: false,
+    })) as { enableHoverPanel?: boolean };
     if (!config.enableHoverPanel) {
       logger.info('Hover panel disabled in settings, skipping injection');
       return;

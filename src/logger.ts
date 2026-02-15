@@ -224,7 +224,7 @@ export class Logger {
     });
 
     // Console passthrough
-    const consoleMethods: Record<LogLevel, (...args: any[]) => void> = {
+    const consoleMethods: Record<LogLevel, (...args) => void> = {
       [LogLevel.Error]: console.error,
       [LogLevel.Warn]: console.warn,
       [LogLevel.Info]: console.info,

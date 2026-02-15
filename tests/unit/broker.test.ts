@@ -170,7 +170,7 @@ test('STREAM_DETECTED: handles missing tab context', async () => {
   const result = await handleMessage(message, sender);
 
   assert.equal(result.success, false, 'Should return failure');
-  assert.match(result.error!, /No tab context/);
+  assert.match(result.error ?? '', /No tab context/);
 });
 
 test('GET_STREAMS: returns streams for tab', async () => {

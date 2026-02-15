@@ -189,7 +189,7 @@ test('parseEndpoints: preserves optional fields', () => {
 test('validateEndpoints: rejects non-array JSON', () => {
   const result = validateEndpoints('{"key": "value"}');
   assert(!result.valid);
-  assert.match(result.errorMessage!, /must be a JSON array/);
+  assert.match(result.errorMessage ?? '', /must be a JSON array/);
 });
 
 test('validateEndpoints: rejects endpoint with missing endpointTemplate', () => {
@@ -201,7 +201,7 @@ test('validateEndpoints: rejects endpoint with missing endpointTemplate', () => 
 
   const result = validateEndpoints(raw);
   assert(!result.valid);
-  assert.match(result.errorMessage!, /missing an endpointTemplate/);
+  assert.match(result.errorMessage ?? '', /missing an endpointTemplate/);
 });
 
 test('validateEndpoints: rejects duplicate names', () => {
@@ -218,7 +218,7 @@ test('validateEndpoints: rejects duplicate names', () => {
 
   const result = validateEndpoints(raw);
   assert(!result.valid);
-  assert.match(result.errorMessage!, /Duplicate endpoint name/);
+  assert.match(result.errorMessage ?? '', /Duplicate endpoint name/);
 });
 
 test('validateEndpoints: auto-suggests name when missing and enforces uniqueness', () => {

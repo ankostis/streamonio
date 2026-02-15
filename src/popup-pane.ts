@@ -118,7 +118,9 @@ async function loadEndpoints() {
 
   // Use empty object as defaults - browser.storage.sync.get returns stored values or empty object
   // On first run (no stored config), storage is empty, so we get no defaults
-  const stored = await browser.storage.sync.get('apiEndpoints');
+  const stored = (await browser.storage.sync.get('apiEndpoints')) as {
+    apiEndpoints?: string;
+  };
   const apiEndpointsStr = stored.apiEndpoints || '[]';
 
   try {
@@ -126,7 +128,7 @@ async function loadEndpoints() {
     // Sort by MRU (most recently used first)
     apiEndpoints = sortEndpointsByMRU(apiEndpoints);
     logger.infoFlash(3000, `Loaded ${apiEndpoints.length} API endpoints`);
-  } catch (error: any) {
+  } catch (error) {
     // Parse error is expected if config is corrupted - show to user via logger
     logger.error('Invalid API endpoints configured. Check options.', error);
     apiEndpoints = [];
@@ -155,7 +157,7 @@ async function loadStreams() {
     return;
   }
 
-  let response;
+  let response: { streams?: StreamInfo[] } | void;
   try {
     response = await browser.runtime.sendMessage({
       type: 'GET_STREAMS',
@@ -168,7 +170,10 @@ async function loadStreams() {
     return;
   }
 
-  const streams = (response?.streams as StreamInfo[] | undefined) || [];
+  const streams =
+    (response && 'streams' in response
+      ? (response.streams as StreamInfo[])
+      : []) || [];
   logger.debug(`Loaded ${streams.length} streams for tab ${currentTabId}`);
 
   if (els.loading) els.loading.style.display = 'none';
@@ -263,10 +268,13 @@ async function handleCallEndpoint(
   stream: StreamInfo,
   endpointName?: string,
 ) {
-  const config = await browser.storage.sync.get(['apiEndpoints']);
+  const config = (await browser.storage.sync.get(['apiEndpoints'])) as {
+    apiEndpoints?: string;
+  };
   let endpoints: ReturnType<typeof parseEndpoints>;
   try {
     endpoints = parseEndpoints(config.apiEndpoints || '[]');
+    // biome-ignore lint/suspicious/noExplicitAny: Standard error handling
   } catch (parseError: any) {
     logger.error(
       'endpoint',
