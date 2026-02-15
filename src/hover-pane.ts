@@ -16,6 +16,7 @@ import {
   type ApiEndpoint,
   applyTemplate,
   formatResponseBody,
+  loadUserVars,
   parseEndpoints,
   previewCall,
   sortEndpointsByMRU,
@@ -321,7 +322,8 @@ async function handleCopyBtn(stream: StreamInfo, endpointName?: string) {
       return;
     }
 
-    const finalUrl = applyTemplate(endpoint.endpointTemplate, stream);
+    const userVars = await loadUserVars();
+    const finalUrl = applyTemplate(endpoint.endpointTemplate, stream, userVars);
     await navigator.clipboard.writeText(finalUrl);
     logger.infoFlash(2000, `📋 Copied: ${finalUrl}`);
   } catch (error) {

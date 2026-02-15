@@ -32,20 +32,33 @@ export const DEFAULT_CONFIG = {
   enableHoverPanel: false,
   detectionDebounceMs: 1000,
   detectionIntervalMs: 3000,
+  userVars: JSON.stringify(
+    {
+      WiiM: '192.168.1.100',
+    },
+    null,
+    2,
+  ),
   apiEndpoints: JSON.stringify(
     [
-      {
-        name: 'httpbingo',
-        description: 'Simple GET request to just test the call ',
-        endpointTemplate: 'https://httpbingo.org/anything',
-        method: 'GET',
-      },
       {
         name: 'WiiM play',
         description:
           'WiiM streamers support a GET API call that can play arbitrary streams, see PDF: https://www.wiimhome.com/pdf/HTTP%20API%20for%20WiiM%20Mini.pdf',
         endpointTemplate:
-          'https://your.wiim.hostOrIP/httpapi.asp?command=setPlayerCmd:play:{{streamUrl}}',
+          'https://{{WiiM}}/httpapi.asp?command=setPlayerCmd:play:{{streamUrl}}',
+        method: 'GET',
+      },
+      {
+        name: 'WiiM status',
+        description: 'Get WiiM device status',
+        endpointTemplate: 'https://{{WiiM}}/httpapi.asp?command=getStatusEx',
+        method: 'GET',
+      },
+      {
+        name: 'httpbingo',
+        description: 'Simple GET request to just test the call ',
+        endpointTemplate: 'https://httpbingo.org/anything',
         method: 'GET',
       },
       {
@@ -183,6 +196,101 @@ async function loadEndpoints(
 }
 
 /**
+ * Load user-defined variables from storage
+ * Returns empty object if not found or parse fails
+ */
+export async function loadUserVars(): Promise<Record<string, string>> {
+  const defaults = { userVars: '{}' } as const;
+  const config = (await browser.storage.sync.get(defaults)) as typeof defaults;
+  try {
+    const parsed = JSON.parse(config.userVars);
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Save user-defined variables to storage
+ */
+export async function saveUserVars(
+  vars: Record<string, string>,
+): Promise<void> {
+  await browser.storage.sync.set({ userVars: JSON.stringify(vars, null, 2) });
+}
+
+/**
+ * Validate user variable key format
+ * Keys must be alphanumeric + underscore only
+ */
+export function validateUserVarKey(key: string): {
+  valid: boolean;
+  error?: string;
+} {
+  if (!key || key.trim().length === 0) {
+    return { valid: false, error: 'Key cannot be empty' };
+  }
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) {
+    return {
+      valid: false,
+      error:
+        'Key must start with letter/underscore, contain only alphanumeric and underscore',
+    };
+  }
+  return { valid: true };
+}
+
+/**
+ * Detect conflicts between user variables and built-in placeholders
+ * Returns array of conflicts (empty if none)
+ */
+export function detectUserVarConflicts(
+  userVars: Record<string, string>,
+): Array<{ key: string; conflict: string }> {
+  const builtInPlaceholders = [
+    'streamUrl',
+    'streamType',
+    'pageUrl',
+    'pageTitle',
+    'seekTimeSecs',
+  ];
+  const conflicts: Array<{ key: string; conflict: string }> = [];
+
+  for (const key of Object.keys(userVars)) {
+    const lowerKey = key.toLowerCase();
+    const builtIn = builtInPlaceholders.find(
+      (p) => p.toLowerCase() === lowerKey,
+    );
+    if (builtIn) {
+      conflicts.push({ key, conflict: builtIn });
+    }
+  }
+
+  return conflicts;
+}
+
+/**
+ * Generate unique name by appending counter (-2, -3, etc.)
+ * Reused for both endpoints and user variables
+ */
+export function generateUniqueName(
+  baseName: string,
+  existingNames: string[],
+  separator = '-',
+): string {
+  const existingSet = new Set(existingNames);
+  let uniqueName = baseName;
+  let counter = 2;
+
+  while (existingSet.has(uniqueName)) {
+    uniqueName = `${baseName}${separator}${counter}`;
+    counter++;
+  }
+
+  return uniqueName;
+}
+
+/**
  * Preview an API endpoint call and log the formatted request details.
  * Unified function used by popup and options panels.
  */
@@ -193,7 +301,10 @@ export async function previewCall(
   logger: { info: (message: string, ...args: unknown[]) => void },
 ): Promise<void> {
   try {
-    const endpoints = await loadEndpoints(apiEndpoints);
+    const [endpoints, userVars] = await Promise.all([
+      loadEndpoints(apiEndpoints),
+      loadUserVars(),
+    ]);
     const endpoint = endpointName
       ? endpoints.find((ep) => ep.name === endpointName)
       : endpoints[0];
@@ -205,9 +316,9 @@ export async function previewCall(
       return;
     }
 
-    const finalUrl = applyTemplate(endpoint.endpointTemplate, stream);
+    const finalUrl = applyTemplate(endpoint.endpointTemplate, stream, userVars);
     const body = endpoint.bodyTemplate
-      ? applyTemplate(endpoint.bodyTemplate, stream)
+      ? applyTemplate(endpoint.bodyTemplate, stream, userVars)
       : JSON.stringify(stream, null, 2);
 
     const preview = [
@@ -308,19 +419,27 @@ export function validateEndpoints(raw: string): {
  * Apply template with placeholder interpolation
  * Supports {{placeholder}}, {{placeholder|url}}, {{placeholder|json}}
  * Case-insensitive placeholder matching
+ * Merges optional userVars with context (userVars have lower priority)
  */
 export function applyTemplate(
   template: string,
   context: StreamInfo,
+  userVars?: Record<string, string>,
   options: { onMissing?: 'leave' | 'empty' | 'throw' } = { onMissing: 'leave' },
 ): string {
   const onMissing = options.onMissing ?? 'leave';
   const placeholderRe = /\{\{(\w+)(?:\|(url|json))?\}\}/gi;
 
-  // Case-insensitive matching
+  // Merge userVars and context with case-insensitive keys (context overrides userVars)
+  const normalizedUserVars = userVars
+    ? Object.fromEntries(
+        Object.entries(userVars).map(([k, v]) => [k.toLowerCase(), v]),
+      )
+    : {};
   const normalizedContext = Object.fromEntries(
     Object.entries(context).map(([k, v]) => [k.toLowerCase(), v]),
   );
+  const merged = { ...normalizedUserVars, ...normalizedContext };
 
   const encodeJsonString = (val: unknown) => JSON.stringify(String(val));
   const applyFilter = (val: unknown, filter?: 'url' | 'json') => {
@@ -332,7 +451,7 @@ export function applyTemplate(
   return template.replace(
     placeholderRe,
     (_m, key: string, filter?: 'url' | 'json') => {
-      const value = normalizedContext[key.toLowerCase()];
+      const value = merged[key.toLowerCase()];
       const hasValue = value !== undefined && value !== null;
       if (!hasValue) {
         if (onMissing === 'empty') return '';
@@ -369,8 +488,11 @@ export async function callEndpoint({
   logger: Logger;
 }) {
   try {
-    // Load and select endpoint
-    const endpoints = await loadEndpoints(apiEndpoints);
+    // Load endpoints and user variables
+    const [endpoints, userVars] = await Promise.all([
+      loadEndpoints(apiEndpoints),
+      loadUserVars(),
+    ]);
     const selectedEndpoint = endpointName
       ? endpoints.find((ep) => ep.name === endpointName)
       : endpoints[0];
@@ -384,9 +506,13 @@ export async function callEndpoint({
     }
 
     // Interpolate templates
-    const finalUrl = applyTemplate(selectedEndpoint.endpointTemplate, stream);
+    const finalUrl = applyTemplate(
+      selectedEndpoint.endpointTemplate,
+      stream,
+      userVars,
+    );
     const body = selectedEndpoint.bodyTemplate
-      ? applyTemplate(selectedEndpoint.bodyTemplate, stream)
+      ? applyTemplate(selectedEndpoint.bodyTemplate, stream, userVars)
       : mode === 'fetch'
         ? JSON.stringify(stream)
         : undefined;

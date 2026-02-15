@@ -11,11 +11,16 @@ import {
   callEndpoint,
   DEFAULT_CONFIG,
   formatResponseBody,
+  generateUniqueName,
   getBuiltInEndpoints,
+  loadUserVars,
   previewCall,
+  saveUserVars,
   sortEndpointsByMRU,
   suggestEndpointName,
   validateEndpoints,
+  validateUserVarKey,
+  detectUserVarConflicts,
 } from './endpoint';
 import { applyLogFiltering } from './logger-ui';
 import type { StreamInfo } from './types';
@@ -236,7 +241,7 @@ function renderList() {
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'btn-icon btn-danger';
-    deleteBtn.textContent = '🗑️';
+    deleteBtn.textContent = '✖';
     deleteBtn.title = 'Delete';
     deleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -406,16 +411,10 @@ function saveAsNew() {
   const candidate = buildEndpointFromForm();
   if (!candidate) return;
 
-  // Generate unique name by appending counter
+  // Generate unique name using helper
   const baseName = candidate.name || 'endpoint';
-  let newName = baseName;
-  let counter = 2;
-  const existingNames = new Set(endpoints.map((e) => e.name));
-
-  while (existingNames.has(newName)) {
-    newName = `${baseName}-${counter}`;
-    counter++;
-  }
+  const existingNames = endpoints.map((e) => e.name);
+  const newName = generateUniqueName(baseName, existingNames);
 
   candidate.name = newName;
   const updated = [...endpoints, candidate];
@@ -503,12 +502,254 @@ async function handleCopyBtn() {
       seekTimeSecs: 0,
     };
 
-    const finalUrl = applyTemplate(candidate.endpointTemplate, testStream);
+    const userVars = await loadUserVars();
+    const finalUrl = applyTemplate(
+      candidate.endpointTemplate,
+      testStream,
+      userVars,
+    );
     await navigator.clipboard.writeText(finalUrl);
     logger.infoFlash(2000, `📋 Copied: ${finalUrl}`);
   } catch (error) {
     logger.warn('Failed to copy URL', error);
   }
+}
+
+/**
+ * Render user variables list
+ */
+async function renderUserVarsList() {
+  const list = document.getElementById('user-vars-list');
+  if (!list) return;
+
+  const userVars = await loadUserVars();
+  const conflicts = detectUserVarConflicts(userVars);
+  list.innerHTML = '';
+
+  for (const [key, value] of Object.entries(userVars)) {
+    const item = document.createElement('div');
+    item.className = 'var-item';
+    item.dataset.originalKey = key;
+    item.dataset.originalValue = value;
+
+    const conflict = conflicts.find((c) => c.key === key);
+    const validation = validateUserVarKey(key);
+
+    // Status icon (conflict or invalid)
+    const statusIcon = document.createElement('span');
+    statusIcon.className = 'var-status-icon';
+    if (!validation.valid) {
+      item.classList.add('has-invalid');
+      statusIcon.textContent = '❗'; // Red exclamation
+      statusIcon.title = `Invalid key: ${validation.error}`;
+    } else if (conflict) {
+      item.classList.add('has-conflict');
+      statusIcon.textContent = '⚠️'; // Warning triangle
+      statusIcon.title = `Conflicts with built-in placeholder: ${conflict.conflict}`;
+    }
+    item.appendChild(statusIcon);
+
+    // Key input
+    const keyInput = document.createElement('input');
+    keyInput.type = 'text';
+    keyInput.className = 'var-key-input';
+    keyInput.value = key;
+    keyInput.addEventListener('input', () => {
+      updateVarValidation(item);
+      markVarDirty(item);
+    });
+    keyInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSaveUserVar(item);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        handleCancelUserVar(item);
+      }
+    });
+    item.appendChild(keyInput);
+
+    // Value input
+    const valueInput = document.createElement('input');
+    valueInput.type = 'text';
+    valueInput.className = 'var-value-input';
+    valueInput.value = value;
+    valueInput.addEventListener('input', () => markVarDirty(item));
+    valueInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSaveUserVar(item);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        handleCancelUserVar(item);
+      }
+    });
+    item.appendChild(valueInput);
+
+    // Save button (green check)
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'var-save-btn';
+    saveBtn.textContent = '✓'; // Check mark
+    saveBtn.title = 'Save changes (Enter)';
+    saveBtn.addEventListener('click', () => handleSaveUserVar(item));
+    item.appendChild(saveBtn);
+
+    // Cancel button (red X)
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'var-cancel-btn';
+    cancelBtn.textContent = '✗'; // X mark
+    cancelBtn.title = 'Cancel changes (Esc)';
+    cancelBtn.addEventListener('click', () => handleCancelUserVar(item));
+    item.appendChild(cancelBtn);
+
+    // Clone button
+    const cloneBtn = document.createElement('button');
+    cloneBtn.className = 'var-clone-btn';
+    cloneBtn.textContent = '➕';
+    cloneBtn.title = 'Clone variable';
+    cloneBtn.addEventListener('click', () => {
+      const currentKey = keyInput.value.trim();
+      const currentValue = valueInput.value;
+      handleCloneUserVar(item, currentKey, currentValue);
+    });
+    item.appendChild(cloneBtn);
+
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'var-delete-btn';
+    deleteBtn.textContent = '✖';
+    deleteBtn.title = 'Delete variable';
+    deleteBtn.addEventListener('click', () => handleDeleteUserVar(key));
+    item.appendChild(deleteBtn);
+
+    list.appendChild(item);
+  }
+}
+
+function updateVarValidation(item: HTMLElement) {
+  const keyInput = item.querySelector('.var-key-input') as HTMLInputElement;
+  const statusIcon = item.querySelector('.var-status-icon') as HTMLElement;
+  const key = keyInput.value.trim();
+
+  // Remove previous status classes
+  item.classList.remove('has-invalid', 'has-conflict');
+  statusIcon.style.visibility = 'hidden';
+
+  // Check validation (cheap check)
+  const validation = validateUserVarKey(key);
+  if (!validation.valid) {
+    item.classList.add('has-invalid');
+    statusIcon.textContent = '❗'; // Red exclamation
+    statusIcon.title = `Invalid key: ${validation.error}`;
+    statusIcon.style.visibility = 'visible';
+    return;
+  }
+
+  // Check conflicts (also cheap - just array lookup)
+  const userVars: Record<string, string> = {};
+  userVars[key] = '';
+  const conflicts = detectUserVarConflicts(userVars);
+  if (conflicts.length > 0) {
+    item.classList.add('has-conflict');
+    statusIcon.textContent = '⚠️'; // Warning triangle
+    statusIcon.title = `Conflicts with built-in placeholder: ${conflicts[0].conflict}`;
+    statusIcon.style.visibility = 'visible';
+  }
+}
+
+function markVarDirty(item: HTMLElement) {
+  item.classList.add('dirty');
+}
+
+async function handleAddUserVar() {
+  const userVars = await loadUserVars();
+  const baseName = 'newVar';
+  const existingKeys = Object.keys(userVars);
+  const newKey = generateUniqueName(baseName, existingKeys, '_');
+
+  userVars[newKey] = '';
+  await saveUserVars(userVars);
+  await renderUserVarsList();
+  logger.info(`Variable added: ${newKey}`);
+}
+
+async function handleCloneUserVar(
+  item: HTMLElement,
+  key: string,
+  value: string,
+) {
+  // If item is dirty, reset it first then clone
+  if (item.classList.contains('dirty')) {
+    handleCancelUserVar(item);
+  }
+
+  const userVars = await loadUserVars();
+  const existingKeys = Object.keys(userVars);
+  const newKey = generateUniqueName(key, existingKeys, '_');
+
+  userVars[newKey] = value;
+  await saveUserVars(userVars);
+  await renderUserVarsList();
+  logger.info(`Variable cloned: ${key} → ${newKey}`);
+}
+
+async function handleDeleteUserVar(key: string) {
+  if (!confirm(`Delete variable "${key}"?`)) return;
+
+  const userVars = await loadUserVars();
+  delete userVars[key];
+  await saveUserVars(userVars);
+  await renderUserVarsList();
+  logger.info(`Variable deleted: ${key}`);
+}
+
+async function handleSaveUserVar(item: HTMLElement) {
+  const originalKey = item.dataset.originalKey;
+  if (!originalKey) return;
+
+  const keyInput = item.querySelector('.var-key-input') as HTMLInputElement;
+  const valueInput = item.querySelector('.var-value-input') as HTMLInputElement;
+  const newKey = keyInput.value.trim();
+  const newValue = valueInput.value;
+
+  // Validate key
+  const validation = validateUserVarKey(newKey);
+  if (!validation.valid) {
+    logger.error(`Invalid variable key: ${validation.error}`);
+    return;
+  }
+
+  const userVars = await loadUserVars();
+
+  // Check if key changed and new key already exists
+  if (newKey !== originalKey && userVars[newKey] !== undefined) {
+    logger.error(`Variable "${newKey}" already exists`);
+    return;
+  }
+
+  // Remove old key if renamed
+  if (newKey !== originalKey) {
+    delete userVars[originalKey];
+  }
+
+  userVars[newKey] = newValue;
+  await saveUserVars(userVars);
+  await renderUserVarsList();
+  logger.info(`Variable saved: ${newKey}`);
+}
+
+function handleCancelUserVar(item: HTMLElement) {
+  const originalKey = item.dataset.originalKey;
+  const originalValue = item.dataset.originalValue;
+
+  if (!originalKey) return;
+
+  const keyInput = item.querySelector('.var-key-input') as HTMLInputElement;
+  const valueInput = item.querySelector('.var-value-input') as HTMLInputElement;
+
+  keyInput.value = originalKey;
+  valueInput.value = originalValue || '';
+  item.classList.remove('dirty');
 }
 
 /**
@@ -803,7 +1044,7 @@ function performImport(merge: boolean) {
     });
 }
 
-function wireEvents() {
+async function wireEvents() {
   // Disable body field for methods that don't support request body
   const methodSelect = els.method();
   const bodyField = els.body();
@@ -848,6 +1089,12 @@ function wireEvents() {
     .getElementById('export-btn')
     ?.addEventListener('click', exportEndpoints);
 
+  // User variables
+  document
+    .getElementById('add-var-btn')
+    ?.addEventListener('click', handleAddUserVar);
+  await renderUserVarsList();
+
   // Split button import handler
   document.getElementById('import-btn')?.addEventListener('click', () => {
     const importType = (
@@ -887,7 +1134,7 @@ function wireEvents() {
   });
 }
 
-function initialize() {
+async function initialize() {
   // Display version from manifest
   const manifest = browser.runtime.getManifest();
   const devSuffix = buildInfo.isDev ? '-dev' : '';
@@ -902,7 +1149,7 @@ function initialize() {
   }
 
   loadSettings();
-  wireEvents();
+  await wireEvents();
   setHeadersRows();
 
   // Wire log viewer controls using reusable helpers

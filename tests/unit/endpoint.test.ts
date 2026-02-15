@@ -267,12 +267,14 @@ test('applyTemplate: leaves missing placeholders by default', () => {
 
 test('applyTemplate: throws on missing when configured', () => {
   const tpl = 'URL={{streamUrl}}';
-  assert.throws(() => applyTemplate(tpl, {}, { onMissing: 'throw' }));
+  assert.throws(() =>
+    applyTemplate(tpl, {}, undefined, { onMissing: 'throw' }),
+  );
 });
 
 test('applyTemplate: empties missing when configured', () => {
   const tpl = 'URL={{streamUrl}}';
-  const out = applyTemplate(tpl, {}, { onMissing: 'empty' });
+  const out = applyTemplate(tpl, {}, undefined, { onMissing: 'empty' });
   assert.strictEqual(out, 'URL=');
 });
 

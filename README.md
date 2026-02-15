@@ -10,7 +10,8 @@ on *mobile Firefox Nightly*.
 - 🔍 **Page Stream Detection** - Detects HLS, DASH, MP3, AAC, OGG, RTMP,
   RTSP, Icecast, Shoutcast
   from the current page, internal iframes & shadowDOMs.
-- 📡 **Configurable Endpoints** - Define multiple API endpoints with template placeholders, export & import bluprints from files or sites
+- 📡 **Configurable Endpoints** - Define multiple API endpoints with template placeholders, export & import blueprints from files or sites
+- 🎛️ **User Variables** - Define custom placeholders (e.g., `{{WiiM}}` for server IPs) reusable across all endpoints
 - 🌐 **Two API call Modes** - "Open in Tab" (GET via navigation or POST/PUT/DELETE via form submission - bypasses CORS), "Call API" (`fetch` HTTP request with full control: custom headers, body templates, programmatic response handling)
 - 🔔 **Badge Notifications** - Shows number of detected streams on the
   extension icon (including '0' when no streams).
@@ -86,6 +87,19 @@ Placeholders are *case-insensitive* and support 2 jinja-like filters eg. `{{stre
 
 - `url` - URL-encoded stream URL
 - `json` - JSON-encoded value
+
+#### User Variables
+
+Define custom placeholders like `{{WiiM}}` for reusable values (server IPs, API keys, etc):
+
+1. In *Options*, scroll to "User Variables" card
+2. Click "➕ Add" to create a variable
+3. Enter key (alphanumeric + underscore, must start with letter/underscore) and value
+4. Use in endpoint templates: `https://{{WiiM}}/api/stream?url={{streamUrl|url}}`
+5. Filters work with user variables: `{{myVar|url}}`, `{{myVar|json}}`
+
+User variables are merged with built-in placeholders (built-ins have priority).
+Conflict warnings (⚠️) appear if variable names clash with built-ins.
 
 
 ### 2. Detect Streams & call API endpoint
