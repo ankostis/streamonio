@@ -52,6 +52,7 @@ After code/HTML/CSS changes:
 
 2. Test, lint, check dupes (`npm test`, `npm run lint`, `npm run dupes`)
 3. Update docs (if really needed) and the prepare (or update) SUMMARY.md for commit.
+4. **Revert failed experiments** - if an AI code change didn't work, remove it immediately; don't leave unused code around
 
 ### Testing
 - Scripts in `package.json`; manual via httpbin.org/anything + `DEFAULT_CONFIG` tweaks
