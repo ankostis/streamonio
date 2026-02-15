@@ -155,7 +155,7 @@ export function displayStreams(
  */
 export type StreamActionHandlers = {
   onPreview: (stream: StreamInfo, endpointName?: string) => void;
-  onCopy: (url: string) => void;
+  onCopy: (stream: StreamInfo, endpointName?: string) => void;
   onCall: (
     mode: 'fetch' | 'tab',
     stream: StreamInfo,
@@ -221,7 +221,7 @@ export function populateStreamPanel(
   const copyBtn = createButton({
     className: 'btn-secondary',
     text: '📋 Copy',
-    onClick: () => handlers.onCopy(stream.streamUrl),
+    onClick: () => handlers.onCopy(stream, endpointName),
   });
 
   const callBtn = createButton({

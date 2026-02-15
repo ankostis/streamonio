@@ -14,6 +14,7 @@ import {
 } from './components-ui';
 import {
   type ApiEndpoint,
+  applyTemplate,
   formatResponseBody,
   parseEndpoints,
   previewCall,
@@ -206,7 +207,7 @@ function populatePanel(
 ) {
   const handlers: StreamActionHandlers = {
     onPreview: (stream, endpointName) => handlePreview(stream, endpointName),
-    onCopy: (url) => handleCopyUrl(url),
+    onCopy: (stream, endpointName) => handleCopyBtn(stream, endpointName),
     onCall: (mode, stream, endpointName) =>
       handleCallEndpoint(mode, stream, endpointName),
   };
@@ -307,12 +308,22 @@ async function handleCallEndpoint(
 }
 
 /**
- * Handle copy URL
+ * Handle copy URL - copies final interpolated endpoint URL
  */
-async function handleCopyUrl(url: string) {
+async function handleCopyBtn(stream: StreamInfo, endpointName?: string) {
   try {
-    await navigator.clipboard.writeText(url);
-    logger.infoFlash(2000, `📋 Copied URL: ${url}`);
+    const endpoint = endpointName
+      ? apiEndpoints.find((ep) => ep.name === endpointName)
+      : apiEndpoints[0];
+
+    if (!endpoint) {
+      logger.warn('No endpoint available for copy');
+      return;
+    }
+
+    const finalUrl = applyTemplate(endpoint.endpointTemplate, stream);
+    await navigator.clipboard.writeText(finalUrl);
+    logger.infoFlash(2000, `📋 Copied: ${finalUrl}`);
   } catch (error) {
     logger.warn('Failed to copy URL', error);
   }
