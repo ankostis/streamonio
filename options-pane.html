@@ -1200,9 +1200,25 @@
           grid-template-columns: 1fr;
         }
 
-        /* Mobile order: editor, vars, settings, about, log */
+        /* Mobile order: endpoints, editor, vars, settings, about, log */
+        .column > .card:nth-child(1) {
+          order: 0; /* API Endpoints */
+        }
+
+        #editor-card {
+          order: 1;
+        }
+
         #user-vars-card {
           order: 2;
+        }
+
+        .column > .card:nth-child(2) {
+          order: 3; /* Settings */
+        }
+
+        .column > .card:nth-child(3) {
+          order: 4; /* About */
         }
 
         #log-card {
