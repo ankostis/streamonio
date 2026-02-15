@@ -552,7 +552,6 @@
         height: 17.5rem; /* Fixed height for ~5 endpoints */
         overflow-y: auto;
         flex-shrink: 0;
-        padding-bottom: 0.5rem; /* Extra space at bottom for last item visibility */
       }
 
       .endpoint-item {
@@ -568,6 +567,7 @@
 
       .endpoint-item:last-child {
         border-bottom: none;
+        margin-bottom: 2rem; /* Space after last item for full visibility */
       }
 
       .endpoint-item:first-child {
@@ -900,6 +900,11 @@
           height: 12.25rem; /* Fixed height for ~3.5 endpoints */
           overflow-y: auto;
           flex-shrink: 0;
+        }
+
+        /* Reduce bottom margin on mobile for tighter spacing */
+        .endpoint-item:last-child {
+          margin-bottom: 0.5rem;
         }
 
         /* Limit log viewer height on mobile for autoscroll to work */
