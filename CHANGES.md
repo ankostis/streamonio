@@ -2,6 +2,22 @@
 
 - [ ] Chromecast
 - [ ] Music Assistant
+- [ ] Snapcast
+
+## v0.6.1 - (2026-14-08) Fix Hover, `+{{seekTimeSecs}}` `-{{timestamp}}`, unify StreamInfo+RequestContext, lint checks
+
+- FIX(hover): was stuck on loading spinner.
+  - feat(test.hover) +integration TC to capture init errors.
+- Feat(endp): add `{{seekTimeSecs}}` interpolation, drop useless `{{timestamp}}`.
+- feat(endp) Log call & better preview
+- feat(ui): refresh button reloads also endpoints.
+- feat(ui): copy button now copies final interpolated URL.
+- Feat(options.ui): rework edit-endpoint section.
+- fix(ui): preview button yellow
+- REFACT: unify STREAMINFO & eliminate RequestContext>
+- Refact(Endp): unify API call & preview code paths >
+- Refact(LINT): relax type checks, fix most lint errors & warns, also on test-code.
+- Feat(build): compiler checks TypeScript Types.
 
 ## v0.6.0 - (2026-02-08) MSE & blob(informational) Support
 
