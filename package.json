@@ -7,7 +7,7 @@
     "clean": "rm -rf dist",
     "prebuild": "node scripts/gen-build-info.js",
     "build:ts": "esbuild src/broker.ts src/page.ts src/popup-pane.ts src/options-pane.ts src/hover-pane.ts --bundle --outdir=dist --format=iife --target=es2020 --platform=browser",
-    "copy:static": "mkdir -p dist && cp popup-pane.html options-pane.html hover-pane.html src/shared-pane.css dist/",
+    "copy:static": "mkdir -p dist && cp popup-pane.html options-pane.html hover-pane.html src/shared-pane.css src/theme.css dist/",
     "build": "npm run clean && tsc --noEmit && npm run build:ts && npm run copy:static",
     "test": "node --test --import tsx tests/unit/*.test.ts",
     "test:integration": "node tests/integration/run.js",

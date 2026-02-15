@@ -24,6 +24,7 @@ import {
 } from './endpoint';
 import { applyLogFiltering } from './logger-ui';
 import type { StreamInfo } from './types';
+import { ICONS } from './ui-constants';
 
 declare global {
   interface Window {
@@ -117,7 +118,7 @@ function addHeaderRow(key = '', value = '') {
   const removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'btn-secondary btn-danger';
-  removeBtn.textContent = '✖';
+  removeBtn.textContent = ICONS.DELETE;
   removeBtn.addEventListener('click', () => row.remove());
 
   row.appendChild(keyInput);
@@ -225,9 +226,9 @@ function renderList() {
       ? Object.keys(endpoint.headers).length
       : 0;
     const flags = [];
-    if (endpoint.includeCookies) flags.push('🍪');
-    if (endpoint.includePageHeaders) flags.push('📋');
-    if (endpoint.bodyTemplate) flags.push('📄');
+    if (endpoint.includeCookies) flags.push(ICONS.COOKIE);
+    if (endpoint.includePageHeaders) flags.push(ICONS.CLIPBOARD);
+    if (endpoint.bodyTemplate) flags.push(ICONS.DOCUMENT);
     const flagsStr = flags.length ? ` ${flags.join(' ')}` : '';
     summary.textContent = `${method} → ${endpoint.endpointTemplate}${headersCount > 0 ? ` [${headersCount} headers]` : ''}${flagsStr}`;
     summary.title = `${method} ${endpoint.endpointTemplate}`;
@@ -241,7 +242,7 @@ function renderList() {
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'btn-icon btn-danger';
-    deleteBtn.textContent = '✖';
+    deleteBtn.textContent = ICONS.DELETE;
     deleteBtn.title = 'Delete';
     deleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -263,11 +264,11 @@ function openEditor(index: number | null) {
 
   if (index === null) {
     els.editorTitle().textContent = 'Add endpoint';
-    els.saveBtn().textContent = '💾 Save';
+    els.saveBtn().textContent = `${ICONS.SAVE} Save`;
     els.saveNewBtn().style.display = 'none';
   } else {
     els.editorTitle().textContent = 'Edit endpoint';
-    els.saveBtn().textContent = '💾 Save';
+    els.saveBtn().textContent = `${ICONS.SAVE} Save`;
     els.saveNewBtn().style.display = 'inline-block';
   }
 
@@ -278,7 +279,7 @@ function closeEditor() {
   editingIndex = null;
   fillForm(newEndpointDefaults());
   els.editorTitle().textContent = 'Add new endpoint';
-  els.saveBtn().textContent = '💾 Save';
+  els.saveBtn().textContent = `${ICONS.SAVE} Save`;
   els.saveNewBtn().style.display = 'none';
   renderList(); // Clear selected state in UI
 }
@@ -509,7 +510,7 @@ async function handleCopyBtn() {
       userVars,
     );
     await navigator.clipboard.writeText(finalUrl);
-    logger.infoFlash(2000, `📋 Copied: ${finalUrl}`);
+    logger.infoFlash(2000, `${ICONS.COPY} Copied: ${finalUrl}`);
   } catch (error) {
     logger.warn('Failed to copy URL', error);
   }
@@ -540,11 +541,11 @@ async function renderUserVarsList() {
     statusIcon.className = 'var-status-icon';
     if (!validation.valid) {
       item.classList.add('has-invalid');
-      statusIcon.textContent = '❗'; // Red exclamation
+      statusIcon.textContent = ICONS.ERROR;
       statusIcon.title = `Invalid key: ${validation.error}`;
     } else if (conflict) {
       item.classList.add('has-conflict');
-      statusIcon.textContent = '⚠️'; // Warning triangle
+      statusIcon.textContent = ICONS.WARNING;
       statusIcon.title = `Conflicts with built-in placeholder: ${conflict.conflict}`;
     }
     item.appendChild(statusIcon);
@@ -589,7 +590,7 @@ async function renderUserVarsList() {
     // Save button (green check)
     const saveBtn = document.createElement('button');
     saveBtn.className = 'var-save-btn';
-    saveBtn.textContent = '✓'; // Check mark
+    saveBtn.textContent = ICONS.SUCCESS;
     saveBtn.title = 'Save changes (Enter)';
     saveBtn.addEventListener('click', () => handleSaveUserVar(item));
     item.appendChild(saveBtn);
@@ -597,7 +598,7 @@ async function renderUserVarsList() {
     // Cancel button (red X)
     const cancelBtn = document.createElement('button');
     cancelBtn.className = 'var-cancel-btn';
-    cancelBtn.textContent = '✗'; // X mark
+    cancelBtn.textContent = ICONS.CANCEL;
     cancelBtn.title = 'Cancel changes (Esc)';
     cancelBtn.addEventListener('click', () => handleCancelUserVar(item));
     item.appendChild(cancelBtn);
@@ -605,7 +606,7 @@ async function renderUserVarsList() {
     // Clone button
     const cloneBtn = document.createElement('button');
     cloneBtn.className = 'var-clone-btn';
-    cloneBtn.textContent = '➕';
+    cloneBtn.textContent = ICONS.CLONE;
     cloneBtn.title = 'Clone variable';
     cloneBtn.addEventListener('click', () => {
       const currentKey = keyInput.value.trim();
@@ -617,7 +618,7 @@ async function renderUserVarsList() {
     // Delete button
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'var-delete-btn';
-    deleteBtn.textContent = '✖';
+    deleteBtn.textContent = ICONS.DELETE;
     deleteBtn.title = 'Delete variable';
     deleteBtn.addEventListener('click', () => handleDeleteUserVar(key));
     item.appendChild(deleteBtn);
@@ -651,7 +652,7 @@ function updateVarValidation(item: HTMLElement) {
   const conflicts = detectUserVarConflicts(userVars);
   if (conflicts.length > 0) {
     item.classList.add('has-conflict');
-    statusIcon.textContent = '⚠️'; // Warning triangle
+    statusIcon.textContent = ICONS.WARNING;
     statusIcon.title = `Conflicts with built-in placeholder: ${conflicts[0].conflict}`;
     statusIcon.style.visibility = 'visible';
   }
@@ -1196,7 +1197,7 @@ async function initialize() {
   els.detectionDebounce().addEventListener('change', () => {
     const value = Number.parseInt(els.detectionDebounce().value, 10);
     if (Number.isNaN(value) || value < 100 || value > 5000) {
-      logger.warn('storage', '⚠️ Debounce must be 100-5000ms');
+      logger.warn('storage', `${ICONS.WARNING} Debounce must be 100-5000ms`);
       return;
     }
     browser.storage.sync
@@ -1216,7 +1217,7 @@ async function initialize() {
   els.detectionInterval().addEventListener('change', () => {
     const value = Number.parseInt(els.detectionInterval().value, 10);
     if (Number.isNaN(value) || value < 500 || value > 10000) {
-      logger.warn('storage', '⚠️ Interval must be 500-10000ms');
+      logger.warn('storage', `${ICONS.WARNING} Interval must be 500-10000ms`);
       return;
     }
     browser.storage.sync

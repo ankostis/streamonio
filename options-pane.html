@@ -87,7 +87,7 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        overflow: visible;
         min-height: 0;
       }
 
@@ -113,6 +113,11 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 0.75rem;
+        overflow: visible;
+      }
+
+      .form-group {
+        overflow: visible;
       }
 
       .card-actions {
@@ -348,20 +353,6 @@
         transform: scale(0.98);
       }
 
-      .btn-test {
-        background: #ffc107;
-        color: #000;
-      }
-
-      .btn-test:hover {
-        background: #e0a800;
-      }
-
-      .btn-test:active {
-        background: #c69500;
-        transform: scale(0.98);
-      }
-
       .btn-action {
         background: #4caf50;
         color: white;
@@ -431,11 +422,23 @@
         font-size: 11px;
         font-weight: bold;
         margin-left: 0.375rem;
-        cursor: help;
+        cursor: pointer;
         vertical-align: middle;
         position: relative;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+
+      /* Increase touch target size without breaking circle appearance */
+      .help-icon::before {
+        content: '';
+        position: absolute;
+        top: -0.625rem;
+        left: -0.625rem;
+        right: -0.625rem;
+        bottom: -0.625rem;
+        z-index: -1;
       }
 
       .help-icon:hover,
@@ -447,10 +450,10 @@
 
       /* Tooltip bubble - appears on tap/click for mobile */
       .help-icon::after {
-        content: attr(title);
+        content: attr(data-tooltip);
         position: absolute;
         left: 50%;
-        bottom: calc(100% + 8px);
+        bottom: calc(100% + 12px);
         transform: translateX(-50%);
         background: rgba(0, 0, 0, 0.9);
         color: white;
@@ -464,55 +467,24 @@
         line-height: 1.4;
         opacity: 0;
         pointer-events: none;
-        z-index: 1000;
+        z-index: 10000;
         transition: opacity 0.2s ease;
       }
 
-      .help-icon::before {
-        content: "";
-        position: absolute;
-        left: 50%;
-        bottom: calc(100% + 2px);
-        transform: translateX(-50%);
-        border: 0.375rem solid transparent;
-        border-top-color: rgba(0, 0, 0, 0.9);
-        opacity: 0;
-        pointer-events: none;
-        z-index: 1000;
-        transition: opacity 0.2s ease;
-      }
-
-      .help-icon.show-tooltip::after,
-      .help-icon.show-tooltip::before {
+      .help-icon.show-tooltip::after {
         opacity: 1;
       }
 
       /* Desktop hover */
       @media (hover: hover) and (pointer: fine) {
-        .help-icon:hover::after,
-        .help-icon:hover::before {
+        .help-icon:hover::after {
           opacity: 1;
         }
       }
 
-      /* Mobile: hide help-icon tooltips, show help-text instead */
-      @media (max-width: 768px) or (hover: none) {
-        .help-icon {
-          display: none;
-        }
-        .help-text-mobile {
-          display: block;
-        }
-      }
-
-      /* Desktop: show help-icon, hide mobile help-text */
-      @media (min-width: 769px) and (hover: hover) {
-        .help-icon {
-          display: inline-block;
-        }
-        .help-text-mobile {
-          display: none;
-        }
+      /* Always show help-icon on all devices */
+      .help-icon {
+        display: inline-block;
       }
 
       .template-help {
@@ -823,6 +795,14 @@
         transition: border-color 0.2s;
       }
 
+      /* Join buttons together */
+      .var-item > button:nth-last-child(4),
+      .var-item > button:nth-last-child(3),
+      .var-item > button:nth-last-child(2),
+      .var-item > button:nth-last-child(1) {
+        margin-left: 0;
+      }
+
       .var-item.dirty {
         background: #e7ecff;
         border-color: #667eea;
@@ -858,6 +838,10 @@
         font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
       }
 
+      .var-key-input {
+        min-width: 8rem;
+      }
+
       .var-key-input:focus,
       .var-value-input:focus {
         outline: none;
@@ -872,7 +856,7 @@
       .var-cancel-btn,
       .var-clone-btn,
       .var-delete-btn {
-        padding: 0.25rem 0.5rem;
+        padding: 0.375rem;
         background: none;
         border: none;
         border-radius: 0.25rem;
@@ -880,6 +864,8 @@
         cursor: pointer;
         white-space: nowrap;
         transition: all 0.2s;
+        min-width: 2rem;
+        aspect-ratio: 1;
       }
 
       .var-save-btn {
@@ -1105,6 +1091,12 @@
           max-height: none;
         }
 
+        /* Mobile: shrink user-var fonts */
+        .var-key-input,
+        .var-value-input {
+          font-size: 0.75rem;
+        }
+
         /* Keep endpoint list scrollable on mobile */
         #endpoints-list.endpoints-list {
           height: 12.25rem; /* Fixed height for ~3.5 endpoints */
@@ -1177,7 +1169,7 @@
 
         .card {
           padding: 1rem;
-          overflow-x: hidden;
+          overflow: visible;
         }
 
         .card-header {
@@ -1196,6 +1188,11 @@
         .card-actions button {
           width: 100%;
           min-width: 0;
+        }
+
+        /* User-vars: single button takes full width */
+        #user-vars-card .card-actions {
+          grid-template-columns: 1fr;
         }
 
         /* Mobile: single column layout with specific order */
@@ -1409,14 +1406,11 @@
                   <label for="endpoint-name"
                     >Endpoint name *<span
                       class="help-icon"
-                      title="Must be unique. Auto-suggested from endpoint host."
+                      data-tooltip="Must be unique. Auto-suggested from endpoint host."
                       >ℹ</span
                     ></label
                   >
                   <input type="text" id="endpoint-name" placeholder="example.com POST" />
-                  <div class="help-text help-text-mobile">
-                    Must be unique. Auto-suggested from endpoint host.
-                  </div>
                 </div>
 
                 <div class="form-group">
@@ -1443,7 +1437,7 @@
                   <label for="endpoint-endpoint"
                     >Endpoint URL *<span
                       class="help-icon"
-                      title="Supports placeholders like {{streamUrl|url}}, {{PAGEURL}}, {{pageTitle|json}}, {{timestamp}}."
+                      data-tooltip="Supports placeholders like {{streamUrl|url}}, {{PAGEURL}}, {{pageTitle|json}}, {{timestamp}}."
                       >ℹ</span
                     ></label
                   >
@@ -1451,24 +1445,17 @@
                     id="endpoint-endpoint"
                     placeholder="https://api.example.com/stream"
                   ></textarea>
-                  <div class="help-text help-text-mobile">
-                    Supports placeholders like {{streamUrl|url}}, {{PAGEURL}}, {{pageTitle|json}},
-                    {{timestamp}}.
-                  </div>
                 </div>
 
                 <div class="form-group">
                   <label for="endpoint-body"
                     >Body template (optional)<span
                       class="help-icon"
-                      title="Leave empty to send defaults (URL + timestamp, and page info if enabled)."
+                      data-tooltip="Leave empty to send defaults (URL + timestamp, and page info if enabled)."
                       >ℹ</span
                     ></label
                   >
                   <textarea id="endpoint-body" placeholder='{"url":"{{streamUrl}}"}'></textarea>
-                  <div class="help-text help-text-mobile">
-                    Leave empty to send defaults (URL + timestamp, and page info if enabled).
-                  </div>
                 </div>
 
                 <!-- Method & Content-Type -->
@@ -1513,24 +1500,14 @@
 
                 <!-- Authentication -->
                 <div class="form-group">
-                  <label
-                    >Authentication (optional)<span
-                      class="help-icon"
-                      title="Choose Bearer token OR username/password. Bearer takes precedence if both provided."
-                      >ℹ</span
-                    ></label
-                  >
-                  <div class="help-text help-text-mobile">
-                    Choose Bearer token OR username/password. Bearer takes precedence if both
-                    provided.
-                  </div>
+                  <label>Authentication (optional)</label>
                   <div style="display: grid; gap: 0.5rem">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem">
                       <div>
                         <input
                           type="text"
                           id="endpoint-username"
-                          placeholder="Username"
+                          placeholder="Username (for Basic auth)"
                           style="width: 100%"
                         />
                       </div>
@@ -1538,24 +1515,19 @@
                         <input
                           type="password"
                           id="endpoint-password"
-                          placeholder="Password"
+                          placeholder="Password (for Basic auth)"
                           style="width: 100%"
                         />
                       </div>
-                    </div>
-                    <div class="help-text" style="margin: 0">
-                      Basic authentication (username:password)
                     </div>
                     <div>
                       <input
                         type="text"
                         id="endpoint-bearer-token"
-                        placeholder="Bearer token"
+                        placeholder="Bearer token (takes precedence over Basic auth)"
                         style="width: 100%"
                       />
-                    </div>
-                    <div class="help-text" style="margin: 0">
-                      Bearer token auth (takes precedence over username/password)
+                      />
                     </div>
                   </div>
                 </div>
@@ -1565,30 +1537,17 @@
                   <label>
                     <input type="checkbox" id="endpoint-include-cookies" /> Page cookies<span
                       class="help-icon"
-                      title="Send current page cookies with API request (requires cookies permission)."
+                      data-tooltip="Send current page cookies with API request (requires cookies permission)."
                       >ℹ</span
                     >
                   </label>
-                  <div
-                    class="help-text help-text-mobile"
-                    style="margin-left: 1.5rem; margin-top: 0.25rem"
-                  >
-                    Send current page cookies with API request (requires cookies permission).
-                  </div>
                   <label>
                     <input type="checkbox" id="endpoint-include-headers" /> Page headers<span
                       class="help-icon"
-                      title="Capture and send HTTP request headers from the page (User-Agent, Accept, Referer, etc)."
+                      data-tooltip="Capture and send HTTP request headers from the page (User-Agent, Accept, Referer, etc)."
                       >ℹ</span
                     >
                   </label>
-                  <div
-                    class="help-text help-text-mobile"
-                    style="margin-left: 1.5rem; margin-top: 0.25rem"
-                  >
-                    Capture and send HTTP request headers from the page (User-Agent, Accept,
-                    Referer, etc).
-                  </div>
                 </div>
 
                 <!-- Custom Headers -->
@@ -1616,7 +1575,7 @@
               <h2 class="card-title">
                 User Variables<span
                   class="help-icon"
-                  title="Define custom placeholders like {{WiiM}} for server IPs. Use in endpoint templates with optional filters: {{myVar}}, {{myVar|url}}, {{myVar|json}}."
+                  data-tooltip="Define custom placeholders like {{WiiM}} for server IPs. Use in endpoint templates with optional filters: {{myVar}}, {{myVar|url}}, {{myVar|json}}."
                   >ℹ</span
                 >
               </h2>
@@ -1639,23 +1598,17 @@
                 <input type="checkbox" id="enable-hover-panel" style="margin-right: 0.5rem" />
                 Enable in-page hover panel (experimental)<span
                   class="help-icon"
-                  title="Shows a floating panel on the page with detected streams. When enabled, a floating toggle button (🎵) appears on pages with detected streams. Click it to open an in-page overlay with the same functionality as the browser popup. Useful for mobile devices where browser action popup is hard to access."
+                  data-tooltip="Shows a floating panel on the page with detected streams. When enabled, a floating toggle button (🎵) appears on pages with detected streams. Click it to open an in-page overlay with the same functionality as the browser popup. Useful for mobile devices where browser action popup is hard to access."
                   >ℹ</span
                 >
               </label>
-              <p class="help-text help-text-mobile">
-                Shows a floating panel on the page with detected streams. When enabled, a floating
-                toggle button (🎵) appears on pages with detected streams. Click it to open an
-                in-page overlay with the same functionality as the browser popup. Useful for mobile
-                devices where browser action popup is hard to access.
-              </p>
             </div>
 
             <div class="form-group">
               <label for="detection-debounce"
                 >DOM Change Debounce (ms)<span
                   class="help-icon"
-                  title="Wait time after page changes before scanning for streams. Lower values give faster response to new media but use more CPU. Higher values are better for battery life. Use 200-300ms for fast-updating sites (e.g., single-page apps, live feeds). Use 500-1000ms for better battery life on mobile devices."
+                  data-tooltip="Wait time after page changes before scanning for streams. Lower values give faster response to new media but use more CPU. Higher values are better for battery life. Use 200-300ms for fast-updating sites (e.g., single-page apps, live feeds). Use 500-1000ms for better battery life on mobile devices."
                   >ℹ</span
                 ></label
               >
@@ -1667,19 +1620,13 @@
                 step="100"
                 placeholder="500"
               />
-              <p class="help-text help-text-mobile">
-                Wait time after page changes before scanning for streams. Lower values give faster
-                response to new media but use more CPU. Higher values are better for battery life.
-                Use <strong>200-300ms</strong> for fast-updating sites (e.g., single-page apps, live
-                feeds). Use <strong>500-1000ms</strong> for better battery life on mobile devices.
-              </p>
             </div>
 
             <div class="form-group">
               <label for="detection-interval"
                 >Periodic Scan Interval (ms)<span
                   class="help-icon"
-                  title="How often to rescan the entire page for streams. Lower values mean more frequent checks but higher CPU usage. Higher values improve performance. Use 1000-2000ms for sites with dynamically loaded streams (e.g., video platforms). Use 3000-5000ms to reduce CPU usage on static pages."
+                  data-tooltip="How often to rescan the entire page for streams. Lower values mean more frequent checks but higher CPU usage. Higher values improve performance. Use 1000-2000ms for sites with dynamically loaded streams (e.g., video platforms). Use 3000-5000ms to reduce CPU usage on static pages."
                   >ℹ</span
                 ></label
               >
@@ -1691,12 +1638,6 @@
                 step="500"
                 placeholder="2000"
               />
-              <p class="help-text help-text-mobile">
-                How often to rescan the entire page for streams. Lower values mean more frequent
-                checks but higher CPU usage. Higher values improve performance. Use
-                <strong>1000-2000ms</strong> for sites with dynamically loaded streams (e.g., video
-                platforms). Use <strong>3000-5000ms</strong> to reduce CPU usage on static pages.
-              </p>
             </div>
           </div>
 
@@ -1774,14 +1715,10 @@
           <label style="display: block; margin-bottom: 0.5rem; font-weight: 500"
             >JSON URL or GitHub Gist:<span
               class="help-icon"
-              title="Paste a URL to a JSON file or GitHub gist. For gists, use either the gist URL or the raw JSON URL."
+              data-tooltip="Paste a URL to a JSON file or GitHub gist. For gists, use either the gist URL or the raw JSON URL."
               >ℹ</span
             ></label
           >
-          <div class="help-text help-text-mobile">
-            Paste a URL to a JSON file or GitHub gist. For gists, use either the gist URL or the raw
-            JSON URL.
-          </div>
           <input
             type="text"
             id="import-url-input"

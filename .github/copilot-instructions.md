@@ -27,6 +27,13 @@
 
 ### UI
 - Use `rem` units; ensure `dist/` copy for runtime assets
+- **Theme & Constants**: Centralized in `src/theme.css` (110 CSS vars) and `src/ui-constants.ts` (27 icons + colors)
+  - Colors: `src/theme.css` defines `--color-primary`, `--color-success`, `--color-danger-*`, etc.
+  - Icons: `src/ui-constants.ts` exports `ICONS.SAVE`, `ICONS.DELETE`, etc. as TypeScript consts
+  - **popup-pane**: Uses theme variables via `shared-pane.css` (green rgb(69,160,73), banner rgb(241,248,244))
+  - **hover-pane**: Uses theme variables via `shared-pane.css` (same colors as popup)
+  - **options-pane**: Uses `shared-pane.css` + inline `<style>` (legacy hardcoded colors - not yet refactored)
+  - Always use CSS variables (`var(--color-*)`) in shared-pane.css, avoid hardcoding colors in HTML files
 
 ### Logging
 - No naked `console.*` - use logger/statusbar

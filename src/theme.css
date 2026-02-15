@@ -1,0 +1,117 @@
+/**
+ * Streamonio UI Theme - Centralized colors and design tokens
+ * Used across popup, options, and hover panels
+ */
+
+:root {
+  /* Primary brand colors */
+  --color-primary: #667eea;
+  --color-primary-hover: #5568d3;
+  --color-primary-active: #4557c2;
+  --color-primary-gradient-start: #667eea;
+  --color-primary-gradient-end: #764ba2;
+
+  /* Danger/Delete colors */
+  --color-danger-bg: #fda4af;
+  --color-danger-text: #b91c1c;
+  --color-danger-border: #f87171;
+  --color-danger-hover: #fb7185;
+  --color-danger-light: #fef2f2;
+  --color-danger-border-light: #fecaca;
+
+  /* Success colors */
+  --color-success: rgb(69, 160, 73);
+  --color-success-hover: rgb(60, 140, 64);
+  --color-success-active: rgb(50, 120, 54);
+  --color-success-bg: #d4edda;
+  --color-success-bg-alert: #d4edda;
+  --color-success-text-alert: #155724;
+  --color-success-border-alert: #c3e6cb;
+  --color-success-btn: rgb(69, 160, 73);
+  --color-success-btn-hover: rgb(60, 140, 64);
+  --color-success-btn-active: rgb(50, 120, 54);
+
+  /* Warning colors */
+  --color-warning: #f59e0b;
+  --color-warning-hover: #e08d08;
+  --color-warning-active: #c77b07;
+  --color-warning-bg: #fffbeb;
+  --color-warning-btn: #ffc107;
+  --color-warning-btn-hover: #e0a800;
+  --color-warning-btn-active: #c69500;
+
+  /* Error/Alert colors */
+  --color-error: #ef4444;
+  --color-error-bg: #fee2e2;
+  --color-error-bg-alert: #f8d7da;
+  --color-error-text-alert: #721c24;
+  --color-error-border-alert: #f5c6cb;
+
+  /* Info colors */
+  --color-info-bg: #d1ecf1;
+  --color-info-text: #0c5460;
+  --color-info-border: #bee5eb;
+
+  /* Neutral/Gray scale */
+  --color-text: #333;
+  --color-text-secondary: #666;
+  --color-text-muted: #6b7280;
+  --color-text-dark: #111827;
+  --color-text-light: #24292e;
+
+  --color-bg: #f5f5f5;
+  --color-bg-light: #f8f9fa;
+  --color-bg-card: white;
+
+  --color-border: #e5e7eb;
+  --color-border-light: #d1d5db;
+  --color-border-medium: #e0e0e0;
+  --color-border-dark: #ddd;
+  --color-border-dashed: #e5e7eb;
+
+  /* Button grays */
+  --color-btn-secondary-bg: #e0e0e0;
+  --color-btn-secondary-hover: #d0d0d0;
+  --color-btn-secondary-active: #c0c0c0;
+
+  --color-btn-gray-bg: #f1f1f1;
+  --color-btn-gray-hover: #888;
+  --color-btn-gray-active: #555;
+
+  /* Selection/Active states */
+  --color-selected-bg: #e7ecff;
+  --color-selected-border: #667eea;
+  --color-hover-bg: #f3f4f6;
+  --color-hover-item: #e5e7eb;
+
+  /* Dirty/Modified state */
+  --color-dirty-bg: #e7ecff;
+  --color-dirty-border: #667eea;
+  --color-invalid-bg: #fef2f2;
+
+  /* Code/Preview backgrounds */
+  --color-code-bg: #0b1021;
+  --color-code-text: #e5e7eb;
+  --color-code-border: #1e293b;
+  --color-log-bg: #0b1021;
+  --color-log-text: #e5e7eb;
+  --color-log-border: #1e293b;
+  --color-highlight-bg: #fff5b1;
+  --color-preview-bg: #f8f9fa;
+  --color-preview-border: #e1e4e8;
+  --color-preview-text: #24292e;
+  --color-preview-error: #d73a49;
+
+  /* Help/Info panel */
+  --color-help-bg: #f8f9fa;
+  --color-help-border: #667eea;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-primary: 0 2px 4px rgba(102, 126, 234, 0.4);
+  --shadow-primary-hover: -4px 4px 12px rgba(102, 126, 234, 0.6);
+
+  /* Dev mode indicator */
+  --color-dev: #ff9800;
+}

@@ -3,6 +3,8 @@
  * Common UI components: header, streams list, buttons, log viewer, status bar
  */
 
+@import url("./theme.css");
+
 * {
   margin: 0;
   padding: 0;
@@ -16,13 +18,17 @@ body {
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, sans-serif;
   font-size: 0.875rem;
-  color: #333;
-  background: #f5f5f5;
+  color: var(--color-text);
+  background: var(--color-bg);
 }
 
 /* Header */
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-gradient-start) 0%,
+    var(--color-primary-gradient-end) 100%
+  );
   color: white;
   padding: 1rem;
   text-align: center;
@@ -53,21 +59,21 @@ body {
 .loading {
   text-align: center;
   padding: 2rem;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 /* Status indicator */
 .status {
-  background: white;
+  background: var(--color-white);
   border-radius: 0.5rem;
   padding: 0.75rem;
   margin-bottom: 0.75rem;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
 }
 
 .status.detected {
-  border-color: #4caf50;
-  background: #f1f8f4;
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
 }
 
 .status-title {
@@ -80,8 +86,8 @@ body {
 
 .badge {
   display: inline-block;
-  background: #4caf50;
-  color: white;
+  background: var(--color-success);
+  color: var(--color-white);
   padding: 0.125rem 8px;
   border-radius: 0.75rem;
   font-size: 11px;
@@ -92,8 +98,8 @@ body {
 .streams-list-container {
   max-height: 150px;
   overflow-y: auto;
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
   border-radius: 0.375rem;
   margin-bottom: 0.75rem;
   flex-shrink: 0;
@@ -105,7 +111,7 @@ body {
 
 .stream-list-item {
   padding: 0.5rem 12px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border-light);
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
@@ -118,16 +124,16 @@ body {
 }
 
 .stream-list-item:hover {
-  background: #f8f9fa;
+  background: var(--color-hover);
 }
 
 .stream-list-item:active {
-  background: #e9ecef;
+  background: var(--color-active);
 }
 
 .stream-list-item.selected {
-  background: #e7ecff;
-  border-left: 3px solid #667eea;
+  background: var(--color-primary-bg);
+  border-left: 3px solid var(--color-primary);
 }
 
 .stream-list-item .stream-type {
@@ -138,7 +144,7 @@ body {
 
 .stream-list-item .stream-url {
   font-size: 11px;
-  color: #666;
+  color: var(--color-text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -148,8 +154,8 @@ body {
 
 /* Stream detail panel */
 .stream-panel {
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
   border-radius: 0.375rem;
   padding: 0.5rem 12px;
   margin-bottom: 0.75rem;
@@ -158,8 +164,8 @@ body {
 
 .stream-type {
   display: inline-block;
-  background: #667eea;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-white);
   padding: 0.125rem 0.5rem;
   border-radius: 0.25rem;
   font-size: 10px;
@@ -176,10 +182,10 @@ body {
 .stream-actions select {
   grid-column: 1 / -1;
   padding: 0.375rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-light);
   border-radius: 0.25rem;
   font-size: 0.6875rem;
-  background: #fff;
+  background: var(--color-white);
 }
 
 .stream-actions button {
@@ -192,7 +198,7 @@ body {
   display: flex;
   border-radius: 0.375rem;
   overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .split-btn-group button {
@@ -256,64 +262,64 @@ button {
 }
 
 .btn-primary {
-  background: #667eea;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-white);
 }
 
 .btn-primary:hover {
-  background: #5568d3;
+  background: var(--color-primary-hover);
 }
 
 .btn-primary:active {
-  background: #4557c2;
+  background: var(--color-primary-active);
   transform: scale(0.98);
 }
 
 .btn-secondary {
-  background: #e0e0e0;
-  color: #333;
+  background: var(--color-border);
+  color: var(--color-text);
 }
 
 .btn-secondary:hover {
-  background: #d0d0d0;
+  background: var(--color-border-dark);
 }
 
 .btn-secondary:active {
-  background: #c0c0c0;
+  background: var(--color-border-darker);
   transform: scale(0.98);
 }
 
 .btn-action,
 .stream-actions .btn-action {
-  background: #4caf50;
-  color: white;
+  background: var(--color-success);
+  color: var(--color-white);
 }
 
 .btn-action:hover,
 .stream-actions .btn-action:hover {
-  background: #45a049;
+  background: var(--color-success-hover);
 }
 
 .btn-action:active,
 .stream-actions .btn-action:active {
-  background: #3d8b40;
+  background: var(--color-success-active);
   transform: scale(0.98);
 }
 
 .btn-test,
 .stream-actions .btn-test {
-  background: #ffc107;
-  color: #000;
+  background: var(--color-warning);
+  color: var(--color-black);
 }
 
 .btn-test:hover,
 .stream-actions .btn-test:hover {
-  background: #e0a800;
+  background: var(--color-warning-hover);
 }
 
 .btn-test:active,
 .stream-actions .btn-test:active {
-  background: #c69500;
+  background: var(--color-warning-active);
   transform: scale(0.98);
 }
 
@@ -321,7 +327,7 @@ button {
 .empty-state {
   text-align: center;
   padding: 2rem 1rem;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .empty-state-icon {
@@ -340,14 +346,14 @@ button {
 }
 
 .log-viewer {
-  background: #0b1021;
-  color: #e5e7eb;
+  background: var(--color-log-bg);
+  color: var(--color-log-text);
   border-radius: 0.25rem;
   padding: 0.5rem;
   font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 11px;
   line-height: 1.4;
-  border: 1px solid #1e293b;
+  border: 1px solid var(--color-log-border);
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -363,19 +369,19 @@ button {
 }
 
 .log-empty {
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
 /* Status bar */
 .status-bar-card {
-  background: white;
+  background: var(--color-success-bg);
   padding: 0.5rem 12px;
-  border-top: 0.125rem solid #667eea;
+  border-top: 0.125rem solid var(--color-success);
   border-left: none;
   border-radius: 0;
   font-size: 11px;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   margin: 0;
   flex-shrink: 0;
 }
@@ -386,7 +392,7 @@ button {
 }
 
 .status-text {
-  color: #333;
+  color: var(--color-text);
   font-weight: 500;
   font-size: 11px;
   line-height: 1.3;
@@ -426,7 +432,7 @@ button {
   }
 
   .split-btn-group {
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-xs);
   }
 
   button {

@@ -11,6 +11,7 @@
 - [ ] Undo option changes, instead of confirmation dialog.
 - [ ] Feat(options,UI) draggable height of activity logs in
 - [ ] Feat(options,UI) tabs on mobile
+- Refact(UI): DRY, extract icons & colors into theme
 
 ### v0.6.2-DEV - version auto DEV by git-tag, ui work on split-buttons
 
