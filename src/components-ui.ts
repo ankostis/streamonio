@@ -212,35 +212,50 @@ export function populateStreamPanel(
     panelActions.appendChild(select);
   }
 
+  // Create split-button groups
+  const testGroup = document.createElement('div');
+  testGroup.className = 'split-btn-group test-group';
+
   const previewBtn = createButton({
     className: 'btn-test',
-    text: '👁 Preview',
+    text: '👁\nPreview',
     onClick: () => handlers.onPreview(stream, endpointName),
   });
+  previewBtn.innerHTML = '👁<br>Preview';
 
   const copyBtn = createButton({
-    className: 'btn-secondary',
-    text: '📋 Copy',
+    className: 'btn-test',
+    text: '📋\nCopy',
     onClick: () => handlers.onCopy(stream, endpointName),
   });
+  copyBtn.innerHTML = '📋<br>Copy';
+
+  testGroup.appendChild(previewBtn);
+  testGroup.appendChild(copyBtn);
+
+  const actionGroup = document.createElement('div');
+  actionGroup.className = 'split-btn-group action-group';
 
   const callBtn = createButton({
     className: 'btn-action',
-    text: '📤 Call',
+    text: '⚡\nCall',
     onClick: () => handlers.onCall('fetch', stream, endpointName),
   });
+  callBtn.innerHTML = '⚡<br>Call';
 
   const openTabBtn = createButton({
     className: 'btn-action',
-    text: '🌐 Open tab',
+    text: '🌐\nOpen',
     onClick: () => handlers.onCall('tab', stream, endpointName),
   });
+  openTabBtn.innerHTML = '🌐<br>Open';
 
-  // Append buttons directly - CSS flexbox with wrap handles 2-row layout
-  panelActions.appendChild(previewBtn);
-  panelActions.appendChild(copyBtn);
-  panelActions.appendChild(callBtn);
-  panelActions.appendChild(openTabBtn);
+  actionGroup.appendChild(callBtn);
+  actionGroup.appendChild(openTabBtn);
+
+  // Append split-button groups
+  panelActions.appendChild(testGroup);
+  panelActions.appendChild(actionGroup);
 
   panel.style.display = 'block';
 }

@@ -170,7 +170,7 @@ body {
 .stream-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.375rem;
+  gap: 0.5rem;
 }
 
 .stream-actions select {
@@ -185,6 +185,48 @@ body {
 .stream-actions button {
   padding: 0.5rem 0.5rem;
   font-size: 0.75rem;
+}
+
+/* Split button groups */
+.split-btn-group {
+  display: flex;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.split-btn-group button {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  border-radius: 0;
+  position: relative;
+}
+
+.split-btn-group button:first-child {
+  border-radius: 0.375rem 0 0 0.375rem;
+}
+
+.split-btn-group button:last-child {
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+.split-btn-group button + button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.split-btn-group.action-group button + button::before {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.split-btn-group.test-group button + button::before {
+  background: rgba(0, 0, 0, 0.15);
 }
 
 /* Buttons */
@@ -369,8 +411,18 @@ button {
   }
 
   .stream-actions {
-    flex-direction: column;
-    gap: 0.375rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem;
+  }
+
+  .stream-actions button {
+    font-size: 0.7rem;
+    padding: 0.375rem 0.25rem;
+    min-height: 2rem;
+  }
+
+  .split-btn-group {
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
   }
 
   button {
