@@ -10,14 +10,8 @@ export function createStatusRenderer(elements: {
   bar: HTMLElement;
   message: HTMLSpanElement;
 }) {
-  return function renderStatus(
-    msg: { level: LogLevel; message: string } | null,
-  ) {
+  return function renderStatus(msg: { level: LogLevel; message: string }) {
     const bar = elements.bar;
-    if (!msg) {
-      bar.style.display = 'none';
-      return;
-    }
     elements.message.innerHTML = msg.message;
     // Vary background color by level
     if (msg.level === 'error') {
@@ -30,7 +24,6 @@ export function createStatusRenderer(elements: {
       bar.style.backgroundColor = '#dbeafe';
       bar.style.borderLeftColor = '#2563eb';
     }
-    bar.style.display = 'block';
   };
 }
 

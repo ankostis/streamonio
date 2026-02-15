@@ -91,8 +91,6 @@ export function initLogging(
         level: current.level,
         message: current.message,
       });
-    } else {
-      renderStatus(null);
     }
   });
 

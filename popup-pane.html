@@ -16,6 +16,12 @@
         width: 400px;
         height: 600px;
         padding-bottom: 0;
+        overflow: hidden;
+      }
+
+      .content {
+        padding-bottom: 0;
+        gap: 0.5rem;
       }
 
       .panel-header {
@@ -69,10 +75,6 @@
         margin-bottom: 0.5rem;
         align-items: center;
         flex-shrink: 0;
-      }
-
-      .log-viewer {
-        min-height: 100px;
       }
 
       .log-toggle {
@@ -163,7 +165,7 @@
     </div>
 
     <!-- Status Bar - natural flex child at bottom -->
-    <div id="status-bar" class="status-bar-card" style="display: none">
+    <div id="status-bar" class="status-bar-card">
       <div class="status-content">
         <span id="status-message" class="status-text"></span>
       </div>

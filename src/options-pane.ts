@@ -10,6 +10,7 @@ import {
   applyTemplate,
   callEndpoint,
   DEFAULT_CONFIG,
+  detectUserVarConflicts,
   formatResponseBody,
   generateUniqueName,
   getBuiltInEndpoints,
@@ -20,7 +21,6 @@ import {
   suggestEndpointName,
   validateEndpoints,
   validateUserVarKey,
-  detectUserVarConflicts,
 } from './endpoint';
 import { applyLogFiltering } from './logger-ui';
 import type { StreamInfo } from './types';
@@ -1252,7 +1252,9 @@ async function initialize() {
 
   document.querySelectorAll('.help-icon').forEach((icon) => {
     // Use both touchstart and click for better mobile support
-    icon.addEventListener('touchstart', handleTooltipToggle, { passive: false });
+    icon.addEventListener('touchstart', handleTooltipToggle, {
+      passive: false,
+    });
     icon.addEventListener('click', handleTooltipToggle);
   });
 
