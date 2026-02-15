@@ -1235,20 +1235,25 @@ async function initialize() {
   });
 
   // Make help icons tappable on mobile - toggle tooltip on click/tap
-  document.querySelectorAll('.help-icon').forEach((icon) => {
-    icon.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const el = e.target as HTMLElement;
-      const wasShowing = el.classList.contains('show-tooltip');
+  const handleTooltipToggle = (e: Event) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const el = e.target as HTMLElement;
+    const wasShowing = el.classList.contains('show-tooltip');
 
-      // Hide all other tooltips
-      document.querySelectorAll('.help-icon.show-tooltip').forEach((other) => {
-        if (other !== el) other.classList.remove('show-tooltip');
-      });
-
-      // Toggle this one
-      el.classList.toggle('show-tooltip', !wasShowing);
+    // Hide all other tooltips
+    document.querySelectorAll('.help-icon.show-tooltip').forEach((other) => {
+      if (other !== el) other.classList.remove('show-tooltip');
     });
+
+    // Toggle this one
+    el.classList.toggle('show-tooltip', !wasShowing);
+  };
+
+  document.querySelectorAll('.help-icon').forEach((icon) => {
+    // Use both touchstart and click for better mobile support
+    icon.addEventListener('touchstart', handleTooltipToggle, { passive: false });
+    icon.addEventListener('click', handleTooltipToggle);
   });
 
   // Hide tooltips when clicking elsewhere
