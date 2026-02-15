@@ -326,6 +326,8 @@ async function handleRefresh() {
     if (els.loading) els.loading.style.display = 'block';
 
     logger.debug('Refresh clicked');
+    // Refetch endpoints from storage (may have changed in options)
+    await loadEndpoints();
     await loadStreams();
   } catch (error) {
     logger.error('Failed to refresh streams', error);

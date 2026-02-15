@@ -357,6 +357,9 @@ async function handleRefresh() {
     if (els.streamsContainer) els.streamsContainer.innerHTML = '';
 
     logger.debug('Refresh button clicked');
+    // Clear cache to refetch endpoints from storage (may have changed in options)
+    endpointsCached = false;
+    await loadEndpoints();
     await loadStreams();
   } catch (error) {
     // Unexpected error in refresh - log and display
