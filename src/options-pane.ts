@@ -7,6 +7,7 @@ import buildInfo from './build-info.json';
 import { initLogging } from './components-ui';
 import {
   type ApiEndpoint,
+  applyTemplate,
   callEndpoint,
   DEFAULT_CONFIG,
   formatResponseBody,
@@ -483,6 +484,34 @@ async function handlePreview() {
 }
 
 /**
+ * Handle copy button (copy interpolated endpoint URL to clipboard)
+ */
+async function handleCopyBtn() {
+  try {
+    const candidate = buildEndpointFromForm();
+    if (!candidate) {
+      logger.warn('No endpoint configured for copy');
+      return;
+    }
+
+    // Use same test data as preview/call
+    const testStream: StreamInfo = {
+      streamUrl: 'https://example.com/stream.m3u8',
+      streamType: 'HLS',
+      pageUrl: 'https://example.com/page',
+      pageTitle: 'Example page',
+      seekTimeSecs: 0,
+    };
+
+    const finalUrl = applyTemplate(candidate.endpointTemplate, testStream);
+    await navigator.clipboard.writeText(finalUrl);
+    logger.infoFlash(2000, `📋 Copied: ${finalUrl}`);
+  } catch (error) {
+    logger.warn('Failed to copy URL', error);
+  }
+}
+
+/**
  * Handle endpoint action with test data (call API or open in tab)
  */
 async function handleCallEndpoint(mode: 'fetch' | 'tab') {
@@ -803,11 +832,12 @@ function wireEvents() {
     .getElementById('add-header-row')
     ?.addEventListener('click', () => addHeaderRow());
   document
-    .getElementById('call-btn')
+    .getElementById('call-api-btn')
     ?.addEventListener('click', () => handleCallEndpoint('fetch'));
   document
     .getElementById('open-tab-btn')
     ?.addEventListener('click', () => handleCallEndpoint('tab'));
+  document.getElementById('copy-btn')?.addEventListener('click', handleCopyBtn);
   document
     .getElementById('reset-btn')
     ?.addEventListener('click', resetBuiltIns);
