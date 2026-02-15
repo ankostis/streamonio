@@ -124,9 +124,9 @@ endpoints from stream-dependent ones.
 
 ```
 streamonio/
-├── manifest.json             # Extension manifest (cross-browser)
+├── manifest.json             # Extension manifest (version auto-synced)
 ├── tsconfig.json             # TypeScript configuration
-├── package.json              # Node.js dependencies & scripts
+├── package.json              # Version source of truth, deps & scripts
 ├── biome.json                # Linting & formatting config
 ├── README.md                 # This file
 ├── CHANGES.md                # Version history
@@ -152,7 +152,7 @@ streamonio/
 ├── icons/                    # Extension icons
 │   └── generate-icons.html   # Icon generator (not packaged)
 ├── scripts/                  # Build scripts
-│   └── gen-build-info.js     # Generates build-info.json
+│   └── gen-build-info.js     # Syncs version & generates build-info.json
 ├── tests/                    # Test suite
 │   ├── unit/                 # Unit tests (node --test + tsx)
 │   │   ├── *.test.ts         # Test files
@@ -166,6 +166,33 @@ streamonio/
 └── .github/
     └── copilot-instructions.md  # AI assistant guidelines
 ```
+
+### Versioning
+
+**Single source of truth**: Version is maintained in `package.json` only.
+
+The build process:
+
+1. Reads version from `package.json`
+2. Syncs it to `manifest.json` during build (`npm run prebuild`)
+3. Sets `isDev` flag in `build-info.json` if HEAD has a matching git tag
+   (`v0.6.2` or `0.6.2`) or `NODE_ENV=development`.
+4. A **dev** badge is shown on runtime by the extension.
+
+**To bump version:**
+```bash
+# 1. Update package.json version only
+npm version patch  # or minor, major
+
+# 2. Build (auto-syncs to manifest.json)
+npm run build
+
+# 3. Commit & tag when ready to release
+git commit -am "bump: 0.6.2"
+git tag v0.6.2
+```
+
+Any uncommitted version bumps are clearly marked as development builds.
 
 ## Testing
 
