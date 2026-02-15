@@ -1,8 +1,22 @@
-## Changes
+,e## Changes
 
 - [ ] Chromecast
 - [ ] Music Assistant
 - [ ] Snapcast
+- [ ] FEAT(options, endp) User-defined interpolations (eg server IPs)
+- [ ] Notify msg when endps/vars edited to auto refresh
+- [ ] Improve hovers on mobile (long-tap?)
+- [ ] Fix(options) Mark Edit endpoint as dirty if not saved
+- [ ] shrink hover mark and move it to the very edge, not to hinder page content.
+- [ ] Undo option changes, instead of confirmation dialog.
+- [ ] Feat(options,UI) draggable height of activity logs in
+- [ ] Feat(options,UI) tabs on mobile
+
+### v0.6.2-DEV - version auto DEV by git-tag, ui work on split-buttons
+
+- feat(UI): split-button groups in popup & hover panels>
+- Feat(VER) auto DEV if tagged, ver in `package.json` >
+- Chore(AI) build process in Copilot guidelines;  compressed to aid sonnet remember...
 
 ## v0.6.1 - (2026-14-08) Fix Hover, `+{{seekTimeSecs}}` `-{{timestamp}}`, unify StreamInfo+RequestContext, lint checks
 
