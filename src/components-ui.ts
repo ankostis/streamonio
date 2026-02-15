@@ -28,6 +28,39 @@ export function createButton(config: ButtonConfig): HTMLButtonElement {
 }
 
 /**
+ * Split-button group configuration
+ */
+export type SplitButtonConfig = {
+  variant: 'test-group' | 'action-group' | 'primary-group';
+  buttons: Array<{
+    icon: string;
+    label: string;
+    className: 'btn-primary' | 'btn-secondary' | 'btn-action' | 'btn-test';
+    onClick: () => void;
+  }>;
+};
+
+/**
+ * Create a split-button group container with multiple buttons
+ */
+export function createSplitButtonGroup(
+  config: SplitButtonConfig,
+): HTMLDivElement {
+  const group = document.createElement('div');
+  group.className = `split-btn-group ${config.variant}`;
+
+  config.buttons.forEach((btnConfig) => {
+    const btn = document.createElement('button');
+    btn.className = btnConfig.className;
+    btn.innerHTML = `${btnConfig.icon}<br>${btnConfig.label}`;
+    btn.addEventListener('click', btnConfig.onClick);
+    group.appendChild(btn);
+  });
+
+  return group;
+}
+
+/**
  * Initialize logging infrastructure with UI wiring
  *
  * @param elements - DOM elements for status bar and log viewer
@@ -213,45 +246,41 @@ export function populateStreamPanel(
   }
 
   // Create split-button groups
-  const testGroup = document.createElement('div');
-  testGroup.className = 'split-btn-group test-group';
-
-  const previewBtn = createButton({
-    className: 'btn-test',
-    text: '👁\nPreview',
-    onClick: () => handlers.onPreview(stream, endpointName),
+  const testGroup = createSplitButtonGroup({
+    variant: 'test-group',
+    buttons: [
+      {
+        icon: '👁',
+        label: 'Preview',
+        className: 'btn-test',
+        onClick: () => handlers.onPreview(stream, endpointName),
+      },
+      {
+        icon: '📋',
+        label: 'Copy',
+        className: 'btn-test',
+        onClick: () => handlers.onCopy(stream, endpointName),
+      },
+    ],
   });
-  previewBtn.innerHTML = '👁<br>Preview';
 
-  const copyBtn = createButton({
-    className: 'btn-test',
-    text: '📋\nCopy',
-    onClick: () => handlers.onCopy(stream, endpointName),
+  const actionGroup = createSplitButtonGroup({
+    variant: 'action-group',
+    buttons: [
+      {
+        icon: '⚡',
+        label: 'Call',
+        className: 'btn-action',
+        onClick: () => handlers.onCall('fetch', stream, endpointName),
+      },
+      {
+        icon: '🌐',
+        label: 'Open',
+        className: 'btn-action',
+        onClick: () => handlers.onCall('tab', stream, endpointName),
+      },
+    ],
   });
-  copyBtn.innerHTML = '📋<br>Copy';
-
-  testGroup.appendChild(previewBtn);
-  testGroup.appendChild(copyBtn);
-
-  const actionGroup = document.createElement('div');
-  actionGroup.className = 'split-btn-group action-group';
-
-  const callBtn = createButton({
-    className: 'btn-action',
-    text: '⚡\nCall',
-    onClick: () => handlers.onCall('fetch', stream, endpointName),
-  });
-  callBtn.innerHTML = '⚡<br>Call';
-
-  const openTabBtn = createButton({
-    className: 'btn-action',
-    text: '🌐\nOpen',
-    onClick: () => handlers.onCall('tab', stream, endpointName),
-  });
-  openTabBtn.innerHTML = '🌐<br>Open';
-
-  actionGroup.appendChild(callBtn);
-  actionGroup.appendChild(openTabBtn);
 
   // Append split-button groups
   panelActions.appendChild(testGroup);

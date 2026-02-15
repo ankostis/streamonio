@@ -225,6 +225,10 @@ body {
   background: rgba(255, 255, 255, 0.25);
 }
 
+.split-btn-group.primary-group button + button::before {
+  background: rgba(255, 255, 255, 0.25);
+}
+
 .split-btn-group.test-group button + button::before {
   background: rgba(0, 0, 0, 0.15);
 }
