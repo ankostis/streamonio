@@ -237,17 +237,37 @@ button {
   transform: scale(0.98);
 }
 
-.btn-action {
+.btn-action,
+.stream-actions .btn-action {
   background: #4caf50;
   color: white;
 }
 
-.btn-action:hover {
+.btn-action:hover,
+.stream-actions .btn-action:hover {
   background: #45a049;
 }
 
-.btn-action:active {
+.btn-action:active,
+.stream-actions .btn-action:active {
   background: #3d8b40;
+  transform: scale(0.98);
+}
+
+.btn-test,
+.stream-actions .btn-test {
+  background: #ffc107;
+  color: #000;
+}
+
+.btn-test:hover,
+.stream-actions .btn-test:hover {
+  background: #e0a800;
+}
+
+.btn-test:active,
+.stream-actions .btn-test:active {
+  background: #c69500;
   transform: scale(0.98);
 }
 
