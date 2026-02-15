@@ -34,6 +34,24 @@
         cursor: pointer;
         background: #fff;
       }
+
+      /* Hover-specific responsive overrides
+       * NOTE: Matches popup overrides to ensure identical layout on mobile.
+       * Hover typically doesn't trigger @media (max-width: 450px) since it's
+       * full-width, but these rules ensure consistency if viewed on small screens.
+       */
+      @media (max-width: 450px) {
+        /* Override mobile padding reduction - keep desktop 1rem */
+        .content {
+          padding: 1rem;
+          padding-bottom: 0;
+        }
+
+        /* Override mobile status-bar padding reduction - keep desktop spacing */
+        .status-bar-card {
+          padding: 0.5rem 12px;
+        }
+      }
     </style>
   </head>
   <body>

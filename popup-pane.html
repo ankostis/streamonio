@@ -20,6 +20,7 @@
       }
 
       .content {
+        padding: 1rem;
         padding-bottom: 0;
         gap: 0.5rem;
       }
@@ -92,15 +93,26 @@
         background: #e0e0e0;
       }
 
-      /* Popup-specific responsive overrides */
+      /* Popup-specific responsive overrides
+       * NOTE: Popup width=400px triggers shared-pane.css @media (max-width: 450px)
+       * which reduces padding/font-sizes for mobile. Override padding here to
+       * maintain desktop layout spacing (keep smaller fonts for readability).
+       */
       @media (max-width: 450px) {
         body {
           width: 100vw;
           min-width: 320px;
         }
 
-        .log-viewer {
-          max-height: 150px;
+        /* Override mobile padding reduction - keep desktop 1rem */
+        .content {
+          padding: 1rem;
+          padding-bottom: 0;
+        }
+
+        /* Override mobile status-bar padding reduction - keep desktop spacing */
+        .status-bar-card {
+          padding: 0.5rem 12px;
         }
       }
     </style>
