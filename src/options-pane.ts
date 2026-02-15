@@ -467,7 +467,7 @@ function deleteEndpoint(index: number) {
     });
 }
 
-function handlePreview() {
+async function handlePreview() {
   const candidate = buildEndpointFromForm();
   if (!candidate) return;
 
@@ -479,7 +479,7 @@ function handlePreview() {
     seekTimeSecs: 0, // Seek position (0 = unknown)
   };
 
-  previewCall(candidate, context, logger);
+  await previewCall(context, candidate.name, [candidate], logger);
 }
 
 /**

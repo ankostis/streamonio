@@ -248,16 +248,14 @@ function populatePanel(
 /**
  * Handle preview - shows formatted API request details in logger
  */
-function handlePreview(stream: StreamInfo, endpointName?: string) {
+async function handlePreview(stream: StreamInfo, endpointName?: string) {
   if (apiEndpoints.length === 0) {
     logger.warn('No endpoints configured');
     return;
   }
 
-  const endpoint =
-    apiEndpoints.find((ep) => ep.name === endpointName) || apiEndpoints[0];
   // Stream already has all fields, just pass it
-  previewCall(endpoint, stream, logger);
+  await previewCall(stream, endpointName, apiEndpoints, logger);
 }
 
 /**

@@ -162,47 +162,69 @@ export function sortEndpointsByMRU(endpoints: ApiEndpoint[]): ApiEndpoint[] {
 }
 
 /**
- * Generate preview text for an API endpoint with given context
+ * Load endpoints from storage or use provided array
+ * @throws Error with message on parse failure
  */
-export function generatePreview(
-  endpoint: ApiEndpoint,
-  context: StreamInfo,
-  applyTemplate: (template: string, context: StreamInfo) => string,
-): string {
-  const url = applyTemplate(endpoint.endpointTemplate, context);
-  const body = endpoint.bodyTemplate
-    ? applyTemplate(endpoint.bodyTemplate, context)
-    : JSON.stringify(context, null, 2);
+async function loadEndpoints(
+  apiEndpoints?: ApiEndpoint[],
+): Promise<ApiEndpoint[]> {
+  if (apiEndpoints) return apiEndpoints;
 
-  return [
-    `Endpoint: ${endpoint.name}`,
-    `URL: ${url}`,
-    `Method: ${(endpoint.method || 'POST').toUpperCase()}`,
-    '',
-    `Headers: ${JSON.stringify(endpoint.headers || {}, null, 2)}`,
-    '',
-    `Body:`,
-    body,
-  ].join('\n');
+  const defaults = { apiEndpoints: '[]' } as const;
+  const config = (await browser.storage.sync.get(defaults)) as typeof defaults;
+  try {
+    return parseEndpoints(config.apiEndpoints);
+    // biome-ignore lint/suspicious/noExplicitAny: Standard error handling pattern
+  } catch (parseError: any) {
+    throw new Error(
+      `Failed to parse API endpoints: ${parseError?.message ?? 'Unknown error'}`,
+    );
+  }
 }
 
 /**
  * Preview an API endpoint call and log the formatted request details.
  * Unified function used by popup and options panels.
  */
-export function previewCall(
-  endpoint: ApiEndpoint,
-  context: StreamInfo,
+export async function previewCall(
+  stream: StreamInfo,
+  endpointName: string | undefined,
+  apiEndpoints: ApiEndpoint[] | undefined,
   logger: { info: (message: string, ...args: unknown[]) => void },
-): void {
+): Promise<void> {
   try {
-    const preview = generatePreview(endpoint, context, applyTemplate);
-    logger.info(preview, { endpoint, context });
-  } catch (error) {
-    logger.info(
-      `Interpolation error: ${error?.message ?? 'Invalid placeholder'}`,
-      error,
-    );
+    const endpoints = await loadEndpoints(apiEndpoints);
+    const endpoint = endpointName
+      ? endpoints.find((ep) => ep.name === endpointName)
+      : endpoints[0];
+
+    if (!endpoint) {
+      logger.info(
+        'No API endpoints configured. Please add an endpoint in the extension options.',
+      );
+      return;
+    }
+
+    const finalUrl = applyTemplate(endpoint.endpointTemplate, stream);
+    const body = endpoint.bodyTemplate
+      ? applyTemplate(endpoint.bodyTemplate, stream)
+      : JSON.stringify(stream, null, 2);
+
+    const preview = [
+      `Endpoint: ${endpoint.name}`,
+      `URL: ${finalUrl}`,
+      `Method: ${(endpoint.method || 'POST').toUpperCase()}`,
+      '',
+      `Headers: ${JSON.stringify(endpoint.headers || {}, null, 2)}`,
+      '',
+      `Body:`,
+      body,
+    ].join('\n');
+
+    logger.info(preview, { endpoint, stream });
+    // biome-ignore lint/suspicious/noExplicitAny: Standard error handling
+  } catch (error: any) {
+    logger.info(`Preview failed: ${error?.message ?? 'Unknown error'}`);
   }
 }
 
@@ -346,33 +368,9 @@ export async function callEndpoint({
   apiEndpoints?: ApiEndpoint[];
   logger: Logger;
 }) {
-  // Declare variables at function scope for error logging
-  let selectedEndpoint: ApiEndpoint | undefined;
-  let finalUrl: string | undefined;
-  let method: string | undefined;
-
   try {
-    // Use provided endpoints or load from storage
-    let endpoints: ApiEndpoint[];
-    if (apiEndpoints) {
-      endpoints = apiEndpoints;
-    } else {
-      const defaults = { apiEndpoints: '[]' } as const;
-      const config = (await browser.storage.sync.get(
-        defaults,
-      )) as typeof defaults;
-      try {
-        endpoints = parseEndpoints(config.apiEndpoints);
-        // biome-ignore lint/suspicious/noExplicitAny: Standard error handling pattern
-      } catch (parseError: any) {
-        return {
-          success: false,
-          error: `Failed to parse API endpoints: ${parseError?.message ?? 'Unknown error'}`,
-        };
-      }
-    }
-
-    // Select endpoint
+    // Load and select endpoint
+    const endpoints = await loadEndpoints(apiEndpoints);
     const selectedEndpoint = endpointName
       ? endpoints.find((ep) => ep.name === endpointName)
       : endpoints[0];
@@ -385,26 +383,13 @@ export async function callEndpoint({
       };
     }
 
-    // Interpolate placeholders in URL and body templates
-    let finalUrl: string;
-    let body: string | undefined;
-
-    // Template interpolation
-    try {
-      finalUrl = applyTemplate(selectedEndpoint.endpointTemplate, stream);
-      // Interpolate body template for both modes (fetch needs it, tab uses it for form fields)
-      body = selectedEndpoint.bodyTemplate
-        ? applyTemplate(selectedEndpoint.bodyTemplate, stream)
-        : mode === 'fetch'
-          ? JSON.stringify(stream)
-          : undefined;
-      // biome-ignore lint/suspicious/noExplicitAny: Standard error handling
-    } catch (templateError: any) {
-      return {
-        success: false,
-        error: `Interpolation error in endpoint "${selectedEndpoint.name}": ${templateError?.message ?? 'Invalid placeholder'}. Check endpoint/body templates and placeholders.`,
-      };
-    }
+    // Interpolate templates
+    const finalUrl = applyTemplate(selectedEndpoint.endpointTemplate, stream);
+    const body = selectedEndpoint.bodyTemplate
+      ? applyTemplate(selectedEndpoint.bodyTemplate, stream)
+      : mode === 'fetch'
+        ? JSON.stringify(stream)
+        : undefined;
 
     // Mode: open in tab
     if (mode === 'tab') {
@@ -541,8 +526,7 @@ export async function callEndpoint({
     }
 
     // Mode: fetch (HTTP request)
-    method = (selectedEndpoint.method || 'POST').toUpperCase();
-
+    const method = (selectedEndpoint.method || 'POST').toUpperCase();
     let headers: Record<string, string> = {
       'Content-Type': selectedEndpoint.contentType || 'application/json',
     };
@@ -666,10 +650,6 @@ export async function callEndpoint({
   } catch (error: any) {
     const action = mode === 'tab' ? 'open URL' : 'API call';
     logger.error(`${action} failed: ${error?.message ?? 'Unknown error'}`, {
-      endpoint: selectedEndpoint?.name,
-      url: finalUrl,
-      method,
-      mode,
       error,
     });
 
