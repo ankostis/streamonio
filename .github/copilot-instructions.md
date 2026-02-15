@@ -5,7 +5,9 @@
 - **Blip**: Send page streams to API calls
 - **Short description**: A cross-browser extension (Firefox & Chrome) to extract streaming media URLs (podcasts, radio stations, live streams) and send to HTTP API endpoint(s)
 
-## Project essentials
+## Architecture
+
+### Project essentials
 - Cross-browser WebExtension; manifest points to built assets in `dist/` (tsc + copy,
   no bundler). Keep manifest paths in sync with `dist` outputs.
 - TypeScript sources in `src/` (`broker.ts`, `page.ts`, `popup.ts`,
@@ -22,7 +24,7 @@
 - **Mobile Firefox Nightly**: Must have good UX on mobile browsers where options UI panels
   cannot float/dock alongside the webpage.
 
-## Architecture principles
+### Architecture principles
 - Message-based flow: content -> `STREAM_DETECTED`; popup -> PING + `GET_STREAMS`.
   All cross-component comms via `browser.runtime.sendMessage()`.
 - Bounded state: broker caps 200 streams/tab (LRU) and cleans on close/nav;
@@ -37,22 +39,23 @@
 - Debounced detection: media scan 1s delay/2s interval; DOM mutation debounce
   500ms.
 
-## Conventions & pitfalls
+
+### Conventions & pitfalls
 - **Exception handling**: Follow `notes/exception-handling-policy.md` strictly:
   - DON'T swallow silently exceptions.
   - Avoid early handling of exceptions, prefer to let them bubble to console via logger or statusbar,
   - early handling of exceptions preferable only when fail cause is known or where remedy is possible.
 - Type isolation: each TS file `export {}` to avoid globals.
-- Endpoint keying: unique `name`; `suggestEndpointName()` derives from hostname;
-  `parseEndpoints()` filters dupes; `validateEndpoints()` surfaces dups.
-- Template errors: handled separately in `callStreamAPI()`/`testAPI()` to
-  distinguish placeholder issues from network errors.
-- Detection patterns: extend `STREAM_PATTERNS` and `getStreamType()` together;
-  DASH before HLS to avoid `.mpd` false HLS matches.
-- Static assets: if adding runtime HTML/assets, ensure copy step/manifest puts
-  them in `dist/`. Icons via `icons/generate-icons.html`.
+- Endpoint keying: unique `name`; `suggestEndpointName()` derives from hostname; `parseEndpoints()` filters dupes; `validateEndpoints()` surfaces dups.
+- Template errors: handled separately in `callStreamAPI()`/`testAPI()` to distinguish placeholder issues from network errors.
+- Detection patterns: extend `STREAM_PATTERNS` and `getStreamType()` together; DASH before HLS to avoid `.mpd` false HLS matches.
 
-## Logging Architecture Rules
+### UI, CSS
+
+- Prefer `rem` units.
+- Static assets: if adding runtime HTML/assets, ensure copy step/manifest puts them in `dist/`. Icons via `icons/generate-icons.html`.
+
+### Logging Architecture Rules
 - **Don't use naked console-log statements**; use logger or statusbar methods.
 - **Slots/Categories** = WHAT you're logging about, domain names, concerns (eg. `endpoint`, `storage`, `apicall`)
 - **Levels** = severity enums (`LogLevel.Error/Warn/Info/Debug`) - HOW important it is
@@ -61,38 +64,37 @@
 - StatusBar slots Map: one message per category, `getCurrent()` returns highest-priority level across all slots
 - Consolidate log calls, do not spilt them in separate calls, it's slow & waste of bytecodes.
 - Print a textual msg for the log-boxes or statusbars, and include the actual objects for consle to inspect them.
+- `error-handling-audit.md`: Silent error sinks fixed (PING checks, template
+  error separation, better UI feedback).
 
-## Testing & debugging
+## Development
+
+### Code change workflow
+After ANY code/HTML/CSS changes:
+1. modify, format & build - always, to verify types and update browser for me to review
+2. Test, Lint, DeadCode - run test-cases & integration test (if needed), check for dupes.
+4. Update SUMMARY.md for commit (see SUMMARY.md section below)
+
+### Testing & debugging
 - Unit & Integrations are launched by the `package.json:scripts`.
 - Manual API: use https://httpbin.org/anything to validate templating; tweak
   `DEFAULT_CONFIG` in `src/options.ts` for quick tests.
 - Debugging: broker via about:debugging > Inspect; content in page console;
   PING handler for popup health checks; use logs.
 
-## Code quality checks
+### Code quality checks
 - **Run after features & refactoring**: `npm run lint`, `npm run dupes`, `npm run dead-code`
 - Linting: `npm run lint` (Biome checks); `npm run lint:fix` (auto-fix safe issues)
 - Duplication: `npm run dupes` (jscpd analysis); keep below 5%, refactor if >8 clones
 - Dead code: `npm run dead-code` (ts-prune for unused exports)
 - See `notes/linting-report.md` for current metrics & refactoring priorities
 
-## Quick references
+### Quick references
 - Build: `npm run build` (clean + tsc + copy HTML)
 - Package: `npm run build && zip -r streamonio.zip manifest.json dist icons -x
   "icons/generate-icons.html"`
 - Tests: `npm test`; `npm run test:integration`
 - Quality: `npm run lint`; `npm run dupes`; `npm run dead-code`
-
-## Roadmap context (notes/)
-- `ui-rework-plan.md`: Form-based editor (Phase 2), import/export by name (Phase
-  3), polish (Phase 4). Phase 1 (ID→name) done.
-- `error-handling-audit.md`: Silent error sinks fixed (PING checks, template
-  error separation, better UI feedback).
-- `refact-options-ui.md`: fiddle architecture to optimize UX and execution-context boundaries.
-
-## UI, CSS
-
-- Prefer `rem` units.
 
 ## Ask when unclear
 - Extension supports both Firefox and Chrome via webextension-polyfill - no browser-specific code needed.
@@ -111,7 +113,7 @@
 - I frequently rewrite my history to hide the [Sausage Making](https://gist.github.com/SethRobertson/1540906/de2387189cc924c2b24ad867e6f81b29a9ced1a7#sausage-making).  Read history and help.
 - Ask me if a commit has finished, when you can't tell.
 
-## Release & Changes
+### Release & Changes
 
 List epigrammatically the most significant changes since last release.
 
@@ -119,7 +121,7 @@ List epigrammatically the most significant changes since last release.
 - An indication of significance of a commit is the capitalization of its header: FIX is more eimportant than Fix & fix.  Fixes useally are more important than features & enhancements docs.
 - Merge & consolidate all commits about an domain (eg logging) per type  (fix, feat, etc)
 
-## SUMMARY.md - Git Commit Message Draft
+### SUMMARY.md - Git Commit Message Draft
 
 **IMPORTANT**: Whenever user asks to "summarize", do it in SUMMARY.md file as commit msg.
 
