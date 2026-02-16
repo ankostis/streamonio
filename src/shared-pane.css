@@ -590,6 +590,17 @@ button {
   pointer-events: none;
 }
 
+/* Log action bar on left edge, vertically centered like filters */
+.log-action-bar {
+  position: absolute;
+  left: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10;
+}
 .filter-icon {
   display: flex;
   align-items: center;
@@ -620,6 +631,10 @@ button {
   opacity: 0.8;
 }
 
+/* Action buttons always at full opacity */
+.log-action-bar .filter-icon span {
+  opacity: 1;
+}
 .log-content {
   padding: 0.5rem;
   font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;

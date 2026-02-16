@@ -37,25 +37,29 @@ function createMockViewer(): HTMLDivElement {
 test('applyLogFilter: shows only selected levels', () => {
   const viewer = createMockViewer();
 
-  // Add log lines
+  // Add log lines with dataset.level
   const line1 = viewer.ownerDocument.createElement('div');
   line1.textContent = '[2024-01-01T00:00:00.000Z] ERROR storage: Error msg';
+  line1.dataset.level = 'error';
   viewer.appendChild(line1);
 
   const line2 = viewer.ownerDocument.createElement('div');
   line2.textContent = '[2024-01-01T00:00:01.000Z] WARN api-test: Warn msg';
+  line2.dataset.level = 'warn';
   viewer.appendChild(line2);
 
   const line3 = viewer.ownerDocument.createElement('div');
   line3.textContent = '[2024-01-01T00:00:02.000Z] INFO endpoint-list: Info msg';
+  line3.dataset.level = 'info';
   viewer.appendChild(line3);
 
   const line4 = viewer.ownerDocument.createElement('div');
   line4.textContent = '[2024-01-01T00:00:03.000Z] DEBUG form-input: Debug msg';
+  line4.dataset.level = 'debug';
   viewer.appendChild(line4);
 
   // Filter to show only error and warn
-  applyLogFilter(viewer, ['error', 'warn']);
+  applyLogFilter(viewer, 'warn');
 
   assert.strictEqual(line1.style.display, 'block', 'ERROR should be visible');
   assert.strictEqual(line2.style.display, 'block', 'WARN should be visible');
@@ -68,31 +72,44 @@ test('applyLogFilter: shows all when all levels selected', () => {
 
   const line1 = viewer.ownerDocument.createElement('div');
   line1.textContent = '[2024-01-01T00:00:00.000Z] ERROR storage: Error';
+  line1.dataset.level = 'error';
   viewer.appendChild(line1);
 
   const line2 = viewer.ownerDocument.createElement('div');
   line2.textContent = '[2024-01-01T00:00:01.000Z] INFO api-test: Info';
+  line2.dataset.level = 'info';
   viewer.appendChild(line2);
 
-  applyLogFilter(viewer, ['error', 'warn', 'info', 'debug']);
+  applyLogFilter(viewer, 'debug');
 
   assert.strictEqual(line1.style.display, 'block');
   assert.strictEqual(line2.style.display, 'block');
 });
 
-test('applyLogFilter: hides all when no levels selected', () => {
+test('applyLogFilter: hides all when error level selected', () => {
   const viewer = createMockViewer();
 
   const line1 = viewer.ownerDocument.createElement('div');
-  line1.textContent = '[2024-01-01T00:00:00.000Z] ERROR storage: Error';
+  line1.textContent = '[2024-01-01T00:00:00.000Z] WARN storage: Warn';
+  line1.dataset.level = 'warn';
   viewer.appendChild(line1);
 
-  applyLogFilter(viewer, []);
+  const line2 = viewer.ownerDocument.createElement('div');
+  line2.textContent = '[2024-01-01T00:00:00.000Z] ERROR storage: Error';
+  line2.dataset.level = 'error';
+  viewer.appendChild(line2);
+
+  applyLogFilter(viewer, 'error');
 
   assert.strictEqual(
     line1.style.display,
     'none',
-    'All lines should be hidden with empty filter',
+    'WARN should be hidden with error filter',
+  );
+  assert.strictEqual(
+    line2.style.display,
+    'block',
+    'ERROR should be visible with error filter',
   );
 });
 

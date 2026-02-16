@@ -95,10 +95,9 @@ export function initLogging(
     }
   });
 
+  // Create appendLog function but don't subscribe yet
+  // Subscription will be set up by createLogViewer which knows the actual DOM element
   const appendLog = createLogAppender(elements.logViewer);
-  logger.subscribeLogs((entries) => {
-    entries.slice(-1).forEach((e) => appendLog(e.level, e.category, e.message));
-  });
 
   return { logger, appendLog };
 }

@@ -48,6 +48,7 @@ async function run() {
 
   const proc = spawn(webExtPath, args, { cwd });
 
+  let stdout = '';
   let stderr = '';
   let addonInstalled = false;
   let hoverPanelInjected = false;
@@ -58,7 +59,7 @@ async function run() {
   const hoverInjectedRegex = /Hover panel iframe injected|Toggle button added/i;
   const hoverInitRegex = /\[hover\].*initialized successfully/i;
   const hoverErrorRegex =
-    /\[hover\].*Failed to initialize|buildInfo is not defined|logger is undefined|els is undefined/i;
+    /\[hover\].*Failed to initialize|buildInfo is not defined|logger is undefined|els is undefined|can't access property "querySelector", viewer is null|TypeError.*viewer.*null/i;
 
   proc.stdout.on('data', (d) => {
     const s = d.toString();
@@ -89,6 +90,10 @@ async function run() {
     if (hoverErrorRegex.test(s)) {
       hoverPanelError = true;
       console.error('[✗] Hover panel error in stderr:', s.trim());
+    }
+    // Also check for general TypeError/ReferenceError that might be hover-related
+    if (/TypeError|ReferenceError/.test(s) && /hover/.test(s.toLowerCase())) {
+      console.error('[!] Potential hover panel error:', s.trim());
     }
   });
 

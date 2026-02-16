@@ -22,7 +22,7 @@ import {
   validateEndpoints,
   validateUserVarKey,
 } from './endpoint';
-import { applyLogFiltering } from './logger-ui';
+import { createLogViewer } from './logger-ui';
 import type { StreamInfo } from './types';
 import { ICONS } from './ui-constants';
 
@@ -75,8 +75,6 @@ const els = {
     document.getElementById('endpoint-include-headers') as HTMLInputElement,
   headersRows: () => document.getElementById('headers-rows') as HTMLDivElement,
   logViewer: () => document.getElementById('log-viewer') as HTMLDivElement,
-  logClear: () => document.getElementById('log-clear') as HTMLButtonElement,
-  logExport: () => document.getElementById('log-export') as HTMLButtonElement,
   enableHoverPanel: () =>
     document.getElementById('enable-hover-panel') as HTMLInputElement,
   detectionDebounce: () =>
@@ -1153,33 +1151,9 @@ async function initialize() {
   await wireEvents();
   setHeadersRows();
 
-  // Wire log viewer controls using reusable helpers
-  const logViewer = els.logViewer();
-  const levelCheckboxes = document.querySelectorAll(
-    '.log-level-filter',
-  ) as NodeListOf<HTMLInputElement>;
-
-  // Wire log filtering (filters always visible in header)
-  applyLogFiltering(logViewer, levelCheckboxes);
-
-  els.logClear()?.addEventListener('click', () => {
-    logger.clearLogs();
-    const viewer = els.logViewer();
-    viewer.innerHTML = '<div class="log-empty">No logs yet</div>';
-  });
-
-  els.logExport()?.addEventListener('click', () => {
-    const json = logger.exportJSON();
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `streamonio-logs-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  });
+  // Wire log viewer
+  const logViewerEl = els.logViewer();
+  createLogViewer(logViewerEl, logger);
 
   // Settings checkbox
   els.enableHoverPanel().addEventListener('change', () => {

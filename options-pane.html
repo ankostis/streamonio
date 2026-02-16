@@ -1691,32 +1691,10 @@
         <!-- Activity Log (spans both columns on desktop) -->
         <div class="card" id="log-card">
           <div class="card-header">
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: 100%">
-              <h2 class="card-title" style="margin: 0">Activity Log</h2>
-              <div style="display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; flex: 1">
-                <label style="display: flex; align-items: center; font-weight: normal; margin: 0">
-                  <input type="checkbox" class="log-level-filter" value="error" checked /> Error
-                </label>
-                <label style="display: flex; align-items: center; font-weight: normal; margin: 0">
-                  <input type="checkbox" class="log-level-filter" value="warn" checked /> Warn
-                </label>
-                <label style="display: flex; align-items: center; font-weight: normal; margin: 0">
-                  <input type="checkbox" class="log-level-filter" value="info" checked /> Info
-                </label>
-                <label style="display: flex; align-items: center; font-weight: normal; margin: 0">
-                  <input type="checkbox" class="log-level-filter" value="debug" /> Debug
-                </label>
-              </div>
-              <div style="display: flex; gap: 0.5rem">
-                <button id="log-clear" class="btn-secondary">🗑 Clear</button>
-                <button id="log-export" class="btn-secondary">⬇ Export</button>
-              </div>
-            </div>
+            <h2 class="card-title" style="margin: 0">Activity Log</h2>
           </div>
           <!-- Log viewer -->
-          <div id="log-viewer" class="log-viewer scrollable-content">
-            <div class="log-empty">No logs yet</div>
-          </div>
+          <div id="log-viewer" class="log-viewer scrollable-content"></div>
         </div>
       </div>
       <!-- End main-content -->

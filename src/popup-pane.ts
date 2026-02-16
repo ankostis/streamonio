@@ -20,7 +20,7 @@ import {
   previewCall,
   sortEndpointsByMRU,
 } from './endpoint';
-import { applyLogFiltering } from './logger-ui';
+import { createLogViewer } from './logger-ui';
 import type { StreamInfo } from './types';
 
 let currentTabId: number | null = null;
@@ -59,10 +59,12 @@ async function openOrSwitchToTab(url: string): Promise<void> {
  */
 async function initialize() {
   // Initialize logging infrastructure FIRST to ensure logger available for all code paths
+  // Note: logViewer element created by createLogViewer() later, so we pass a temporary div
+  const tempLogViewer = document.createElement('div');
   const logging = initLogging('popup', {
     statusBar: document.getElementById('status-bar') as HTMLDivElement,
     statusMsg: document.getElementById('status-message') as HTMLSpanElement,
-    logViewer: document.getElementById('log-content') as HTMLDivElement,
+    logViewer: tempLogViewer,
   });
   logger = logging.logger;
 
@@ -92,14 +94,9 @@ async function initialize() {
     streamsContainer: document.getElementById('streams-scrollp'),
   };
 
-  // Wire log filtering (always visible)
-  const levelCheckboxes = document.querySelectorAll(
-    '.log-level-filter',
-  ) as NodeListOf<HTMLInputElement>;
-  applyLogFiltering(
-    document.getElementById('log-content') as HTMLDivElement,
-    levelCheckboxes,
-  );
+  // Wire log viewer
+  const logViewer = document.getElementById('log-viewer');
+  if (logViewer) createLogViewer(logViewer, logger);
 
   // Load data
   await loadEndpoints();
