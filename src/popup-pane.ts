@@ -38,6 +38,7 @@ let els: {
   status: HTMLElement | null;
   emptyState: HTMLElement | null;
   streamCount: HTMLElement | null;
+  endpointCount: HTMLElement | null;
   streamsContainer: HTMLElement | null;
 };
 
@@ -61,7 +62,7 @@ async function initialize() {
   const logging = initLogging('popup', {
     statusBar: document.getElementById('status-bar') as HTMLDivElement,
     statusMsg: document.getElementById('status-message') as HTMLSpanElement,
-    logViewer: document.getElementById('log-viewer') as HTMLDivElement,
+    logViewer: document.getElementById('log-content') as HTMLDivElement,
   });
   logger = logging.logger;
 
@@ -87,7 +88,8 @@ async function initialize() {
     status: document.getElementById('status'),
     emptyState: document.getElementById('empty-state'),
     streamCount: document.getElementById('stream-count'),
-    streamsContainer: document.getElementById('streams-container'),
+    endpointCount: document.getElementById('endpoint-count'),
+    streamsContainer: document.getElementById('streams-scrollp'),
   };
 
   // Wire log filtering (always visible)
@@ -95,7 +97,7 @@ async function initialize() {
     '.log-level-filter',
   ) as NodeListOf<HTMLInputElement>;
   applyLogFiltering(
-    document.getElementById('log-viewer') as HTMLDivElement,
+    document.getElementById('log-content') as HTMLDivElement,
     levelCheckboxes,
   );
 
@@ -188,8 +190,12 @@ async function loadStreams() {
       els.status.classList.remove('detected');
     }
     if (els.streamCount) els.streamCount.textContent = '0';
-    const container = document.getElementById('streams-list');
+    if (els.endpointCount)
+      els.endpointCount.textContent = apiEndpoints.length.toString();
+    const listContainer = document.getElementById('streams-scrollp');
+    const container = document.getElementById('streams');
     if (container) container.innerHTML = '';
+    if (listContainer) listContainer.style.display = 'block'; // Show scrollpane to display placeholder
     // Create page-only stream object with page metadata
     const tabs = await browser.tabs.query({
       active: true,
@@ -214,6 +220,8 @@ async function loadStreams() {
 
     if (els.streamCount)
       els.streamCount.textContent = streams.length.toString();
+    if (els.endpointCount)
+      els.endpointCount.textContent = apiEndpoints.length.toString();
 
     displayStreamsPopup(streams);
   }
@@ -366,7 +374,8 @@ async function handleCopyBtn(stream: StreamInfo, endpointName?: string) {
 async function handleRefresh() {
   try {
     if (els.loading) els.loading.style.display = 'block';
-    if (els.streamsContainer) els.streamsContainer.innerHTML = '';
+    const streamsContainer = document.getElementById('streams');
+    if (streamsContainer) streamsContainer.innerHTML = '';
 
     logger.debug('Refresh button clicked');
     // Clear cache to refetch endpoints from storage (may have changed in options)

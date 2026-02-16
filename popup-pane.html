@@ -22,7 +22,7 @@
       .content {
         padding: 1rem;
         padding-bottom: 0;
-        gap: 0.5rem;
+        gap: 0.125rem;
       }
 
       .panel-header {
@@ -119,11 +119,18 @@
   </head>
   <body>
     <div class="header">
-      <h1>
-        🎵 <em>Streamonio</em>
-        <sub id="popup-version" style="color: #999; font-size: 0.5em; font-style: normal">…</sub>
-      </h1>
-      <p>Send page streams to API calls</p>
+      <div class="header-content">
+        <div class="header-main">
+          <h1>
+            🎵 <em>Streamonio</em>
+            <sub id="popup-version" style="color: #999; font-size: 0.5em; font-style: normal"
+              >…</sub
+            >
+          </h1>
+          <p>Send page streams to API calls</p>
+        </div>
+        <button id="options-btn" class="header-icon-btn" title="Options">⚙️</button>
+      </div>
     </div>
 
     <div class="content">
@@ -133,26 +140,25 @@
 
       <div id="status" class="status" style="display: none">
         <div class="status-title">
-          <span>Streams on this page:</span>
-          <span class="badge" id="stream-count">0</span>
+          <span class="badge" id="stream-count">0</span><span> streams, </span
+          ><span class="badge" id="endpoint-count">0</span><span> endpoints</span>
+          <button id="refresh-btn" class="status-banner-icon-btn" title="Refresh">🔄</button>
         </div>
       </div>
 
-      <!-- Button Group -->
-      <div class="button-group">
-        <button id="refresh-btn" class="btn-secondary">🔄 Refresh</button>
-        <button id="options-btn" class="btn-secondary">⚙️ Options</button>
-      </div>
-
       <!-- Streams list (compact, scrollable) -->
-      <div id="streams-list-container" class="streams-list-container" style="display: none">
-        <div id="streams-list" class="streams-list"></div>
+      <div id="streams-scrollp" class="streams-scrollp">
+        <div id="streams" class="streams"></div>
+        <div class="list-placeholder">Detected media streams will appear here</div>
       </div>
 
-      <!-- Stream detail panel (actions only, no redundant stream display) -->
-      <div id="stream-panel" class="stream-panel" style="display: none">
-        <div id="panel-actions" class="stream-actions"></div>
+      <!-- Endpoint list (2-column grid, scrollable) -->
+      <div id="endps-scrollp" class="endps-scrollp">
+        <div id="endps" class="endps"></div>
+        <div class="list-placeholder">API endpoints will appear here (configure in Options)</div>
       </div>
+      <!-- Action buttons (single row) -->
+      <div id="btns" class="btns"></div>
 
       <div id="empty-state" class="empty-state" style="display: none">
         <div class="empty-state-icon">🔍</div>
@@ -162,18 +168,32 @@
         </p>
       </div>
 
-      <!-- Log Filters & Viewer -->
-      <div id="log-filter-panel" class="log-filter-panel">
-        <label
-          ><input type="checkbox" class="log-level-filter" value="error" checked /> Error</label
-        >
-        <label><input type="checkbox" class="log-level-filter" value="warn" checked /> Warn</label>
-        <label><input type="checkbox" class="log-level-filter" value="info" checked /> Info</label>
-        <label
-          ><input type="checkbox" class="log-level-filter" value="debug" checked /> Debug</label
-        >
+      <!-- Log Viewer with integrated filters -->
+      <div id="log-viewer" class="log-viewer">
+        <div class="log-filter-bar">
+          <label class="filter-icon" title="Error"
+            ><input type="checkbox" class="log-level-filter" value="error" checked /><span
+              >❌</span
+            ></label
+          >
+          <label class="filter-icon" title="Warning"
+            ><input type="checkbox" class="log-level-filter" value="warn" checked /><span
+              >⚠️</span
+            ></label
+          >
+          <label class="filter-icon" title="Info"
+            ><input type="checkbox" class="log-level-filter" value="info" checked /><span
+              >ℹ️</span
+            ></label
+          >
+          <label class="filter-icon" title="Debug"
+            ><input type="checkbox" class="log-level-filter" value="debug" checked /><span
+              >🐛</span
+            ></label
+          >
+        </div>
+        <div id="log-content" class="log-content"></div>
       </div>
-      <div id="log-viewer" class="log-viewer"></div>
     </div>
 
     <!-- Status Bar - natural flex child at bottom -->

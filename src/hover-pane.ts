@@ -17,7 +17,7 @@ import {
   applyTemplate,
   formatResponseBody,
   loadUserVars,
-  parseEndpoints,
+  type parseEndpoints,
   previewCall,
   sortEndpointsByMRU,
 } from './endpoint';
@@ -35,6 +35,7 @@ let els: {
   status: HTMLElement | null;
   emptyState: HTMLElement | null;
   streamCount: HTMLElement | null;
+  endpointCount: HTMLElement | null;
   streamsList: HTMLElement | null;
   streamsListContainer: HTMLElement | null;
   streamPanel: HTMLElement | null;
@@ -48,7 +49,7 @@ async function initialize() {
   const logging = initLogging('hover', {
     statusBar: document.getElementById('status-bar') as HTMLDivElement,
     statusMsg: document.getElementById('status-message') as HTMLSpanElement,
-    logViewer: document.getElementById('log-viewer') as HTMLDivElement,
+    logViewer: document.getElementById('log-content') as HTMLDivElement,
   });
   logger = logging.logger;
 
@@ -69,9 +70,10 @@ async function initialize() {
     status: document.getElementById('status'),
     emptyState: document.getElementById('empty-state'),
     streamCount: document.getElementById('stream-count'),
-    streamsList: document.getElementById('streams-list'),
-    streamsListContainer: document.getElementById('streams-list-container'),
-    streamPanel: document.getElementById('stream-panel'),
+    endpointCount: document.getElementById('endpoint-count'),
+    streamsList: document.getElementById('streams'),
+    streamsListContainer: document.getElementById('streams-scrollp'),
+    streamPanel: document.getElementById('endps-scrollp'),
   };
 
   // Wire log filtering
@@ -79,7 +81,7 @@ async function initialize() {
     '.log-level-filter',
   ) as NodeListOf<HTMLInputElement>;
   applyLogFiltering(
-    document.getElementById('log-viewer') as HTMLDivElement,
+    document.getElementById('log-content') as HTMLDivElement,
     levelCheckboxes,
   );
 
@@ -158,6 +160,8 @@ async function loadStreams() {
         els.status.classList.remove('detected');
       }
       if (els.streamCount) els.streamCount.textContent = '0';
+      if (els.endpointCount)
+        els.endpointCount.textContent = apiEndpoints.length.toString();
       if (els.loading) els.loading.style.display = 'none';
       if (els.streamPanel) els.streamPanel.style.display = 'block';
       const list = els.streamsList;
@@ -181,6 +185,8 @@ async function loadStreams() {
 
     if (els.streamCount)
       els.streamCount.textContent = streams.length.toString();
+    if (els.endpointCount)
+      els.endpointCount.textContent = apiEndpoints.length.toString();
 
     displayStreamsHover(streams);
   } catch (error) {

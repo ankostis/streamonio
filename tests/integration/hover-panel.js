@@ -48,7 +48,6 @@ async function run() {
 
   const proc = spawn(webExtPath, args, { cwd });
 
-  let _stdout = '';
   let stderr = '';
   let addonInstalled = false;
   let hoverPanelInjected = false;

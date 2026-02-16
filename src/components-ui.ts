@@ -6,6 +6,7 @@ import type { ApiEndpoint } from './endpoint';
 import { Logger } from './logger';
 import { createLogAppender, createStatusRenderer } from './logger-ui';
 import type { StreamInfo } from './types';
+import { ICONS } from './ui-constants';
 
 /**
  * Button configuration
@@ -120,7 +121,7 @@ export function createStreamListItem(
   // Mark blob URLs as non-functional
   const isBlob = stream.streamUrl.startsWith('blob:');
   if (isBlob) {
-    item.style.background = '#e0e0e0';
+    item.classList.add('blob-url');
     item.style.cursor = 'default';
     item.title = 'Blob URLs cannot be sent to APIs (memory-only references)';
   }
@@ -153,13 +154,30 @@ export function displayStreams(
   streams: StreamInfo[],
   onSelectStream: (stream: StreamInfo, index: number) => void,
 ): void {
-  const listContainer = document.getElementById('streams-list-container');
-  const list = document.getElementById('streams-list');
-  const panel = document.getElementById('stream-panel');
+  console.log(
+    '[components-ui] displayStreams called with',
+    streams.length,
+    'streams',
+  );
+  const listContainer = document.getElementById('streams-scrollp');
+  const list = document.getElementById('streams');
 
-  if (!list || !listContainer || !panel) return;
+  console.log('[components-ui] Found elements:', {
+    listContainer: !!listContainer,
+    list: !!list,
+  });
+
+  if (!list || !listContainer) {
+    console.error('[components-ui] Missing elements, aborting displayStreams');
+    return;
+  }
 
   list.innerHTML = '';
+  console.log(
+    '[components-ui] Cleared list, appending',
+    streams.length,
+    'items',
+  );
 
   streams.forEach((stream, index) => {
     const item = createStreamListItem(stream, index, index === 0, () => {
@@ -173,10 +191,18 @@ export function displayStreams(
     list.appendChild(item);
   });
 
+  console.log(
+    '[components-ui] Appended all items, list.children.length =',
+    list.children.length,
+  );
+  console.log('[components-ui] Setting listContainer display to block');
+
+  // Always show scrollpane (placeholder visible when empty)
   listContainer.style.display = 'block';
 
   // Auto-select first stream
   if (streams.length > 0) {
+    console.log('[components-ui] Auto-selecting first stream');
     onSelectStream(streams[0], 0);
   }
 }
@@ -203,47 +229,90 @@ export function populateStreamPanel(
   activeEndpoints: ApiEndpoint[],
   handlers: StreamActionHandlers,
 ): void {
-  const panel = document.getElementById('stream-panel');
-  const panelActions = document.getElementById('panel-actions');
+  console.log(
+    '[components-ui] populateStreamPanel called with',
+    activeEndpoints.length,
+    'endpoints',
+  );
+  const endpListScrollpane = document.getElementById('endps-scrollp');
+  const endpList = document.getElementById('endps');
+  const actionButtons = document.getElementById('btns');
 
-  if (!panel || !panelActions) return;
+  console.log('[components-ui] Found elements:', {
+    endpListScrollpane: !!endpListScrollpane,
+    endpList: !!endpList,
+    actionButtons: !!actionButtons,
+  });
 
-  // Rebuild actions
-  panelActions.innerHTML = '';
-
-  let endpointName: string | undefined = activeEndpoints[0]?.name;
-
-  if (activeEndpoints.length > 0) {
-    const select = document.createElement('select');
-    select.className = 'endpoint-select';
-
-    // Update select tooltip on change (option titles don't work in most browsers)
-    const updateTooltip = () => {
-      const selectedEndpoint = activeEndpoints.find(
-        (ep) => ep.name === select.value,
-      );
-      select.title = selectedEndpoint?.description || '';
-    };
-
-    activeEndpoints.forEach((endpoint, index) => {
-      const option = document.createElement('option');
-      option.value = endpoint.name;
-      option.textContent = endpoint.name;
-      option.selected = index === 0; // Select first (MRU) endpoint
-      select.appendChild(option);
-    });
-
-    updateTooltip(); // Set initial tooltip
-
-    select.addEventListener('change', (e) => {
-      const target = e.target as HTMLSelectElement;
-      endpointName = target.value;
-      updateTooltip();
-    });
-    panelActions.appendChild(select);
+  if (!endpListScrollpane || !endpList || !actionButtons) {
+    console.error(
+      '[components-ui] Missing elements, aborting populateStreamPanel',
+    );
+    return;
   }
 
-  // Create split-button groups
+  // Preserve previously selected endpoint BEFORE clearing
+  const previouslySelected = document.querySelector(
+    '.endpoint-list-item.selected',
+  );
+  const previousEndpointName = previouslySelected?.querySelector(
+    '.endpoint-list-name',
+  )?.textContent;
+
+  // Rebuild endpoint list and buttons
+  endpList.innerHTML = '';
+  actionButtons.innerHTML = '';
+  console.log('[components-ui] Cleared endpList and actionButtons');
+
+  // Use preserved selection if it still exists, otherwise default to first
+  const selectedEndpoint =
+    activeEndpoints.find((ep) => ep.name === previousEndpointName) ||
+    activeEndpoints[0];
+  let endpointName: string | undefined = selectedEndpoint?.name;
+
+  // Append endpoint items directly (no wrapper) - will be 2-column grid via CSS
+  if (activeEndpoints.length > 0) {
+    activeEndpoints.forEach((endpoint, index) => {
+      const item = document.createElement('div');
+      item.className = 'endpoint-list-item';
+      if (endpoint.name === endpointName) item.classList.add('selected');
+
+      // Endpoint name
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'endpoint-list-name';
+      nameSpan.textContent = endpoint.name;
+
+      // Info tooltip icon (larger clickable area)
+      const infoIcon = document.createElement('span');
+      infoIcon.className = 'endpoint-info-icon';
+      infoIcon.innerHTML = `<span class="info-circle">${ICONS.INFO}</span>`;
+      infoIcon.title = `${endpoint.description || endpoint.name}\n${endpoint.method || 'POST'} → ${endpoint.endpointTemplate}`;
+
+      item.appendChild(nameSpan);
+      item.appendChild(infoIcon);
+
+      // Click to select endpoint
+      item.addEventListener('click', () => {
+        document
+          .querySelectorAll('.endpoint-list-item')
+          .forEach((el) => el.classList.remove('selected'));
+        item.classList.add('selected');
+        endpointName = endpoint.name;
+      });
+
+      endpList.appendChild(item); // Direct child
+    });
+    console.log(
+      '[components-ui] Appended',
+      activeEndpoints.length,
+      'endpoints, endpList.children.length =',
+      endpList.children.length,
+    );
+  } else {
+    console.log('[components-ui] No endpoints to display');
+  }
+
+  // Append button groups to separate container
   const testGroup = createSplitButtonGroup({
     variant: 'test-group',
     buttons: [
@@ -280,9 +349,20 @@ export function populateStreamPanel(
     ],
   });
 
-  // Append split-button groups
-  panelActions.appendChild(testGroup);
-  panelActions.appendChild(actionGroup);
+  // Append to button container
+  actionButtons.appendChild(testGroup);
+  actionButtons.appendChild(actionGroup);
 
-  panel.style.display = 'block';
+  console.log(
+    '[components-ui] Appended buttons, actionButtons.children.length =',
+    actionButtons.children.length,
+  );
+  console.log('[components-ui] Setting display styles');
+
+  // Always show scrollpane (placeholder visible when empty)
+  endpListScrollpane.style.display = 'block';
+  endpList.style.display = 'grid';
+  actionButtons.style.display = 'grid';
+
+  console.log('[components-ui] populateStreamPanel complete');
 }
