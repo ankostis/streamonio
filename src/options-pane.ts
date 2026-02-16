@@ -602,6 +602,14 @@ async function renderUserVarsList() {
     cancelBtn.addEventListener('click', () => handleCancelUserVar(item));
     item.appendChild(cancelBtn);
 
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'var-delete-btn';
+    deleteBtn.textContent = ICONS.DELETE;
+    deleteBtn.title = 'Delete variable';
+    deleteBtn.addEventListener('click', () => handleDeleteUserVar(key));
+    item.appendChild(deleteBtn);
+
     // Clone button
     const cloneBtn = document.createElement('button');
     cloneBtn.className = 'var-clone-btn';
@@ -613,14 +621,6 @@ async function renderUserVarsList() {
       handleCloneUserVar(item, currentKey, currentValue);
     });
     item.appendChild(cloneBtn);
-
-    // Delete button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'var-delete-btn';
-    deleteBtn.textContent = ICONS.DELETE;
-    deleteBtn.title = 'Delete variable';
-    deleteBtn.addEventListener('click', () => handleDeleteUserVar(key));
-    item.appendChild(deleteBtn);
 
     list.appendChild(item);
   }
