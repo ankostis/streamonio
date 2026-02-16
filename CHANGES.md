@@ -3,48 +3,52 @@
 - [ ] Chromecast
 - [ ] Music Assistant
 - [ ] Snapcast
-- [ ] FEAT(options, endp) User-defined interpolations (eg server IPs)
 - [ ] Notify msg when endps/vars edited to auto refresh
-- [ ] Improve hovers on mobile (long-tap?)
-- [ ] Fix(options) Mark Edit endpoint as dirty if not saved
-- [ ] shrink hover mark and move it to the very edge, not to hinder page content.
 - [ ] Undo option changes, instead of confirmation dialog.
 - [ ] Feat(options,UI) draggable height of activity logs in
 - [ ] Feat(options,UI) tabs on mobile
-- Refact(UI): DRY, extract icons & colors into theme
+- [ ] Fix(options) Mark Edit endpoint as dirty if not saved
+
+## v0.7.0 - (2026-15-08) User interpolation variables, enhance both UIs, themes
+
+- FEAT(OPTIONS, ENDP) User-defined interpolations (eg server IPs)
+- FEAT(CALLAPI.UI): endpoint dropdown -> 2-col list and and a slew of UI WORK
+- Fix(hover) shrink hover mark and move it to the very edge, not to hinder page content.
+- REFACT(UI) DRY, use constants in the code & CSS for icons & smileys (aka theme)
+- Feat(options.UI) Touch friendly tooltips in options
 
 ### v0.6.2-DEV - version auto DEV by git-tag, ui work on split-buttons
 
-- feat(UI): split-button groups in popup & hover panels>
+- feat(UI) split-button groups in popup & hover panels>
 - Feat(VER) auto DEV if tagged, ver in `package.json` >
 - Chore(AI) build process in Copilot guidelines;  compressed to aid sonnet remember...
 
 ## v0.6.1 - (2026-14-08) Fix Hover, `+{{seekTimeSecs}}` `-{{timestamp}}`, unify StreamInfo+RequestContext, lint checks
 
-- FIX(hover): was stuck on loading spinner.
+- FIX(hover) was stuck on loading spinner.
   - feat(test.hover) +integration TC to capture init errors.
-- Feat(endp): add `{{seekTimeSecs}}` interpolation, drop useless `{{timestamp}}`.
+- Feat(endp) add `{{seekTimeSecs}}` interpolation, drop useless `{{timestamp}}`.
 - feat(endp) Log call & better preview
-- feat(ui): refresh button reloads also endpoints.
-- feat(ui): copy button now copies final interpolated URL.
-- Feat(options.ui): rework edit-endpoint section.
-- fix(ui): preview button yellow
+- feat(ui) refresh button reloads also endpoints.
+- feat(ui) copy button now copies final interpolated URL.
+- Feat(options.ui) rework edit-endpoint section.
+- fix(ui) preview button yellow
 - REFACT: unify STREAMINFO & eliminate RequestContext>
-- Refact(Endp): unify API call & preview code paths >
-- Refact(LINT): relax type checks, fix most lint errors & warns, also on test-code.
-- Feat(build): compiler checks TypeScript Types.
+- Refact(Endp) unify API call & preview code paths >
+- Refact(LINT) relax type checks, fix most lint errors & warns, also on test-code.
+- Feat(build) compiler checks TypeScript Types.
 
 ## v0.6.0 - (2026-02-08) MSE & blob(informational) Support
 
-- FEAT(detect): Intercepts MediaSource Extensions (MSE) usually originating from blob URLs
+- FEAT(detect) Intercepts MediaSource Extensions (MSE) usually originating from blob URLs
  (eg youtube). Hook fetch, XMLHttpRequest, and MediaSource constructor.
  Blob URLs are grey background, unselectable, with a tooltip explaining limitation.
-- Drop(detect): `interceptNetworkRequests()` that ran in isolated extension context
+- Drop(detect) `interceptNetworkRequests()` that ran in isolated extension context
   and never intercepted page's fetch/XHR calls from day one, out of missunderstanding
   of the various contexts involved.
-- FIX(options.ui): Endpoint list was not scrollable.
-- Feat(options.ui): Split-button imports to fit better in mobile.
-- FEAT(version): DEV build indicator in `manifest.json::version_name`.
+- FIX(options.ui) Endpoint list was not scrollable.
+- Feat(options.ui) Split-button imports to fit better in mobile.
+- FEAT(version) DEV build indicator in `manifest.json::version_name`.
 
 ## v0.5.1 - (2026-01-10) unreleased
 
@@ -65,7 +69,7 @@
 - Fix: logger areas don't wrap lines
 - Feat/STYLE(BUILD) Linting, FORMATting, Dedupe(PMD), Dead code elimination
 - Fix(ui) usability fixes on hover-panel
-- feat(ui): github home & Lic & Date in About
+- feat(ui) github home & Lic & Date in About
 - refact: `logger` accepts category only on its constructor.
 - refact: de-dupe getElementById; fix Stuck Tests
 - Doc: Trim and correct README (not yet prime time).
@@ -102,7 +106,7 @@
 - feat(build) include version in zip fname when packaging the extension.
 - drop(broker) minor messaging dead code
 - chore: my project coordinates in `manifest.json`
-- [x] TODO/Enh(API): support POST for "Open in Tab" button with dynamic `<form>` submission.
+- [x] TODO/Enh(API) support POST for "Open in Tab" button with dynamic `<form>` submission.
 - [x] TODO/FEAT: hover panel full implementation (WIP since v0.1.0)
 
 ## v0.2.0 - (2025-12-15) FIXED and ENHANCED
@@ -140,7 +144,7 @@ lg- FIX: had duplicate endpoint DEFAULTS.
 plb- Feat: Refactored options UI for mobile-friendly experience:
 - Enhanced API validation with real calls and detailed logging
 - Logger architecture hardening (required logger, no console.* calls)
-- Fix(mobile): options button in popup not quite working:
+- Fix(mobile) options button in popup not quite working:
   opens new tab without switching to it, filling up the tab list.  Reuse tab??
 - doc: improve README.
 - [ ] TODO/CHORE: prepare for Mozilla extension site submission.
