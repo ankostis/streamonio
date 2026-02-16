@@ -45,6 +45,7 @@
 ## Development
 
 - Build: `npm run build`. Package: `npm run package"`, explore other package.json scripts occasionally.
+- When prompt refers to past changes, it may imply 4 things: the past couple of prompts, diffs in git-workspace, staged index or past commits.  Ask if unclear.
 
 ### Workflow
 After code/HTML/CSS changes:
