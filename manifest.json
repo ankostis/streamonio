@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Streamonio",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "A browser-extension to call HTTP endpoints with page's media URLs (podcasts, radios & live streams)",
   "author": "Kostis Anagnostopoulos",
   "homepage_url": "https://github.com/ankostis/streamonio",
@@ -19,14 +19,20 @@
     "<all_urls>"
   ],
   "background": {
-    "scripts": ["dist/broker.js"],
+    "scripts": [
+      "dist/broker.js"
+    ],
     "service_worker": "dist/broker.js",
     "type": "module"
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["dist/page.js"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "dist/page.js"
+      ],
       "run_at": "document_end",
       "all_frames": true
     }
@@ -53,8 +59,14 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["dist/page.js", "dist/hover-pane.html", "dist/hover-pane.js"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "dist/page.js",
+        "dist/hover-pane.html",
+        "dist/hover-pane.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
   "browser_specific_settings": {
