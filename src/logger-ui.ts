@@ -112,7 +112,8 @@ export function createLogActionBar(container: HTMLElement, logger: any) {
   clearSpan.textContent = '🧹';
   clearBtn.appendChild(clearInput);
   clearBtn.appendChild(clearSpan);
-  clearBtn.addEventListener('click', () => {
+  clearBtn.addEventListener('click', (e) => {
+    e.preventDefault(); // Prevent checkbox toggle
     logger.clearLogs();
     const viewer = container.querySelector('.log-content') as HTMLDivElement;
     if (viewer) viewer.innerHTML = '<div class="log-empty">No logs yet</div>';
@@ -129,7 +130,8 @@ export function createLogActionBar(container: HTMLElement, logger: any) {
   exportSpan.textContent = '⬇️';
   exportBtn.appendChild(exportInput);
   exportBtn.appendChild(exportSpan);
-  exportBtn.addEventListener('click', () => {
+  exportBtn.addEventListener('click', (e) => {
+    e.preventDefault(); // Prevent checkbox toggle
     const json = logger.exportJSON();
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
