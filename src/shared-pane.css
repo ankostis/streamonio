@@ -422,6 +422,7 @@ body {
   margin: 0;
   border-radius: 0;
   position: relative;
+  font-size: 0.7rem;
 }
 
 .split-btn-group button:first-child {
@@ -758,10 +759,14 @@ button {
   .split-btn-group button {
     width: auto !important;
     flex: 1;
+    padding: 0.375rem 0.25rem;
+    min-height: 2rem;
+    font-size: 0.625rem;
   }
 
   button {
     width: 100%;
+    font-size: 0.625rem;
   }
 
   .status-bar-card {
