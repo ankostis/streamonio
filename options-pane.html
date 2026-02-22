@@ -1199,9 +1199,28 @@
           min-width: 0;
         }
 
-        /* User-vars: single button takes full width */
+        .card-actions .split-btn-group {
+          display: flex;
+          flex-wrap: nowrap;
+          grid-column: span 2;
+        }
+
+        .card-actions .split-btn-group button {
+          width: auto;
+          flex: 1;
+        }
+
+        /* User-vars: 3 buttons in one row (split-btn takes 2 cols, Add takes 1) */
         #user-vars-card .card-actions {
-          grid-template-columns: 1fr;
+          grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        #user-vars-card .card-actions .split-btn-group {
+          grid-column: span 2;
+        }
+
+        #user-vars-card .card-actions > button {
+          grid-column: span 1;
         }
 
         /* Mobile: single column layout with specific order */
@@ -1604,8 +1623,26 @@
                 >
               </h2>
               <div class="card-actions">
+                <div class="split-btn-group danger-group">
+                  <button
+                    id="reset-vars-btn"
+                    class="btn-danger"
+                    type="button"
+                    title="Reset to defaults"
+                  >
+                    ↺<br />Reset
+                  </button>
+                  <button
+                    id="clear-vars-btn"
+                    class="btn-danger"
+                    type="button"
+                    title="Clear all variables"
+                  >
+                    ✖<br />Clear
+                  </button>
+                </div>
                 <button id="add-var-btn" class="btn-primary" type="button" title="Add variable">
-                  ➕ Add
+                  ➕<br />Add
                 </button>
               </div>
             </div>

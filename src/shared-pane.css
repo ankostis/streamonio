@@ -752,6 +752,12 @@ button {
 
   .split-btn-group {
     box-shadow: var(--shadow-xs);
+    flex-wrap: nowrap;
+  }
+
+  .split-btn-group button {
+    width: auto !important;
+    flex: 1;
   }
 
   button {

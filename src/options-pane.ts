@@ -14,6 +14,7 @@ import {
   formatResponseBody,
   generateUniqueName,
   getBuiltInEndpoints,
+  getDefaultUserVars,
   loadUserVars,
   previewCall,
   saveUserVars,
@@ -702,6 +703,48 @@ async function handleDeleteUserVar(key: string) {
   logger.info(`Variable deleted: ${key}`);
 }
 
+async function clearAllUserVars() {
+  const userVars = await loadUserVars();
+  const count = Object.keys(userVars).length;
+  if (count === 0) {
+    logger.info('No variables to clear');
+    return;
+  }
+  if (!confirm(`Clear all ${count} variable(s)?`)) return;
+
+  await saveUserVars({});
+  await renderUserVarsList();
+  logger.info(`Cleared ${count} variable(s)`);
+}
+
+async function resetUserVars() {
+  const userVars = await loadUserVars();
+  const count = Object.keys(userVars).length;
+  const defaults = getDefaultUserVars();
+  const defaultCount = Object.keys(defaults).length;
+
+  if (count === 0 && defaultCount === 0) {
+    logger.info('No variables to reset');
+    return;
+  }
+
+  const msg =
+    defaultCount > 0
+      ? `Reset to ${defaultCount} default variable(s)? Current: ${count}`
+      : `Clear all ${count} variable(s)? (No defaults available)`;
+
+  if (!confirm(msg)) return;
+
+  await saveUserVars(defaults);
+  await renderUserVarsList();
+
+  if (defaultCount > 0) {
+    logger.info(`Reset to ${defaultCount} default variable(s)`);
+  } else {
+    logger.info('Variables cleared (no defaults available)');
+  }
+}
+
 async function handleSaveUserVar(item: HTMLElement) {
   const originalKey = item.dataset.originalKey;
   if (!originalKey) return;
@@ -1095,6 +1138,12 @@ async function wireEvents() {
     ?.addEventListener('click', showImportUrlModal);
 
   // User variables
+  document
+    .getElementById('reset-vars-btn')
+    ?.addEventListener('click', resetUserVars);
+  document
+    .getElementById('clear-vars-btn')
+    ?.addEventListener('click', clearAllUserVars);
   document
     .getElementById('add-var-btn')
     ?.addEventListener('click', handleAddUserVar);

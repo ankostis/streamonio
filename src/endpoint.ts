@@ -95,6 +95,18 @@ export function getBuiltInEndpoints(): ApiEndpoint[] {
 }
 
 /**
+ * Get default user variables from DEFAULT_CONFIG
+ */
+export function getDefaultUserVars(): Record<string, string> {
+  try {
+    const parsed = JSON.parse(DEFAULT_CONFIG.userVars);
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
  * Suggest an endpoint name from an endpoint URL (extract hostname)
  * Example: https://api.example.com/stream → api.example.com
  */
