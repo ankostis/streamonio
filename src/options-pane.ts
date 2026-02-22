@@ -1082,31 +1082,23 @@ async function wireEvents() {
     .getElementById('reset-btn')
     ?.addEventListener('click', resetBuiltIns);
   document
-    .getElementById('clear-all-btn')
+    .getElementById('clear-btn')
     ?.addEventListener('click', clearAllEndpoints);
   document
-    .getElementById('export-btn')
+    .getElementById('to-file-btn')
     ?.addEventListener('click', exportEndpoints);
+  document.getElementById('from-file-btn')?.addEventListener('click', () => {
+    (document.getElementById('import-file-input') as HTMLInputElement).click();
+  });
+  document
+    .getElementById('from-site-btn')
+    ?.addEventListener('click', showImportUrlModal);
 
   // User variables
   document
     .getElementById('add-var-btn')
     ?.addEventListener('click', handleAddUserVar);
   await renderUserVarsList();
-
-  // Split button import handler
-  document.getElementById('import-btn')?.addEventListener('click', () => {
-    const importType = (
-      document.getElementById('import-type-select') as HTMLSelectElement
-    ).value;
-    if (importType === 'file') {
-      (
-        document.getElementById('import-file-input') as HTMLInputElement
-      ).click();
-    } else {
-      showImportUrlModal();
-    }
-  });
 
   document
     .getElementById('import-url-cancel-btn')

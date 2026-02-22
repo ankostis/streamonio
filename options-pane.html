@@ -127,8 +127,7 @@
         width: 100%;
       }
 
-      .card-actions button,
-      .card-actions .split-button {
+      .card-actions .split-btn-group {
         flex: 1;
       }
 
@@ -726,6 +725,16 @@
         background: #fda4af;
         color: #b91c1c;
         border: 1px solid #fecaca;
+      }
+
+      .btn-danger:hover {
+        background: #fb7185;
+        border-color: #f87171;
+      }
+
+      .btn-danger:active {
+        background: #f87171;
+        transform: scale(0.98);
       }
 
       .empty-state {
@@ -1342,15 +1351,15 @@
             <div class="card-header">
               <h2 class="card-title">API Endpoints</h2>
               <div class="card-actions">
-                <button id="reset-btn" class="btn-secondary">↺ Reset</button>
-                <button id="clear-all-btn" class="btn-danger">✖ Clear</button>
-                <button id="export-btn" class="btn-secondary">⬇ Export</button>
-                <div class="split-button">
-                  <button id="import-btn" class="btn-secondary">Import</button>
-                  <select id="import-type-select">
-                    <option value="file">📁</option>
-                    <option value="url">🌐</option>
-                  </select>
+                <div class="split-btn-group danger-group">
+                  <button id="reset-btn" class="btn-danger">↺<br />Reset</button>
+                  <button id="clear-btn" class="btn-danger">✖<br />Clear</button>
+                </div>
+
+                <div class="split-btn-group primary-group">
+                  <button id="from-file-btn" class="btn-primary">📁<br />From file</button>
+                  <button id="from-site-btn" class="btn-primary">🌐<br />From site</button>
+                  <button id="to-file-btn" class="btn-primary">⬇<br />To file</button>
                 </div>
               </div>
             </div>

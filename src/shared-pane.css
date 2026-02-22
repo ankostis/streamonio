@@ -454,6 +454,10 @@ body {
   background: rgba(0, 0, 0, 0.15);
 }
 
+.split-btn-group.danger-group button + button::before {
+  background: rgba(255, 255, 255, 0.25);
+}
+
 /* Buttons */
 button {
   padding: 0.5rem 12px;
