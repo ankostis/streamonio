@@ -79,18 +79,15 @@ body {
 
 .header-icon-btn:hover {
   background: var(--color-hover-bg);
-  transform: scale(1.15) rotate(15deg);
-  animation: button-glow 1.5s infinite;
+  opacity: 0.85;
 }
 
 .header-icon-btn:active {
-  transform: scale(0.95);
-  animation: button-pulse 0.6s;
+  opacity: 0.7;
 }
 
 .header-icon-btn:focus {
   outline: none;
-  animation: button-pulse 0.6s;
 }
 /* Content area */
 .content {
@@ -131,10 +128,11 @@ body {
   margin-bottom: 0.25rem;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   white-space: nowrap;
   position: relative;
-  padding-left: 3rem;
+  padding-left: 2.5rem;
 }
 
 .status-title > span:first-child {
@@ -164,18 +162,17 @@ body {
 
 .status-banner-icon-btn:hover {
   background: var(--color-hover-bg);
-  transform: translateY(-50%) scale(1.1) rotate(15deg);
-  animation: button-glow 1.5s infinite;
+  transform: translateY(-50%);
+  opacity: 0.85;
 }
 
 .status-banner-icon-btn:active {
-  transform: translateY(-50%) scale(0.95);
-  animation: button-pulse 0.6s;
+  transform: translateY(-50%);
+  opacity: 0.7;
 }
 
 .status-banner-icon-btn:focus {
   outline: none;
-  animation: button-pulse 0.6s;
 }
 .badge {
   display: inline-block;
