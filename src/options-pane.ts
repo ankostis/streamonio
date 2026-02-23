@@ -642,6 +642,7 @@ function updateVarValidation(item: HTMLElement) {
   const statusIcon = item.querySelector('.var-status-icon') as HTMLElement;
   const warnIcon = item.querySelector('.var-warn-icon') as HTMLElement;
   const key = keyInput.value.trim();
+  const originalKey = item.dataset.originalKey;
 
   // Remove previous status classes (CSS controls visibility)
   item.classList.remove('has-invalid', 'has-conflict');
@@ -659,7 +660,22 @@ function updateVarValidation(item: HTMLElement) {
     return;
   }
 
-  // Check conflicts (also cheap - just array lookup)
+  // Check for duplicate keys (clash with existing user variables)
+  const otherKeys = new Set(
+    Array.from(document.querySelectorAll('.var-item'))
+      .filter((el) => el !== item)
+      .map((el) => (el as HTMLElement).dataset.originalKey)
+      .filter(Boolean),
+  );
+
+  if (otherKeys.has(key) && key !== originalKey) {
+    item.classList.add('has-conflict');
+    warnIcon.textContent = ICONS.WARNING;
+    warnIcon.title = `Clashes with existing variable: ${key}`;
+    return;
+  }
+
+  // Check conflicts with built-in placeholders
   const userVars: Record<string, string> = {};
   userVars[key] = '';
   const conflicts = detectUserVarConflicts(userVars);
@@ -778,8 +794,15 @@ async function handleSaveUserVar(item: HTMLElement) {
 
   // Check if key changed and new key already exists
   if (newKey !== originalKey && userVars[newKey] !== undefined) {
-    logger.error(`Variable "${newKey}" already exists`);
-    return;
+    logger.warn(`Variable "${newKey}" clashes with existing variable`);
+  }
+
+  // Check for placeholder conflicts and warn
+  const tempVars: Record<string, string> = {};
+  tempVars[newKey] = '';
+  const conflicts = detectUserVarConflicts(tempVars);
+  if (conflicts.length > 0) {
+    logger.warn(`Variable "${newKey}" conflicts with built-in placeholder: ${conflicts[0].conflict}`);
   }
 
   // Remove old key if renamed
