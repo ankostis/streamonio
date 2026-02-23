@@ -635,6 +635,98 @@ async function renderUserVarsList() {
 
     list.appendChild(item);
   }
+
+  // Add empty row at the end (always ready for new variable)
+  const emptyItem = document.createElement('div');
+  emptyItem.className = 'var-item';
+  emptyItem.dataset.originalKey = '';
+  emptyItem.dataset.originalValue = '';
+
+  // Key wrapper
+  const emptyKeyWrapper = document.createElement('div');
+  emptyKeyWrapper.className = 'var-key-wrapper';
+
+  // Key input
+  const emptyKeyInput = document.createElement('input');
+  emptyKeyInput.type = 'text';
+  emptyKeyInput.className = 'var-key-input';
+  emptyKeyInput.placeholder = 'Variable name...';
+  emptyKeyInput.addEventListener('input', () => {
+    updateVarValidation(emptyItem);
+    markVarDirty(emptyItem);
+  });
+  emptyKeyInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSaveUserVar(emptyItem);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      handleCancelUserVar(emptyItem);
+    }
+  });
+  emptyKeyWrapper.appendChild(emptyKeyInput);
+
+  // Warning icon
+  const emptyWarnIcon = document.createElement('span');
+  emptyWarnIcon.className = 'var-warn-icon';
+  emptyKeyWrapper.appendChild(emptyWarnIcon);
+  emptyItem.appendChild(emptyKeyWrapper);
+
+  // Value input
+  const emptyValueInput = document.createElement('input');
+  emptyValueInput.type = 'text';
+  emptyValueInput.className = 'var-value-input';
+  emptyValueInput.placeholder = 'Value...';
+  emptyValueInput.addEventListener('input', () => markVarDirty(emptyItem));
+  emptyValueInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSaveUserVar(emptyItem);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      handleCancelUserVar(emptyItem);
+    }
+  });
+  emptyItem.appendChild(emptyValueInput);
+
+  // Save button
+  const emptySaveBtn = document.createElement('button');
+  emptySaveBtn.className = 'var-save-btn';
+  emptySaveBtn.textContent = ICONS.SUCCESS;
+  emptySaveBtn.title = 'Save (Enter)';
+  emptySaveBtn.addEventListener('click', () => handleSaveUserVar(emptyItem));
+  emptyItem.appendChild(emptySaveBtn);
+
+  // Status icon
+  const emptyStatusIcon = document.createElement('span');
+  emptyStatusIcon.className = 'var-status-icon';
+  emptyItem.appendChild(emptyStatusIcon);
+
+  // Cancel button
+  const emptyCancelBtn = document.createElement('button');
+  emptyCancelBtn.className = 'var-cancel-btn';
+  emptyCancelBtn.textContent = ICONS.CANCEL;
+  emptyCancelBtn.title = 'Cancel (Esc)';
+  emptyCancelBtn.addEventListener('click', () =>
+    handleCancelUserVar(emptyItem),
+  );
+  emptyItem.appendChild(emptyCancelBtn);
+
+  // Delete button (hidden via CSS for empty row)
+  const emptyDeleteBtn = document.createElement('button');
+  emptyDeleteBtn.className = 'var-delete-btn';
+  emptyDeleteBtn.textContent = ICONS.DELETE;
+  emptyDeleteBtn.title = 'Delete';
+  emptyItem.appendChild(emptyDeleteBtn);
+
+  // Clone button (hidden via CSS for empty row)
+  const emptyCloneBtn = document.createElement('button');
+  emptyCloneBtn.className = 'var-clone-btn';
+  emptyCloneBtn.textContent = ICONS.CLONE;
+  emptyCloneBtn.title = 'Clone';
+  emptyItem.appendChild(emptyCloneBtn);
+
+  list.appendChild(emptyItem);
 }
 
 function updateVarValidation(item: HTMLElement) {
@@ -688,18 +780,6 @@ function updateVarValidation(item: HTMLElement) {
 
 function markVarDirty(item: HTMLElement) {
   item.classList.add('dirty');
-}
-
-async function handleAddUserVar() {
-  const userVars = await loadUserVars();
-  const baseName = 'newVar';
-  const existingKeys = Object.keys(userVars);
-  const newKey = generateUniqueName(baseName, existingKeys, '_');
-
-  userVars[newKey] = '';
-  await saveUserVars(userVars);
-  await renderUserVarsList();
-  logger.info(`Variable added: ${newKey}`);
 }
 
 async function handleCloneUserVar(
@@ -775,8 +855,7 @@ async function resetUserVars() {
 }
 
 async function handleSaveUserVar(item: HTMLElement) {
-  const originalKey = item.dataset.originalKey;
-  if (!originalKey) return;
+  const originalKey = item.dataset.originalKey ?? '';
 
   const keyInput = item.querySelector('.var-key-input') as HTMLInputElement;
   const valueInput = item.querySelector('.var-value-input') as HTMLInputElement;
@@ -792,7 +871,7 @@ async function handleSaveUserVar(item: HTMLElement) {
 
   const userVars = await loadUserVars();
 
-  // Check if key changed and new key already exists
+  // Check if key already exists (for new variables or renames)
   if (newKey !== originalKey && userVars[newKey] !== undefined) {
     logger.warn(`Variable "${newKey}" clashes with existing variable`);
   }
@@ -802,32 +881,47 @@ async function handleSaveUserVar(item: HTMLElement) {
   tempVars[newKey] = '';
   const conflicts = detectUserVarConflicts(tempVars);
   if (conflicts.length > 0) {
-    logger.warn(`Variable "${newKey}" conflicts with built-in placeholder: ${conflicts[0].conflict}`);
+    logger.warn(
+      `Variable "${newKey}" conflicts with built-in placeholder: ${conflicts[0].conflict}`,
+    );
   }
 
-  // Remove old key if renamed
-  if (newKey !== originalKey) {
+  // Remove old key if renamed (skip if originalKey is empty = new variable)
+  if (originalKey && newKey !== originalKey) {
     delete userVars[originalKey];
   }
 
   userVars[newKey] = newValue;
   await saveUserVars(userVars);
   await renderUserVarsList();
-  logger.info(`Variable saved: ${newKey}`);
+
+  const action = originalKey ? 'saved' : 'added';
+  logger.info(`Variable ${action}: ${newKey}`);
 }
 
 function handleCancelUserVar(item: HTMLElement) {
-  const originalKey = item.dataset.originalKey;
-  const originalValue = item.dataset.originalValue;
-
-  if (!originalKey) return;
+  const originalKey = item.dataset.originalKey ?? '';
+  const originalValue = item.dataset.originalValue ?? '';
 
   const keyInput = item.querySelector('.var-key-input') as HTMLInputElement;
   const valueInput = item.querySelector('.var-value-input') as HTMLInputElement;
 
+  // For empty row, just clear fields; for existing vars, revert to original
   keyInput.value = originalKey;
-  valueInput.value = originalValue || '';
-  item.classList.remove('dirty');
+  valueInput.value = originalValue;
+  item.classList.remove('dirty', 'has-invalid', 'has-conflict');
+
+  // Clear validation icons
+  const statusIcon = item.querySelector('.var-status-icon') as HTMLElement;
+  const warnIcon = item.querySelector('.var-warn-icon') as HTMLElement;
+  if (statusIcon) {
+    statusIcon.textContent = '';
+    statusIcon.title = '';
+  }
+  if (warnIcon) {
+    warnIcon.textContent = '';
+    warnIcon.title = '';
+  }
 }
 
 /**
@@ -1180,9 +1274,6 @@ async function wireEvents() {
   document
     .getElementById('clear-vars-btn')
     ?.addEventListener('click', clearAllUserVars);
-  document
-    .getElementById('add-var-btn')
-    ?.addEventListener('click', handleAddUserVar);
   await renderUserVarsList();
 
   document

@@ -975,6 +975,12 @@
         background-color: #fee2e2;
       }
 
+      /* Hide delete/clone buttons on empty row (new variable) */
+      .var-item[data-original-key=""] .var-delete-btn,
+      .var-item[data-original-key=""] .var-clone-btn {
+        display: none;
+      }
+
       .var-clone-btn {
         color: white;
         background-color: #667eea;
@@ -1787,9 +1793,6 @@
                     ✖<br />Clear
                   </button>
                 </div>
-                <button id="add-var-btn" class="btn-primary" type="button" title="Add variable">
-                  ➕<br />Add
-                </button>
               </div>
             </div>
             <div id="user-vars-list" class="scrollable-content">
