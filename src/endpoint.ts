@@ -212,7 +212,7 @@ async function loadEndpoints(
  * Returns empty object if not found or parse fails
  */
 export async function loadUserVars(): Promise<Record<string, string>> {
-  const defaults = { userVars: '{}' } as const;
+  const defaults = { userVars: DEFAULT_CONFIG.userVars };
   const config = (await browser.storage.sync.get(defaults)) as typeof defaults;
   try {
     const parsed = JSON.parse(config.userVars);
