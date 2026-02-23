@@ -535,19 +535,9 @@ async function renderUserVarsList() {
     const conflict = conflicts.find((c) => c.key === key);
     const validation = validateUserVarKey(key);
 
-    // Status icon (conflict or invalid)
-    const statusIcon = document.createElement('span');
-    statusIcon.className = 'var-status-icon';
-    if (!validation.valid) {
-      item.classList.add('has-invalid');
-      statusIcon.textContent = ICONS.ERROR;
-      statusIcon.title = `Invalid key: ${validation.error}`;
-    } else if (conflict) {
-      item.classList.add('has-conflict');
-      statusIcon.textContent = ICONS.WARNING;
-      statusIcon.title = `Conflicts with built-in placeholder: ${conflict.conflict}`;
-    }
-    item.appendChild(statusIcon);
+    // Key wrapper (holds input and warning icon)
+    const keyWrapper = document.createElement('div');
+    keyWrapper.className = 'var-key-wrapper';
 
     // Key input
     const keyInput = document.createElement('input');
@@ -567,7 +557,18 @@ async function renderUserVarsList() {
         handleCancelUserVar(item);
       }
     });
-    item.appendChild(keyInput);
+    keyWrapper.appendChild(keyInput);
+
+    // Warning icon (inside key field for conflicts)
+    const warnIcon = document.createElement('span');
+    warnIcon.className = 'var-warn-icon';
+    if (conflict) {
+      item.classList.add('has-conflict');
+      warnIcon.textContent = ICONS.WARNING;
+      warnIcon.title = `Conflicts with built-in placeholder: ${conflict.conflict}`;
+    }
+    keyWrapper.appendChild(warnIcon);
+    item.appendChild(keyWrapper);
 
     // Value input
     const valueInput = document.createElement('input');
@@ -586,13 +587,23 @@ async function renderUserVarsList() {
     });
     item.appendChild(valueInput);
 
-    // Save button (green check)
+    // Save button (green check) - hidden when status icon shows error
     const saveBtn = document.createElement('button');
     saveBtn.className = 'var-save-btn';
     saveBtn.textContent = ICONS.SUCCESS;
     saveBtn.title = 'Save changes (Enter)';
     saveBtn.addEventListener('click', () => handleSaveUserVar(item));
     item.appendChild(saveBtn);
+
+    // Status icon (error only) - shares btn1 position with save button
+    const statusIcon = document.createElement('span');
+    statusIcon.className = 'var-status-icon';
+    if (!validation.valid) {
+      item.classList.add('has-invalid');
+      statusIcon.textContent = ICONS.ERROR;
+      statusIcon.title = `Invalid key: ${validation.error}`;
+    }
+    item.appendChild(statusIcon);
 
     // Cancel button (red X)
     const cancelBtn = document.createElement('button');
@@ -629,11 +640,15 @@ async function renderUserVarsList() {
 function updateVarValidation(item: HTMLElement) {
   const keyInput = item.querySelector('.var-key-input') as HTMLInputElement;
   const statusIcon = item.querySelector('.var-status-icon') as HTMLElement;
+  const warnIcon = item.querySelector('.var-warn-icon') as HTMLElement;
   const key = keyInput.value.trim();
 
-  // Remove previous status classes
+  // Remove previous status classes (CSS controls visibility)
   item.classList.remove('has-invalid', 'has-conflict');
-  statusIcon.style.visibility = 'hidden';
+  statusIcon.textContent = '';
+  statusIcon.title = '';
+  warnIcon.textContent = '';
+  warnIcon.title = '';
 
   // Check validation (cheap check)
   const validation = validateUserVarKey(key);
@@ -641,7 +656,6 @@ function updateVarValidation(item: HTMLElement) {
     item.classList.add('has-invalid');
     statusIcon.textContent = '❗'; // Red exclamation
     statusIcon.title = `Invalid key: ${validation.error}`;
-    statusIcon.style.visibility = 'visible';
     return;
   }
 
@@ -651,9 +665,8 @@ function updateVarValidation(item: HTMLElement) {
   const conflicts = detectUserVarConflicts(userVars);
   if (conflicts.length > 0) {
     item.classList.add('has-conflict');
-    statusIcon.textContent = ICONS.WARNING;
-    statusIcon.title = `Conflicts with built-in placeholder: ${conflicts[0].conflict}`;
-    statusIcon.style.visibility = 'visible';
+    warnIcon.textContent = ICONS.WARNING;
+    warnIcon.title = `Conflicts with built-in placeholder: ${conflicts[0].conflict}`;
   }
 }
 
