@@ -1629,14 +1629,14 @@
                   <code>{{pageUrl}}</code>
                   <code>{{pageTitle}}</code>
                   <code>{{pageTitle|json}}</code>
-                  <code>{{timestamp}}</code>
+                  <code>{{seekTimeSecs}}</code>
                 </div>
 
                 <div class="form-group">
                   <label for="endpoint-endpoint"
                     >Endpoint URL *<span
                       class="help-icon"
-                      data-tooltip="Supports placeholders like {{streamUrl|url}}, {{PAGEURL}}, {{pageTitle|json}}, {{timestamp}}."
+                      data-tooltip="Supports placeholders like {{streamUrl|url}}, {{PAGEURL}}, {{pageTitle|json}}, {{seekTimeSecs}}."
                       >ℹ</span
                     ></label
                   >
@@ -1650,7 +1650,7 @@
                   <label for="endpoint-body"
                     >Body template (optional)<span
                       class="help-icon"
-                      data-tooltip="Leave empty to send defaults (URL + timestamp, and page info if enabled)."
+                      data-tooltip="Leave empty to send defaults."
                       >ℹ</span
                     ></label
                   >

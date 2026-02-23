@@ -24,7 +24,7 @@ function generateTestConfig(options = {}) {
           streamUrl: '{{streamUrl}}',
           pageUrl: '{{pageUrl}}',
           pageTitle: '{{pageTitle}}',
-          timestamp: '{{timestamp}}',
+          seekPosition: '{{seekTimeSecs}}',
           test: 'streamonio-integration',
         }),
         includeCookies,

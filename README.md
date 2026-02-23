@@ -81,7 +81,7 @@ The **url** & **body** endpoint fields support those *placeholders*:
 - `{{streamUrl}}` - The detected stream URL
 - `{{pageUrl}}`   - The webpage URL where the stream was found
 - `{{pageTitle}}` - The webpage title
-- `{{timestamp}}` - Current timestamp in ISO format
+- `{{seekTimeSecs}}` - Seek position in stream (seconds)
 
 Placeholders are *case-insensitive* and support 2 jinja-like filters eg. `{{streamUrl | url }}`:
 
@@ -267,8 +267,8 @@ The extension architecture revolves around six core concepts that work together 
 | **Detection Patterns** | Regex for stream URLs | `STREAM_PATTERNS` in `detect.ts` | • Match streaming media URLs<br>• Built-in, not user-configurable<br>• Tested via `content.test.ts` |
 | **Streams** | Detected URLs + metadata + classification | `StreamInfo` in `broker.ts` | • Store detected media per tab<br>• Typed as HLS, DASH, MP3, RTMP, etc.<br>• Include page context + timestamp |
 | **API Endpoints** | User-configured HTTP targets | `storage.sync.apiEndpoints`, `config.ts` | • Webhooks/APIs for detected streams<br>• Support templating<br>• Fully customizable |
-| **Interpolation Templates** | Placeholder strings | Endpoint/body templates | • Dynamic value insertion<br>• `{{streamUrl}}`, `{{pageUrl}}`, `{{pageTitle}}`, `{{timestamp}}` |
-| **Execution Contexts** | Isolated JavaScript environments | Page context vs Extension context | • Content script runs in page context<br>• Broker/popup run in extension context<br>• Cannot share variables/functions<br>• Communication only via messages |
+| **Interpolation Templates** | Placeholder strings | Endpoint/body templates | • Dynamic value insertion<br>• `{{streamUrl}}`, `{{pageUrl}}`, `{{pageTitle}}`, `{{seekTimeSecs}}` |
+| **Execution Contexts** | 2 Isolated JavaScript environments | Page context vs Extension context | • **Page context:** Content script to detect streams & Hover pane run in page context<br>• **Extension context:** Popup-pane, Options & message-broker run in extension context<br>• Cannot share variables/functions <br>• Must duplicate common code <br>• Communicate via messages only |
 | **Runtime Messages** | Cross-component IPC | `RuntimeMessage` type | • `STREAM_DETECTED` (page→broker), `GET_STREAMS` (popup→broker)<br>• `CALL_API` (hover→broker), `OPEN_IN_TAB` (hover→broker)<br>• `GET_ENDPOINTS` (hover→broker), `OPEN_OPTIONS` (any→broker)<br>• `CLOSE_HOVER_PANEL` (hover→page), `PING` (any→broker) |
 
 ### 1. Detection Patterns
@@ -296,7 +296,7 @@ The extension architecture revolves around six core concepts that work together 
     "name": "My API",
     "endpointTemplate": "https://api.example.com/stream",
     "method": "POST",
-    "bodyTemplate": "{\"url\":\"{{streamUrl}}\",\"timestamp\":\"{{timestamp}}\"}"
+    "bodyTemplate": "{\"url\":\"{{streamUrl}}\",\"seekPosition\":{{seekTimeSecs}}}"
   }
   ```
 - **Fully customizable by users** in the options page
@@ -305,11 +305,11 @@ The extension architecture revolves around six core concepts that work together 
 - **What**: Strings in `endpointTemplate` and `bodyTemplate` that contain placeholders like `{{streamUrl}}`
 - **Where**: Defined as endpoint field values; processed by `src/template.ts`
 - **Purpose**: Allow dynamic values (stream URL, page title, timestamp) to be inserted at API call time
-- **Available placeholders**: `{{streamUrl}}`, `{{pageUrl}}`, `{{pageTitle}}`, `{{timestamp}}`
+- **Available placeholders**: `{{streamUrl}}`, `{{pageUrl}}`, `{{pageTitle}}`, `{{seekTimeSecs}}`
 - **Error handling**: "Interpolation error" occurs when a placeholder is undefined or malformed
 - **Examples**:
   - Endpoint template: `https://api.example.com/notify?url={{streamUrl}}`
-  - Body template: `{"stream":"{{streamUrl}}","detected":"{{timestamp}}"}`
+  - Body template: `{"stream":"{{streamUrl}}","seekPosition":{{seekTimeSecs}}}`
 
 ### 5. Execution Contexts
 - **What**: Isolated JavaScript environments where extension code runs

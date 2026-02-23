@@ -48,7 +48,7 @@ async function run() {
 
   const proc = spawn(webExtPath, args, { cwd });
 
-  let stdout = '';
+  let _stdout = '';
   let stderr = '';
   let addonInstalled = false;
   let hoverPanelInjected = false;
@@ -63,7 +63,7 @@ async function run() {
 
   proc.stdout.on('data', (d) => {
     const s = d.toString();
-    stdout += s;
+    _stdout += s;
 
     if (hoverInjectedRegex.test(s)) {
       hoverPanelInjected = true;
