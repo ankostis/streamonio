@@ -832,26 +832,33 @@ async function resetUserVars() {
   const defaults = getDefaultUserVars();
   const defaultCount = Object.keys(defaults).length;
 
-  if (count === 0 && defaultCount === 0) {
-    logger.info('No variables to reset');
+  if (defaultCount === 0) {
+    logger.warn('No default variables available');
     return;
   }
 
+  // Merge: keep existing vars, append missing defaults
+  const merged = { ...defaults, ...userVars };
+  const addedCount = Object.keys(merged).length - count;
+
   const msg =
-    defaultCount > 0
-      ? `Reset to ${defaultCount} default variable(s)? Current: ${count}`
-      : `Clear all ${count} variable(s)? (No defaults available)`;
+    count === 0
+      ? `Add ${defaultCount} default variable(s)?`
+      : addedCount > 0
+        ? `Add ${addedCount} default variable(s) to existing ${count} variable(s)?`
+        : `All default variables already present (${count} total)`;
+
+  if (addedCount === 0) {
+    logger.info(msg);
+    return;
+  }
 
   if (!confirm(msg)) return;
 
-  await saveUserVars(defaults);
+  await saveUserVars(merged);
   await renderUserVarsList();
 
-  if (defaultCount > 0) {
-    logger.info(`Reset to ${defaultCount} default variable(s)`);
-  } else {
-    logger.info('Variables cleared (no defaults available)');
-  }
+  logger.info(`Added ${addedCount} default variable(s), total: ${Object.keys(merged).length}`);
 }
 
 async function handleSaveUserVar(item: HTMLElement) {
