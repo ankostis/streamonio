@@ -27,6 +27,20 @@ try {
   const commitDate = execSync('git log -1 --format=%cI', { encoding: 'utf8' }).trim();
   const commitHash = execSync('git log -1 --format=%h', { encoding: 'utf8' }).trim();
 
+  // Get git describe for version suffix (e.g., "20-ge80f77f" for dev builds)
+  let gitDescribe = null;
+  try {
+    const describeOutput = execSync('git describe --always --tags --long', { encoding: 'utf8' }).trim();
+    // Parse v0.7.0-20-ge80f77f -> extract "20-ge80f77f"
+    const match = describeOutput.match(/-(\d+-g[a-f0-9]+)$/);
+    if (match) {
+      gitDescribe = match[1];
+    }
+  } catch {
+    // git describe can fail if no tags exist
+    gitDescribe = null;
+  }
+
   // Check if this is a dev build (no tag, or tag doesn't match version, or NODE_ENV=development)
   let isDev = process.env.NODE_ENV === 'development';
   if (!isDev) {
@@ -44,6 +58,7 @@ try {
     commitHash,
     buildDate: new Date().toISOString(),
     isDev,
+    gitDescribe, // e.g., "20-ge80f77f" or null
   };
 
   const outputPath = path.join(__dirname, '../src/build-info.json');
@@ -58,6 +73,7 @@ try {
     commitHash: null,
     buildDate: new Date().toISOString(),
     isDev: true, // Assume dev if not in git
+    gitDescribe: null,
   };
   const outputPath = path.join(__dirname, '../src/build-info.json');
   fs.writeFileSync(outputPath, JSON.stringify(buildInfo, null, 2));

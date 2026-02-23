@@ -1311,7 +1311,11 @@ async function wireEvents() {
 async function initialize() {
   // Display version from manifest
   const manifest = browser.runtime.getManifest();
-  const devSuffix = buildInfo.isDev ? '-dev' : '';
+  const devSuffix = buildInfo.isDev
+    ? buildInfo.gitDescribe
+      ? `-dev-${buildInfo.gitDescribe}`
+      : '-dev'
+    : '';
   const versionText = `Version ${manifest.version}${devSuffix}`;
   const dateText = buildInfo.commitDate
     ? ` • Released ${new Date(buildInfo.commitDate).toLocaleDateString()}`

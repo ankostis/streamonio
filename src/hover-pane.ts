@@ -59,7 +59,11 @@ async function initialize() {
   const manifest = browser.runtime.getManifest();
   const versionEl = document.getElementById('hover-version');
   if (versionEl) {
-    const devSuffix = buildInfo.isDev ? '-dev' : '';
+    const devSuffix = buildInfo.isDev
+      ? buildInfo.gitDescribe
+        ? `-dev-${buildInfo.gitDescribe}`
+        : '-dev'
+      : '';
     versionEl.textContent = `v${manifest.version}${devSuffix}`;
     if (buildInfo.isDev) {
       versionEl.style.color = '#ff9800'; // Orange for dev builds

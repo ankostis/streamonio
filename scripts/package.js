@@ -12,7 +12,11 @@ try {
   const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
 
   const version = packageJson.version;
-  const suffix = buildInfo.isDev ? '-dev' : '';
+  const suffix = buildInfo.isDev
+    ? buildInfo.gitDescribe
+      ? `-dev-${buildInfo.gitDescribe}`
+      : '-dev'
+    : '';
   const filename = `streamonio-${version}${suffix}.zip`;
 
   console.log(`📦 Packaging: ${filename}`);
