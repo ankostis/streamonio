@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Streamonio",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "A browser-extension to call HTTP endpoints with page's media URLs (podcasts, radios & live streams)",
   "author": "Kostis Anagnostopoulos",
   "homepage_url": "https://github.com/ankostis/streamonio",
