@@ -17,7 +17,7 @@
 - Sources: `src/*.ts` (broker, page, popup, options); HTMLs copied to `dist/`
 - APIs: `browser` namespace (`@types/firefox-webext-browser`), no framework
 - Tests: `npm test` (unit), `npm run test:integration` (web-ext, port 9090)
-- Templates: `streamUrl`, `pageUrl`, `pageTitle`, `timestamp`, `seekTimeSec`
+- Templates: `streamUrl`, `pageUrl`, `pageTitle`, `seekTimeSecs`
 - **2 execution Contexts(Isolated JavaScript environments):**: Page context (page, hover-pane) vs Extension context (broker, popup-pane, options).  Common code must duplicate
 - Messages across contexts: `STREAM_DETECTED`, `PING`, `GET_STREAMS` via `browser.runtime.sendMessage()` etc, see `types.ts::RuntimeMessage`
 - Debounced detection, cleanup on close/nav
@@ -56,6 +56,7 @@ After code/HTML/CSS changes:
 2. Test, lint, check dupes (`npm test`, `npm run lint`, `npm run dupes`)
 3. Update docs (if really needed) and the prepare (or update) SUMMARY.md for commit.
 4. **Revert failed experiments** - when code change didn't work or had no visible effect, remove it. But don't retract aggressively - keep changes that work or that the user explicitly praises.  Always inform what you kept.
+5. Use MCP with Playwright on tough issues.
 
 ### Testing
 - Scripts in `package.json`; manual via httpbin.org/anything + `DEFAULT_CONFIG` tweaks
