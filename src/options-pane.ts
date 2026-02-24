@@ -858,7 +858,9 @@ async function resetUserVars() {
   await saveUserVars(merged);
   await renderUserVarsList();
 
-  logger.info(`Added ${addedCount} default variable(s), total: ${Object.keys(merged).length}`);
+  logger.info(
+    `Added ${addedCount} default variable(s), total: ${Object.keys(merged).length}`,
+  );
 }
 
 async function handleSaveUserVar(item: HTMLElement) {
@@ -1052,6 +1054,78 @@ function exportEndpoints() {
   logger.info(`Exported ${endpoints.length} endpoint(s)`);
 }
 
+/**
+ * Export user variables to JSON file
+ */
+async function exportUserVars() {
+  const vars = await loadUserVars();
+  const keys = Object.keys(vars);
+  if (keys.length === 0) {
+    logger.warn('No user variables to export');
+    return;
+  }
+
+  const json = JSON.stringify(vars, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `streamonio-vars-${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  logger.info(`Exported ${keys.length} variable(s)`);
+}
+
+/**
+ * Handle user variables file selection for import
+ */
+function handleVarsFileSelect(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (event) => {
+    try {
+      const content = event.target?.result as string;
+      const parsed = JSON.parse(content);
+
+      // Validate it's an object with string values
+      if (
+        typeof parsed !== 'object' ||
+        parsed === null ||
+        Array.isArray(parsed)
+      ) {
+        logger.error('Invalid file: expected JSON object');
+        return;
+      }
+      for (const [key, value] of Object.entries(parsed)) {
+        if (typeof value !== 'string') {
+          logger.error(`Invalid file: value for "${key}" must be a string`);
+          return;
+        }
+      }
+
+      // Merge with existing vars
+      const existing = await loadUserVars();
+      const merged = { ...existing, ...parsed };
+      await saveUserVars(merged);
+      await renderUserVarsList();
+      logger.info(`Imported ${Object.keys(parsed).length} variable(s)`);
+    } catch (error) {
+      logger.error(
+        `Failed to read file: ${(error as Error)?.message ?? 'Invalid JSON'}`,
+      );
+    }
+  };
+  reader.readAsText(file);
+
+  // Reset file input
+  input.value = '';
+}
+
 function handleFileSelect(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input.files?.[0];
@@ -1079,6 +1153,88 @@ function handleFileSelect(e: Event) {
 
   // Reset file input
   input.value = '';
+}
+
+function showVarsImportUrlModal() {
+  const modal = document.getElementById(
+    'vars-import-url-modal',
+  ) as HTMLDivElement;
+  const input = document.getElementById(
+    'vars-import-url-input',
+  ) as HTMLInputElement;
+  input.value = '';
+  modal.style.display = 'flex';
+  input.focus();
+}
+
+function hideVarsImportUrlModal() {
+  const modal = document.getElementById(
+    'vars-import-url-modal',
+  ) as HTMLDivElement;
+  modal.style.display = 'none';
+}
+
+async function fetchVarsFromUrl() {
+  const input = document.getElementById(
+    'vars-import-url-input',
+  ) as HTMLInputElement;
+  const url = input.value.trim();
+
+  if (!url) {
+    logger.error('URL is required');
+    return;
+  }
+
+  try {
+    new URL(url);
+  } catch {
+    logger.error('Invalid URL format');
+    return;
+  }
+
+  const fetchUrl = convertGistUrl(url);
+  logger.infoFlash(2000, `Fetching variables from URL...`);
+
+  try {
+    const response = await fetch(fetchUrl);
+    if (!response.ok) {
+      logger.error(
+        `Failed to fetch: ${response.status} ${response.statusText}`,
+      );
+      return;
+    }
+
+    const content = await response.text();
+    const parsed = JSON.parse(content);
+
+    // Validate it's an object with string values
+    if (
+      typeof parsed !== 'object' ||
+      parsed === null ||
+      Array.isArray(parsed)
+    ) {
+      logger.error('Invalid data: expected JSON object');
+      return;
+    }
+    for (const [key, value] of Object.entries(parsed)) {
+      if (typeof value !== 'string') {
+        logger.error(`Invalid data: value for "${key}" must be a string`);
+        return;
+      }
+    }
+
+    // Merge with existing vars
+    const existing = await loadUserVars();
+    const merged = { ...existing, ...parsed };
+    await saveUserVars(merged);
+    await renderUserVarsList();
+    hideVarsImportUrlModal();
+    logger.info(`Imported ${Object.keys(parsed).length} variable(s) from URL`);
+  } catch (error) {
+    logger.error(
+      `Failed to fetch: ${(error as Error)?.message ?? 'Unknown error'}`,
+    );
+  }
 }
 
 function showImportUrlModal() {
@@ -1281,6 +1437,26 @@ async function wireEvents() {
   document
     .getElementById('clear-vars-btn')
     ?.addEventListener('click', clearAllUserVars);
+  document
+    .getElementById('vars-to-file-btn')
+    ?.addEventListener('click', exportUserVars);
+  document
+    .getElementById('vars-from-file-btn')
+    ?.addEventListener('click', () => {
+      (document.getElementById('vars-file-input') as HTMLInputElement).click();
+    });
+  document
+    .getElementById('vars-file-input')
+    ?.addEventListener('change', handleVarsFileSelect);
+  document
+    .getElementById('vars-from-site-btn')
+    ?.addEventListener('click', showVarsImportUrlModal);
+  document
+    .getElementById('vars-import-url-cancel-btn')
+    ?.addEventListener('click', hideVarsImportUrlModal);
+  document
+    .getElementById('vars-import-url-fetch-btn')
+    ?.addEventListener('click', fetchVarsFromUrl);
   await renderUserVarsList();
 
   document

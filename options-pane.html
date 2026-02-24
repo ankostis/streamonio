@@ -1325,9 +1325,9 @@
           font-size: 0.625rem;
         }
 
-        /* User-vars: 3 buttons in one row (split-btn takes 2 cols, Add takes 1) */
+        /* User-vars: 2 split-btn-groups (4 buttons total) in one row */
         #user-vars-card .card-actions {
-          grid-template-columns: 1fr 1fr 1fr;
+          grid-template-columns: repeat(4, 1fr);
         }
 
         #user-vars-card .card-actions .split-btn-group {
@@ -1358,7 +1358,7 @@
         }
 
         #user-vars-card #user-vars-list {
-          height: 12rem; /* Fixed height to show 2-3 items */
+          height: 25rem; /* Fixed height to show 4-5 items */
           overflow-y: auto;
           flex: none;
         }
@@ -1796,6 +1796,12 @@
                     ✖<br />Clear
                   </button>
                 </div>
+
+                <div class="split-btn-group primary-group">
+                  <button id="vars-from-file-btn" class="btn-primary">📁<br />From file</button>
+                  <button id="vars-from-site-btn" class="btn-primary">🌐<br />From site</button>
+                  <button id="vars-to-file-btn" class="btn-primary">⬇<br />To file</button>
+                </div>
               </div>
             </div>
             <div id="user-vars-list" class="scrollable-content">
@@ -1898,6 +1904,39 @@
     </div>
     <!-- End container -->
 
+    <!-- Vars Import URL modal -->
+    <div id="vars-import-url-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <h2>Import variables from URL</h2>
+        <div style="margin-bottom: 1rem">
+          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500"
+            >JSON URL or GitHub Gist:<span
+              class="help-icon"
+              data-tooltip="Paste a URL to a JSON file or GitHub gist containing user variables."
+              >ℹ</span
+            ></label
+          >
+          <input
+            type="text"
+            id="vars-import-url-input"
+            placeholder="https://example.com/vars.json or https://gist.github.com/..."
+            style="
+              width: 100%;
+              padding: 0.5rem;
+              border: 1px solid #ddd;
+              border-radius: 0.25rem;
+              font-family: monospace;
+              font-size: 0.8125rem;
+            "
+          />
+        </div>
+        <div class="button-group">
+          <button id="vars-import-url-fetch-btn" class="btn-primary">⬇ Fetch</button>
+          <button id="vars-import-url-cancel-btn" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Import URL modal -->
     <div id="import-url-modal" class="modal" style="display: none">
       <div class="modal-content">
@@ -1944,6 +1983,7 @@
       </div>
     </div>
     <input type="file" id="import-file-input" accept=".json" style="display: none" />
+    <input type="file" id="vars-file-input" accept=".json" style="display: none" />
 
     <script src="options-pane.js"></script>
   </body>
