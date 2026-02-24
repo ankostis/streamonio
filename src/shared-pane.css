@@ -212,6 +212,8 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .stream-list-item:last-child {
@@ -330,10 +332,16 @@ body {
   font-size: 0.6875rem;
   max-height: 2.5rem;
   overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .endpoint-list-item:hover {
   background: var(--color-hover-bg);
+}
+
+.endpoint-list-item:active {
+  background: var(--color-active);
 }
 
 .endpoint-list-item.selected {
@@ -468,6 +476,8 @@ button {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  touch-action: manipulation; /* Enable :active on mobile touch */
+  -webkit-tap-highlight-color: transparent; /* Remove default tap highlight */
 }
 
 .button-group {

@@ -324,11 +324,11 @@ import { Logger } from './logger';
     const maxWidth = Math.min(targetPhysicalWidth, Math.floor(vp.width * 0.9));
     const height = vp.height;
 
-    // Use CSS transform to scale iframe up - content renders at physical size,
-    // transform makes it appear correctly in the scaled-down layout viewport.
+    // Use CSS zoom to scale iframe up - unlike transform, zoom affects both
+    // visual appearance AND event coordinates, making buttons clickable.
     // Only apply scaling on mobile (layoutScale > 1.1 to avoid rounding issues).
     const needsScale = layoutScale > 1.1;
-    const scaleTransform = needsScale ? `scale(${layoutScale})` : '';
+    const zoomValue = needsScale ? layoutScale : 1;
     iframe.style.cssText = `
       position: fixed;
       top: 0;
@@ -337,7 +337,8 @@ import { Logger } from './logger';
       height: ${height}px;
       border: none;
       z-index: 999999;
-      transform: ${scaleTransform} translateX(100%);
+      zoom: ${zoomValue};
+      transform: translateX(100%);
       transform-origin: top right;
       transition: transform 0.3s ease-in-out;
       box-shadow: -4px 0 12px rgba(0,0,0,0.3);
@@ -360,8 +361,8 @@ import { Logger } from './logger';
       const isVisible = !iframe.style.transform.includes('translateX(100%)');
       const shouldHide = forceClose || isVisible;
       iframe.style.transform = shouldHide
-        ? `${scaleTransform} translateX(100%)`
-        : `${scaleTransform} translateX(0px)`;
+        ? 'translateX(100%)'
+        : 'translateX(0)';
       // Button stays fixed, no transform needed
     };
 
