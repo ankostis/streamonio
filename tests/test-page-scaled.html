@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" style="font-size: 20px;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page - Large Font (20px root)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+        }
+        .media-container {
+            margin: 20px 0;
+        }
+        video, audio {
+            display: block;
+            margin: 10px 0;
+            max-width: 100%;
+        }
+        .info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Page - Large Root Font (20px)</h1>
+
+    <div class="info">
+        <p>This page has <code>html { font-size: 20px; }</code> to mimic ertecho.gr</p>
+        <p>The Streamonio hover panel should maintain consistent size regardless of page font-size.</p>
+    </div>
+
+    <div class="media-container">
+        <h2>Audio Player</h2>
+        <audio controls>
+            <source src="https://radiostreaming.ert.gr/ert-kosmos" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <div class="media-container">
+        <h2>Video Player</h2>
+        <video controls width="640">
+            <source src="https://example.com/sample.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <script>
+        console.log('Test page loaded - root font-size:', window.getComputedStyle(document.documentElement).fontSize);
+    </script>
+</body>
+</html>

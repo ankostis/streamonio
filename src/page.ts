@@ -306,18 +306,39 @@ import { Logger } from './logger';
 
     const iframe = document.createElement('iframe');
     iframe.id = 'streamonio-hover-frame';
-    iframe.src = browser.runtime.getURL('dist/hover-pane.html');
     iframe.allow = 'clipboard-write'; // Required for Clipboard API in iframe (Chrome)
+
+    // Counter-scale for pages without viewport meta tag.
+    // Without meta: layout is ~980px but displayed in 360px physical → elements appear smaller.
+    // Scale up by (innerWidth / screen.width) to maintain consistent physical size.
+    const layoutScale = window.innerWidth / screen.width;
+    iframe.src = browser.runtime.getURL('dist/hover-pane.html');
+    const getViewportSize = () => ({
+      width: screen.width, // Physical width (unscaled)
+      height:
+        (window.visualViewport?.height ?? window.innerHeight) / layoutScale,
+    });
+
+    const vp = getViewportSize();
+    const targetPhysicalWidth = 324; // Physical pixels on mobile
+    const maxWidth = Math.min(targetPhysicalWidth, Math.floor(vp.width * 0.9));
+    const height = vp.height;
+
+    // Use CSS transform to scale iframe up - content renders at physical size,
+    // transform makes it appear correctly in the scaled-down layout viewport.
+    // Only apply scaling on mobile (layoutScale > 1.1 to avoid rounding issues).
+    const needsScale = layoutScale > 1.1;
+    const scaleTransform = needsScale ? `scale(${layoutScale})` : '';
     iframe.style.cssText = `
       position: fixed;
       top: 0;
       right: 0;
-      width: 400px;
-      max-width: 90vw;
-      height: 100vh;
+      width: ${maxWidth}px;
+      height: ${height}px;
       border: none;
       z-index: 999999;
-      transform: translateX(100%);
+      transform: ${scaleTransform} translateX(100%);
+      transform-origin: top right;
       transition: transform 0.3s ease-in-out;
       box-shadow: -4px 0 12px rgba(0,0,0,0.3);
     `;
@@ -325,13 +346,22 @@ import { Logger } from './logger';
     document.body.appendChild(iframe);
     logger.debug('Hover panel iframe injected');
 
+    // Update iframe size on viewport resize (handles device rotation etc.)
+    const updateIframeSize = () => {
+      const v = getViewportSize();
+      iframe.style.width = `${Math.min(400, Math.floor(v.width * 0.9))}px`;
+      iframe.style.height = `${v.height}px`;
+    };
+    window.addEventListener('resize', updateIframeSize);
+    window.visualViewport?.addEventListener('resize', updateIframeSize);
+
     // Toggle function shared by button and iframe close
     const togglePanel = (forceClose = false) => {
-      const isVisible = iframe.style.transform === 'translateX(0px)';
+      const isVisible = !iframe.style.transform.includes('translateX(100%)');
       const shouldHide = forceClose || isVisible;
       iframe.style.transform = shouldHide
-        ? 'translateX(100%)'
-        : 'translateX(0px)';
+        ? `${scaleTransform} translateX(100%)`
+        : `${scaleTransform} translateX(0px)`;
       // Button stays fixed, no transform needed
     };
 
@@ -347,17 +377,22 @@ import { Logger } from './logger';
     toggleBtn.id = 'streamonio-toggle-btn';
     toggleBtn.innerHTML = '🎵';
     toggleBtn.title = 'Toggle Streamonio panel';
+    // Scale button using layoutScale for consistent physical size across viewport meta variations
+    const btnWidth = Math.round(32 * layoutScale);
+    const btnHeight = Math.round(56 * layoutScale);
+    const btnTop = Math.round(72 * layoutScale);
+    const btnFontSize = Math.round(18 * layoutScale);
     toggleBtn.style.cssText = `
       position: fixed;
-      top: 72px;
+      top: ${btnTop}px;
       right: 0;
-      width: 24px;
-      height: 40px;
+      width: ${btnWidth}px;
+      height: ${btnHeight}px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
       border-radius: 8px 0 0 8px;
-      font-size: 14px;
+      font-size: ${btnFontSize}px;
       cursor: pointer;
       box-shadow: -2px 2px 8px rgba(102, 126, 234, 0.4);
       z-index: 1000001;
@@ -370,13 +405,14 @@ import { Logger } from './logger';
       clip-path: polygon(0 0, 100% 20%, 100% 80%, 0 100%);
     `;
 
+    const btnWidthHover = Math.round(40 * layoutScale);
     toggleBtn.addEventListener('mouseenter', () => {
-      toggleBtn.style.width = '28px';
+      toggleBtn.style.width = `${btnWidthHover}px`;
       toggleBtn.style.boxShadow = '-4px 4px 12px rgba(102, 126, 234, 0.6)';
     });
 
     toggleBtn.addEventListener('mouseleave', () => {
-      toggleBtn.style.width = '24px';
+      toggleBtn.style.width = `${btnWidth}px`;
       toggleBtn.style.boxShadow = '-2px 2px 8px rgba(102, 126, 234, 0.4)';
     });
 
