@@ -51,27 +51,14 @@
   <button onclick="togglePanel()">Toggle Panel</button>
   <button onclick="checkLayout()">Re-check Layout</button>
 
-  <script>
-    // Simulate page.ts injection logic
+  <script type="module">
+    // Import shared viewport logic - keeps test in sync with page.ts
+    import { getHoverViewport } from '/dist/hover-viewport.js';
+
     const iframe = document.createElement('iframe');
-
-    // Same logic as page.ts: getViewportSize
-    // Only apply layoutScale height adjustment on mobile (layoutScale > 1.1)
-    const layoutScale = window.innerWidth / screen.width;
-    const needsScale = layoutScale > 1.1;
-    const getViewportSize = () => ({
-      width: screen.width,
-      height: needsScale
-        ? (window.visualViewport?.height ?? window.innerHeight) / layoutScale
-        : window.visualViewport?.height ?? window.innerHeight,
-    });
-
-    const vp = getViewportSize();
+    const vp = getHoverViewport();
     const targetPhysicalWidth = 324;
     const maxWidth = Math.min(targetPhysicalWidth, Math.floor(vp.width * 0.9));
-    const height = vp.height;
-
-    const zoomValue = needsScale ? layoutScale : 1;
 
     // Use absolute path from server root
     iframe.src = '/dist/hover-pane.html';
@@ -80,10 +67,10 @@
       top: 0;
       right: 0;
       width: ${maxWidth}px;
-      height: ${height}px;
+      height: ${vp.height}px;
       border: none;
       z-index: 999999;
-      zoom: ${zoomValue};
+      zoom: ${vp.zoomValue};
       transform: translateX(0);
       transform-origin: top right;
       transition: transform 0.3s ease-in-out;
@@ -212,6 +199,10 @@
 
     // Re-check on resize
     window.addEventListener('resize', () => setTimeout(checkLayout, 100));
+
+    // Expose for onclick handlers (module scope doesn't expose to global)
+    window.togglePanel = togglePanel;
+    window.checkLayout = checkLayout;
   </script>
 </body>
 </html>

@@ -10,6 +10,7 @@ import {
   isStreamUrl as isStreamUrlShared,
 } from './detect';
 import { DEFAULT_CONFIG } from './endpoint';
+import { getHoverViewport } from './hover-viewport';
 import { Logger } from './logger';
 
 // Module content script (no exports needed)
@@ -308,38 +309,19 @@ import { Logger } from './logger';
     iframe.id = 'streamonio-hover-frame';
     iframe.allow = 'clipboard-write'; // Required for Clipboard API in iframe (Chrome)
 
-    // Counter-scale for pages without viewport meta tag.
-    // Without meta: layout is ~980px but displayed in 360px physical → elements appear smaller.
-    // Scale up by (innerWidth / screen.width) to maintain consistent physical size.
-    // Only apply on mobile (layoutScale > 1.1) - on desktop this ratio is < 1 which would
-    // incorrectly enlarge the iframe beyond the window.
-    const layoutScale = window.innerWidth / screen.width;
-    const needsScale = layoutScale > 1.1;
     iframe.src = browser.runtime.getURL('dist/hover-pane.html');
-    const getViewportSize = () => ({
-      width: screen.width, // Physical width (unscaled)
-      height: needsScale
-        ? (window.visualViewport?.height ?? window.innerHeight) / layoutScale
-        : (window.visualViewport?.height ?? window.innerHeight),
-    });
-
-    const vp = getViewportSize();
+    const vp = getHoverViewport();
     const targetPhysicalWidth = 324; // Physical pixels on mobile
     const maxWidth = Math.min(targetPhysicalWidth, Math.floor(vp.width * 0.9));
-    const height = vp.height;
-
-    // Use CSS zoom to scale iframe up - unlike transform, zoom affects both
-    // visual appearance AND event coordinates, making buttons clickable.
-    const zoomValue = needsScale ? layoutScale : 1;
     iframe.style.cssText = `
       position: fixed;
       top: 0;
       right: 0;
       width: ${maxWidth}px;
-      height: ${height}px;
+      height: ${vp.height}px;
       border: none;
       z-index: 999999;
-      zoom: ${zoomValue};
+      zoom: ${vp.zoomValue};
       transform: translateX(100%);
       transform-origin: top right;
       transition: transform 0.3s ease-in-out;
@@ -351,7 +333,7 @@ import { Logger } from './logger';
 
     // Update iframe size on viewport resize (handles device rotation etc.)
     const updateIframeSize = () => {
-      const v = getViewportSize();
+      const v = getHoverViewport();
       iframe.style.width = `${Math.min(400, Math.floor(v.width * 0.9))}px`;
       iframe.style.height = `${v.height}px`;
     };
@@ -381,10 +363,10 @@ import { Logger } from './logger';
     toggleBtn.innerHTML = '🎵';
     toggleBtn.title = 'Toggle Streamonio panel';
     // Scale button using layoutScale for consistent physical size across viewport meta variations
-    const btnWidth = Math.round(32 * layoutScale);
-    const btnHeight = Math.round(56 * layoutScale);
-    const btnTop = Math.round(72 * layoutScale);
-    const btnFontSize = Math.round(18 * layoutScale);
+    const btnWidth = Math.round(32 * vp.layoutScale);
+    const btnHeight = Math.round(56 * vp.layoutScale);
+    const btnTop = Math.round(72 * vp.layoutScale);
+    const btnFontSize = Math.round(18 * vp.layoutScale);
     toggleBtn.style.cssText = `
       position: fixed;
       top: ${btnTop}px;
@@ -408,7 +390,7 @@ import { Logger } from './logger';
       clip-path: polygon(0 0, 100% 20%, 100% 80%, 0 100%);
     `;
 
-    const btnWidthHover = Math.round(40 * layoutScale);
+    const btnWidthHover = Math.round(40 * vp.layoutScale);
     toggleBtn.addEventListener('mouseenter', () => {
       toggleBtn.style.width = `${btnWidthHover}px`;
       toggleBtn.style.boxShadow = '-4px 4px 12px rgba(102, 126, 234, 0.6)';
