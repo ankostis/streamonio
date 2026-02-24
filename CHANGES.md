@@ -1,4 +1,4 @@
-,e## Changes
+## Changes
 
 - [ ] Chromecast
 - [ ] Music Assistant
@@ -8,8 +8,29 @@
 - [ ] Feat(options,UI) draggable height of activity logs in
 - [ ] Feat(options,UI) tabs on mobile
 - [ ] Fix(options) Mark Edit endpoint as dirty if not saved
+- [ ] fix touch infos in mobile api-call
 
-## v0.7.0 - (2026-15-08) User interpolation variables, enhance both UIs, themes
+## v0.8.X - (TODO) Chromecast & Snapcast
+
+## v0.7.1 - (2026-02-24) Hover stable size, options UI, vars fix & feats, AI
+- FIX(HOVER) page scale (meta) does not affect hover panel size & fonts.
+- User variables (in options):
+  - fix(UI): var-item as 2-rows on mobile, reduce padding to view more items
+  - fix/Feat: always show empty var row instead of suggesting dummy var key for new var;  drop "Add" button
+  - Feat: +Clear/Reset/Import/Export buttons also for vars list (like endps list)
+  - feat(ui) mutual excl err-icon & accept button on each item
+  - fix: default vars now loaded on first run
+  - feat: warn consistently also for clashing with existing var names
+- fix: replace forgotten `{{timestamp}}` with `{{seekTimeSecs}}`
+- fix(logbox) clear/export btns were still toggles >
+- Refact(opts.ui): group endpoint list buttons into themed split-btn groups
+- Enh(options.ui) equalize all buttons
+- fix(opts.ui) drop stray html closing mark ( `/>`) beneath authentication fields
+- Feat(Build) dev builds show git-describe hash id
+- drop(ui) no show-off animations on refresh/opts buttons
+- chore(AI) +structured programming, no early returns, retract efforts
+
+## v0.7.0 - (2026-02-15) User interpolation variables, enhance both UIs, themes
 
 - FEAT(OPTIONS, ENDP) User-defined interpolations (eg server IPs)
 - FEAT(CALLAPI.UI): endpoint dropdown -> 2-col list and and a slew of UI WORK
@@ -23,7 +44,7 @@
 - Feat(VER) auto DEV if tagged, ver in `package.json` >
 - Chore(AI) build process in Copilot guidelines;  compressed to aid sonnet remember...
 
-## v0.6.1 - (2026-14-08) Fix Hover, `+{{seekTimeSecs}}` `-{{timestamp}}`, unify StreamInfo+RequestContext, lint checks
+## v0.6.1 - (2026-02-14) Fix Hover, `+{{seekTimeSecs}}` `-{{timestamp}}`, unify StreamInfo+RequestContext, lint checks
 
 - FIX(hover) was stuck on loading spinner.
   - feat(test.hover) +integration TC to capture init errors.
