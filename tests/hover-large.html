@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<!--
+  Test Page: Hover pane at desktop (large) viewport size.
+  Directly embeds hover-pane.html without detection logic or handle clicking.
+  Used for visual testing of status-bar visibility and layout.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hover Pane Test - Large (Desktop)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f0f0f0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .test-header {
+      background: #333;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+    .test-header h1 { font-size: 1rem; margin-bottom: 0.25rem; }
+    .test-header p { font-size: 0.75rem; color: #ccc; }
+    .test-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      padding: 1rem;
+      gap: 1rem;
+    }
+    .hover-frame {
+      width: 500px;  /* > 450px to test desktop mode */
+      height: 300px; /* very short height to stress test */
+      border: 2px solid #666;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .hover-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .info-panel {
+      width: 300px;
+      background: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .info-panel h2 { font-size: 0.875rem; margin-bottom: 0.5rem; }
+    .info-panel ul { font-size: 0.75rem; line-height: 1.6; padding-left: 1.25rem; }
+    .info-panel code { background: #f5f5f5; padding: 0.125rem 0.25rem; border-radius: 3px; }
+    .status-indicator {
+      margin-top: 1rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+    .status-indicator.pass { background: #d4edda; color: #155724; }
+    .status-indicator.fail { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+  <div class="test-header">
+    <h1>🧪 Hover Pane Test - Large (Desktop)</h1>
+    <p>Viewport: 360x600px - Status bar should be visible at bottom</p>
+  </div>
+
+  <div class="test-container">
+    <div class="hover-frame" id="frame-container">
+      <iframe id="hover-iframe" src="../dist/hover-pane.html"></iframe>
+    </div>
+
+    <div class="info-panel">
+      <h2>Test Criteria</h2>
+      <ul>
+        <li>Status bar must be visible at bottom</li>
+        <li>Log viewer should be scrollable</li>
+        <li>Streams/endpoints sections visible</li>
+        <li>No vertical overflow beyond frame</li>
+      </ul>
+
+      <div id="test-result" class="status-indicator">
+        Checking layout...
+      </div>
+
+      <h2 style="margin-top: 1rem;">Layout Measurements</h2>
+      <ul id="measurements">
+        <li>Loading...</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const iframe = document.getElementById('hover-iframe');
+    const result = document.getElementById('test-result');
+    const measurements = document.getElementById('measurements');
+
+    iframe.addEventListener('load', () => {
+      setTimeout(() => {
+        injectContent();
+        setTimeout(checkLayout, 100);
+      }, 300);
+    });
+
+    function injectContent() {
+      const doc = iframe.contentDocument;
+
+      // Hide loading, show status
+      const loading = doc.getElementById('loading');
+      const status = doc.getElementById('status');
+      if (loading) loading.style.display = 'none';
+      if (status) status.style.display = 'block';
+
+      // Add streams
+      const streams = doc.getElementById('streams');
+      if (streams) {
+        for (let i = 1; i <= 5; i++) {
+          const card = doc.createElement('div');
+          card.className = 'stream-card';
+          card.innerHTML = `
+            <div class="stream-info">
+              <span class="stream-type-badge">HLS</span>
+              <span class="stream-url">https://stream${i}.example.com/live/playlist.m3u8</span>
+            </div>`;
+          streams.appendChild(card);
+        }
+      }
+
+      // Add endpoints
+      const endps = doc.getElementById('endps');
+      if (endps) {
+        for (let i = 1; i <= 4; i++) {
+          const card = doc.createElement('div');
+          card.className = 'endpoint-card';
+          card.innerHTML = `
+            <div class="endpoint-header">
+              <span class="endpoint-name">Endpoint ${i}</span>
+            </div>
+            <button class="endpoint-btn">Send</button>`;
+          endps.appendChild(card);
+        }
+      }
+
+      // Add log entries
+      const logViewer = doc.getElementById('log-viewer');
+      if (logViewer) {
+        for (let i = 1; i <= 10; i++) {
+          const entry = doc.createElement('div');
+          entry.className = 'log-entry';
+          entry.innerHTML = `<span class="log-time">12:00:0${i%10}</span> <span class="log-msg">Log message ${i} - testing status bar visibility</span>`;
+          logViewer.appendChild(entry);
+        }
+      }
+    }
+
+    function checkLayout() {
+      try {
+        const doc = iframe.contentDocument;
+        const body = doc.body;
+        const statusBar = doc.getElementById('status-bar');
+        const content = doc.querySelector('.content');
+        const logViewer = doc.getElementById('log-viewer');
+
+        const frameHeight = iframe.clientHeight;
+        const bodyHeight = body.scrollHeight;
+        const statusBarRect = statusBar.getBoundingClientRect();
+        const statusBarBottom = statusBarRect.bottom;
+        const statusBarVisible = statusBarBottom <= frameHeight && statusBarRect.top >= 0;
+
+        const data = {
+          frameHeight,
+          bodyScrollHeight: bodyHeight,
+          statusBarTop: Math.round(statusBarRect.top),
+          statusBarBottom: Math.round(statusBarBottom),
+          statusBarHeight: Math.round(statusBarRect.height),
+          contentHeight: content ? content.scrollHeight : 0,
+          logViewerHeight: logViewer ? logViewer.clientHeight : 0,
+          overflow: bodyHeight > frameHeight,
+          statusBarVisible
+        };
+
+        measurements.innerHTML = Object.entries(data)
+          .map(([k, v]) => `<li><code>${k}</code>: ${v}</li>`)
+          .join('');
+
+        const pass = statusBarVisible && !data.overflow;
+        result.className = `status-indicator ${pass ? 'pass' : 'fail'}`;
+        result.textContent = pass
+          ? '✅ PASS: Status bar visible, no overflow'
+          : `❌ FAIL: ${!statusBarVisible ? 'Status bar not visible' : 'Content overflows'}`;
+
+        // Expose for Playwright tests
+        window.testResult = { pass, data };
+      } catch (e) {
+        result.className = 'status-indicator fail';
+        result.textContent = `❌ Error: ${e.message}`;
+        window.testResult = { pass: false, error: e.message };
+      }
+    }
+  </script>
+</body>
+</html>

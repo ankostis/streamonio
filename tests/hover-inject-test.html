@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<!--
+  Test Page: Simulates page.ts hover-pane injection.
+  Replicates exact iframe positioning/sizing from page.ts.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hover Pane Injection Test</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    h1 { margin-bottom: 1rem; }
+    .info {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .measurements {
+      font-family: monospace;
+      font-size: 0.875rem;
+    }
+    .measurements li { margin: 0.25rem 0; }
+    .status { padding: 0.5rem 1rem; border-radius: 4px; margin-top: 1rem; }
+    .pass { background: #d4edda; color: #155724; }
+    .fail { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+  <h1>Hover Pane Injection Test</h1>
+
+  <div class="info">
+    <p>This page simulates how <code>page.ts</code> injects the hover-pane iframe.</p>
+    <p>The iframe should appear on the right side, sliding in.</p>
+  </div>
+
+  <div class="info">
+    <h3>Iframe Measurements</h3>
+    <ul class="measurements" id="measurements">
+      <li>Loading...</li>
+    </ul>
+    <div id="status" class="status">Checking...</div>
+  </div>
+
+  <button onclick="togglePanel()">Toggle Panel</button>
+  <button onclick="checkLayout()">Re-check Layout</button>
+
+  <script>
+    // Simulate page.ts injection logic
+    const iframe = document.createElement('iframe');
+
+    // Same logic as page.ts: getViewportSize
+    const layoutScale = window.innerWidth / screen.width;
+    const getViewportSize = () => ({
+      width: screen.width,
+      height: (window.visualViewport?.height ?? window.innerHeight) / layoutScale,
+    });
+
+    const vp = getViewportSize();
+    const targetPhysicalWidth = 324;
+    const maxWidth = Math.min(targetPhysicalWidth, Math.floor(vp.width * 0.9));
+    const height = vp.height;
+
+    const needsScale = layoutScale > 1.1;
+    const zoomValue = needsScale ? layoutScale : 1;
+
+    // Use absolute path from server root
+    iframe.src = '/dist/hover-pane.html';
+    iframe.style.cssText = `
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: ${maxWidth}px;
+      height: ${height}px;
+      border: none;
+      z-index: 999999;
+      zoom: ${zoomValue};
+      transform: translateX(0);
+      transform-origin: top right;
+      transition: transform 0.3s ease-in-out;
+      box-shadow: -4px 0 12px rgba(0,0,0,0.3);
+    `;
+
+    document.body.appendChild(iframe);
+
+    function togglePanel() {
+      const isVisible = !iframe.style.transform.includes('translateX(100%)');
+      iframe.style.transform = isVisible ? 'translateX(100%)' : 'translateX(0)';
+    }
+
+    function checkLayout() {
+      try {
+        const doc = iframe.contentDocument;
+        if (!doc) {
+          document.getElementById('status').textContent = 'Cannot access iframe (cross-origin)';
+          return;
+        }
+
+        const body = doc.body;
+        const statusBar = doc.getElementById('status-bar');
+        const content = doc.querySelector('.content');
+        const logViewer = doc.getElementById('log-viewer');
+
+        if (!statusBar) {
+          document.getElementById('status').textContent = 'Status bar not found';
+          return;
+        }
+
+        const iframeHeight = iframe.clientHeight;
+        const windowHeight = window.innerHeight;
+        const bodyHeight = body.scrollHeight;
+        const statusBarRect = statusBar.getBoundingClientRect();
+        // Status bar visible in WINDOW viewport (not just iframe)
+        // Since iframe is fixed at top:0, statusBar position in iframe = position on screen
+        const iframeOverflowsWindow = iframeHeight > windowHeight;
+        const statusBarVisibleInWindow = statusBarRect.bottom <= windowHeight && statusBarRect.top >= 0;
+
+        const data = {
+          'window.innerHeight': windowHeight,
+          'screen.width': screen.width,
+          'layoutScale': layoutScale.toFixed(3),
+          'zoomValue': zoomValue.toFixed(3),
+          'iframe.width': iframe.clientWidth,
+          'iframe.height': iframeHeight,
+          'iframe.style.height': iframe.style.height,
+          'iframeOverflowsWindow': iframeOverflowsWindow,
+          'body.scrollHeight': bodyHeight,
+          'statusBar.top': Math.round(statusBarRect.top),
+          'statusBar.bottom': Math.round(statusBarRect.bottom),
+          'content.scrollHeight': content ? content.scrollHeight : 'N/A',
+          'logViewer.clientHeight': logViewer ? logViewer.clientHeight : 'N/A',
+          'statusBarVisibleInWindow': statusBarVisibleInWindow
+        };
+
+        document.getElementById('measurements').innerHTML = Object.entries(data)
+          .map(([k, v]) => `<li><strong>${k}:</strong> ${v}</li>`)
+          .join('');
+
+        // PASS only if iframe fits in window AND status bar is visible on screen
+        const pass = !iframeOverflowsWindow && statusBarVisibleInWindow;
+        const statusEl = document.getElementById('status');
+        statusEl.className = `status ${pass ? 'pass' : 'fail'}`;
+        statusEl.textContent = pass
+          ? '✅ PASS: Status bar visible in window, no overflow'
+          : `❌ FAIL: ${iframeOverflowsWindow ? 'Iframe overflows window (' + iframeHeight + 'px > ' + windowHeight + 'px)' : 'Status bar not visible in window'}`;
+
+        window.testResult = { pass, data };
+      } catch (e) {
+        document.getElementById('status').textContent = `Error: ${e.message}`;
+      }
+    }
+
+    // Check layout after iframe loads
+    iframe.addEventListener('load', () => {
+      // Inject content to simulate real usage
+      setTimeout(() => {
+        try {
+          const doc = iframe.contentDocument;
+          const loading = doc.getElementById('loading');
+          const status = doc.getElementById('status');
+          if (loading) loading.style.display = 'none';
+          if (status) status.style.display = 'block';
+
+          // Add streams
+          const streams = doc.getElementById('streams');
+          if (streams) {
+            for (let i = 1; i <= 5; i++) {
+              const card = document.createElement('div');
+              card.className = 'stream-card';
+              card.innerHTML = '<div class="stream-info"><span class="stream-type-badge">HLS</span><span class="stream-url">https://stream' + i + '.example.com/live/playlist.m3u8</span></div>';
+              streams.appendChild(card);
+            }
+          }
+
+          // Add endpoints
+          const endps = doc.getElementById('endps');
+          if (endps) {
+            for (let i = 1; i <= 4; i++) {
+              const card = document.createElement('div');
+              card.className = 'endpoint-card';
+              card.innerHTML = '<div class="endpoint-header"><span class="endpoint-name">Endpoint ' + i + '</span></div><button class="endpoint-btn">Send</button>';
+              endps.appendChild(card);
+            }
+          }
+
+          // Add log entries
+          const logViewer = doc.getElementById('log-viewer');
+          if (logViewer) {
+            for (let i = 1; i <= 10; i++) {
+              const entry = document.createElement('div');
+              entry.className = 'log-entry';
+              entry.innerHTML = '<span class="log-time">12:00:0' + (i%10) + '</span> <span class="log-msg">Log message ' + i + '</span>';
+              logViewer.appendChild(entry);
+            }
+          }
+        } catch (e) {
+          console.log('Content injection skipped:', e.message);
+        }
+
+        setTimeout(checkLayout, 200);
+      }, 300);
+    });
+
+    // Re-check on resize
+    window.addEventListener('resize', () => setTimeout(checkLayout, 100));
+  </script>
+</body>
+</html>

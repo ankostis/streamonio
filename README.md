@@ -228,6 +228,14 @@ Any uncommitted version bumps are clearly marked as development builds.
   ```
 - Uses web-ext to launch Firefox and test real extension behavior
 
+### UI tests
+
+Visual layout tests in `tests/hover-*.html` validate hover-pane rendering. Run `python3 -m http.server 8080` and open `http://localhost:8080/tests/hover-inject-test.html` - the page self-validates and shows PASS/FAIL.
+
+The inject-test replicates `page.ts` iframe injection logic to catch layout bugs like status bar overflow. For automated testing, use VS Code Copilot with Chrome MCP: navigate to test page, call `window.testResult` to get `{ pass: true/false, data: {...} }`.
+
+Test mobile viewports via Chrome DevTools device toolbar or MCP viewport emulation.
+
 ### Code Quality
 
 The project uses Biome for linting/formatting, jscpd for duplication detection, and ts-prune for dead code analysis:
