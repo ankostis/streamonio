@@ -56,10 +56,14 @@
     const iframe = document.createElement('iframe');
 
     // Same logic as page.ts: getViewportSize
+    // Only apply layoutScale height adjustment on mobile (layoutScale > 1.1)
     const layoutScale = window.innerWidth / screen.width;
+    const needsScale = layoutScale > 1.1;
     const getViewportSize = () => ({
       width: screen.width,
-      height: (window.visualViewport?.height ?? window.innerHeight) / layoutScale,
+      height: needsScale
+        ? (window.visualViewport?.height ?? window.innerHeight) / layoutScale
+        : window.visualViewport?.height ?? window.innerHeight,
     });
 
     const vp = getViewportSize();
@@ -67,7 +71,6 @@
     const maxWidth = Math.min(targetPhysicalWidth, Math.floor(vp.width * 0.9));
     const height = vp.height;
 
-    const needsScale = layoutScale > 1.1;
     const zoomValue = needsScale ? layoutScale : 1;
 
     // Use absolute path from server root

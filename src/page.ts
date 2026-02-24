@@ -311,12 +311,16 @@ import { Logger } from './logger';
     // Counter-scale for pages without viewport meta tag.
     // Without meta: layout is ~980px but displayed in 360px physical → elements appear smaller.
     // Scale up by (innerWidth / screen.width) to maintain consistent physical size.
+    // Only apply on mobile (layoutScale > 1.1) - on desktop this ratio is < 1 which would
+    // incorrectly enlarge the iframe beyond the window.
     const layoutScale = window.innerWidth / screen.width;
+    const needsScale = layoutScale > 1.1;
     iframe.src = browser.runtime.getURL('dist/hover-pane.html');
     const getViewportSize = () => ({
       width: screen.width, // Physical width (unscaled)
-      height:
-        (window.visualViewport?.height ?? window.innerHeight) / layoutScale,
+      height: needsScale
+        ? (window.visualViewport?.height ?? window.innerHeight) / layoutScale
+        : (window.visualViewport?.height ?? window.innerHeight),
     });
 
     const vp = getViewportSize();
@@ -326,8 +330,6 @@ import { Logger } from './logger';
 
     // Use CSS zoom to scale iframe up - unlike transform, zoom affects both
     // visual appearance AND event coordinates, making buttons clickable.
-    // Only apply scaling on mobile (layoutScale > 1.1 to avoid rounding issues).
-    const needsScale = layoutScale > 1.1;
     const zoomValue = needsScale ? layoutScale : 1;
     iframe.style.cssText = `
       position: fixed;
