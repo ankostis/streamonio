@@ -5,9 +5,9 @@
  */
 
 import browser from './browser-api.js';
-import buildInfo from './build-info.json';
 import {
   displayStreams,
+  displayVersion,
   initLogging,
   populateStreamPanel,
   type StreamActionHandlers,
@@ -56,19 +56,8 @@ async function initialize() {
   logger = logging.logger;
 
   // Display version
-  const manifest = browser.runtime.getManifest();
   const versionEl = document.getElementById('hover-version');
-  if (versionEl) {
-    const devSuffix = buildInfo.isDev
-      ? buildInfo.gitDescribe
-        ? `-dev-${buildInfo.gitDescribe}`
-        : '-dev'
-      : '';
-    versionEl.textContent = `v${manifest.version}${devSuffix}`;
-    if (buildInfo.isDev) {
-      versionEl.style.color = '#ff9800'; // Orange for dev builds
-    }
-  }
+  if (versionEl) displayVersion(versionEl);
 
   // Cache DOM elements
   els = {

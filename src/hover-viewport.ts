@@ -33,5 +33,3 @@ export function getHoverViewport(): HoverViewport {
     zoomValue: needsScale ? layoutScale : 1,
   };
 }
-
-export {};

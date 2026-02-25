@@ -2,11 +2,45 @@
  * Shared UI component builders for popup and options panels
  */
 
+import browser from './browser-api.js';
+import buildInfo from './build-info.json';
 import type { ApiEndpoint } from './endpoint';
 import { Logger } from './logger';
 import { createLogAppender, createStatusRenderer } from './logger-ui';
 import type { StreamInfo } from './types';
 import { ICONS } from './ui-constants';
+
+const DEV_COLOR = '#ff9800';
+
+/** Get dev suffix: `-dev-5-g9de0117` or `-dev` or empty */
+function getDevSuffix(): string {
+  if (!buildInfo.isDev) return '';
+  return buildInfo.gitDescribe ? `-dev-${buildInfo.gitDescribe}` : '-dev';
+}
+
+/** Short version: `v0.7.2-dev-5-g9de0117` */
+export function getVersionShort(): string {
+  const manifest = browser.runtime.getManifest();
+  return `v${manifest.version}${getDevSuffix()}`;
+}
+
+/** Full version with date: `Version 0.7.2-dev • Released 2/24/2026` */
+export function getVersionFull(): string {
+  const manifest = browser.runtime.getManifest();
+  const versionText = `Version ${manifest.version}${getDevSuffix()}`;
+  const dateText = buildInfo.commitDate
+    ? ` • Released ${new Date(buildInfo.commitDate).toLocaleDateString()}`
+    : '';
+  return versionText + dateText;
+}
+
+/** Apply version text and dev styling to element */
+export function displayVersion(el: HTMLElement, full = false): void {
+  el.textContent = full ? getVersionFull() : getVersionShort();
+  if (buildInfo.isDev) {
+    el.style.color = DEV_COLOR;
+  }
+}
 
 /**
  * Button configuration

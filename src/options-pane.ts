@@ -3,8 +3,7 @@
  */
 
 import browser from './browser-api.js';
-import buildInfo from './build-info.json';
-import { initLogging } from './components-ui';
+import { displayVersion, initLogging } from './components-ui';
 import {
   type ApiEndpoint,
   applyTemplate,
@@ -1485,22 +1484,8 @@ async function wireEvents() {
 }
 
 async function initialize() {
-  // Display version from manifest
-  const manifest = browser.runtime.getManifest();
-  const devSuffix = buildInfo.isDev
-    ? buildInfo.gitDescribe
-      ? `-dev-${buildInfo.gitDescribe}`
-      : '-dev'
-    : '';
-  const versionText = `Version ${manifest.version}${devSuffix}`;
-  const dateText = buildInfo.commitDate
-    ? ` • Released ${new Date(buildInfo.commitDate).toLocaleDateString()}`
-    : '';
-  const versionEl = els.aboutVersion();
-  versionEl.textContent = versionText + dateText;
-  if (buildInfo.isDev) {
-    versionEl.style.color = '#ff9800'; // Orange for dev builds
-  }
+  // Display version
+  displayVersion(els.aboutVersion(), true);
 
   loadSettings();
   await wireEvents();
