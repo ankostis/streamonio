@@ -186,31 +186,24 @@ export function createStreamListItem(
 export function displayStreams(
   streams: StreamInfo[],
   onSelectStream: (stream: StreamInfo, index: number) => void,
+  logger: Logger,
 ): void {
-  console.log(
-    '[components-ui] displayStreams called with',
-    streams.length,
-    'streams',
-  );
+  logger.debug(`displayStreams called with ${streams.length} streams`);
   const listContainer = document.getElementById('streams-scrollp');
   const list = document.getElementById('streams');
 
-  console.log('[components-ui] Found elements:', {
+  logger.debug('Found elements:', {
     listContainer: !!listContainer,
     list: !!list,
   });
 
   if (!list || !listContainer) {
-    console.error('[components-ui] Missing elements, aborting displayStreams');
+    logger.error('Missing elements, aborting displayStreams');
     return;
   }
 
   list.innerHTML = '';
-  console.log(
-    '[components-ui] Cleared list, appending',
-    streams.length,
-    'items',
-  );
+  logger.debug(`Cleared list, appending ${streams.length} items`);
 
   streams.forEach((stream, index) => {
     const item = createStreamListItem(stream, index, index === 0, () => {
@@ -224,18 +217,17 @@ export function displayStreams(
     list.appendChild(item);
   });
 
-  console.log(
-    '[components-ui] Appended all items, list.children.length =',
-    list.children.length,
+  logger.debug(
+    `Appended all items, list.children.length = ${list.children.length}`,
   );
-  console.log('[components-ui] Setting listContainer display to block');
+  logger.debug('Setting listContainer display to block');
 
   // Always show scrollpane (placeholder visible when empty)
   listContainer.style.display = 'block';
 
   // Auto-select first stream
   if (streams.length > 0) {
-    console.log('[components-ui] Auto-selecting first stream');
+    logger.debug('Auto-selecting first stream');
     onSelectStream(streams[0], 0);
   }
 }
@@ -261,26 +253,23 @@ export function populateStreamPanel(
   stream: StreamInfo,
   activeEndpoints: ApiEndpoint[],
   handlers: StreamActionHandlers,
+  logger: Logger,
 ): void {
-  console.log(
-    '[components-ui] populateStreamPanel called with',
-    activeEndpoints.length,
-    'endpoints',
+  logger.debug(
+    `populateStreamPanel called with ${activeEndpoints.length} endpoints`,
   );
   const endpListScrollpane = document.getElementById('endps-scrollp');
   const endpList = document.getElementById('endps');
   const actionButtons = document.getElementById('btns');
 
-  console.log('[components-ui] Found elements:', {
+  logger.debug('Found elements:', {
     endpListScrollpane: !!endpListScrollpane,
     endpList: !!endpList,
     actionButtons: !!actionButtons,
   });
 
   if (!endpListScrollpane || !endpList || !actionButtons) {
-    console.error(
-      '[components-ui] Missing elements, aborting populateStreamPanel',
-    );
+    logger.error('Missing elements, aborting populateStreamPanel');
     return;
   }
 
@@ -295,7 +284,7 @@ export function populateStreamPanel(
   // Rebuild endpoint list and buttons
   endpList.innerHTML = '';
   actionButtons.innerHTML = '';
-  console.log('[components-ui] Cleared endpList and actionButtons');
+  logger.debug('Cleared endpList and actionButtons');
 
   // Use preserved selection if it still exists, otherwise default to first
   const selectedEndpoint =
@@ -305,7 +294,7 @@ export function populateStreamPanel(
 
   // Append endpoint items directly (no wrapper) - will be 2-column grid via CSS
   if (activeEndpoints.length > 0) {
-    activeEndpoints.forEach((endpoint, index) => {
+    activeEndpoints.forEach((endpoint, _index) => {
       const item = document.createElement('div');
       item.className = 'endpoint-list-item';
       if (endpoint.name === endpointName) item.classList.add('selected');
@@ -335,14 +324,11 @@ export function populateStreamPanel(
 
       endpList.appendChild(item); // Direct child
     });
-    console.log(
-      '[components-ui] Appended',
-      activeEndpoints.length,
-      'endpoints, endpList.children.length =',
-      endpList.children.length,
+    logger.debug(
+      `Appended ${activeEndpoints.length} endpoints, endpList.children.length = ${endpList.children.length}`,
     );
   } else {
-    console.log('[components-ui] No endpoints to display');
+    logger.debug('No endpoints to display');
   }
 
   // Append button groups to separate container
@@ -386,16 +372,15 @@ export function populateStreamPanel(
   actionButtons.appendChild(testGroup);
   actionButtons.appendChild(actionGroup);
 
-  console.log(
-    '[components-ui] Appended buttons, actionButtons.children.length =',
-    actionButtons.children.length,
+  logger.debug(
+    `Appended buttons, actionButtons.children.length = ${actionButtons.children.length}`,
   );
-  console.log('[components-ui] Setting display styles');
+  logger.debug('Setting display styles');
 
   // Always show scrollpane (placeholder visible when empty)
   endpListScrollpane.style.display = 'block';
   endpList.style.display = 'grid';
   actionButtons.style.display = 'grid';
 
-  console.log('[components-ui] populateStreamPanel complete');
+  logger.debug('populateStreamPanel complete');
 }

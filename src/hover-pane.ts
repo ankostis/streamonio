@@ -189,9 +189,13 @@ async function loadStreams() {
  * Display detected streams using shared UI components
  */
 function displayStreamsHover(streams: StreamInfo[]) {
-  displayStreams(streams, (stream, index) => {
-    populatePanel(stream, index, streams);
-  });
+  displayStreams(
+    streams,
+    (stream, index) => {
+      populatePanel(stream, index, streams);
+    },
+    logger,
+  );
 }
 
 /**
@@ -209,7 +213,7 @@ function populatePanel(
       handleCallEndpoint(mode, stream, endpointName),
   };
 
-  populateStreamPanel(stream, apiEndpoints, handlers);
+  populateStreamPanel(stream, apiEndpoints, handlers, logger);
 }
 
 /**
