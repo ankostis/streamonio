@@ -213,22 +213,13 @@ async function loadStreams() {
     if (els.endpointCount)
       els.endpointCount.textContent = apiEndpoints.length.toString();
 
-    displayStreamsPopup(streams);
+    displayStreams(
+      streams,
+      (stream, index) => populatePanel(stream, index, streams),
+      logger,
+    );
   }
   // Note: Other errors bubble to caller (initialize) with full context
-}
-
-/**
- * Display detected streams using shared UI components
- */
-function displayStreamsPopup(streams: StreamInfo[]) {
-  displayStreams(
-    streams,
-    (stream, index) => {
-      populatePanel(stream, index, streams);
-    },
-    logger,
-  );
 }
 
 /**

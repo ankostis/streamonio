@@ -178,24 +178,15 @@ async function loadStreams() {
     if (els.endpointCount)
       els.endpointCount.textContent = apiEndpoints.length.toString();
 
-    displayStreamsHover(streams);
+    displayStreams(
+      streams,
+      (stream, index) => populatePanel(stream, index, streams),
+      logger,
+    );
   } catch (error) {
     logger.error('Failed to load streams', error);
     showEmptyState('❌ Error loading streams', error.message);
   }
-}
-
-/**
- * Display detected streams using shared UI components
- */
-function displayStreamsHover(streams: StreamInfo[]) {
-  displayStreams(
-    streams,
-    (stream, index) => {
-      populatePanel(stream, index, streams);
-    },
-    logger,
-  );
 }
 
 /**
