@@ -7,10 +7,30 @@
 - [ ] Undo option changes, instead of confirmation dialog.
 - [ ] Feat(options,UI) draggable height of activity logs in
 - [ ] Feat(options,UI) tabs on mobile
-- [ ] Fix(options) Mark Edit endpoint as dirty if not saved
 - [ ] fix touch infos in mobile api-call
+- [ ] Feat(options.endp.UI) In-list edit; Mark editing endpoint dirty till saved
 
 ## v0.8.X - (TODO) Chromecast & Snapcast
+
+## v0.7.2 - (2026-02-27) Hover UI fixes, MCP testing, refactor duplicates
+
+- Fix(hover UI) zoom buttons now clickable on mobile: use CSS `zoom` instead of
+  `transform: scale()` so event coordinates match visual rendering; add
+  `touch-action: manipulation` for immediate `:active` state (no 300ms delay)
+- Fix(UI) status bar was overflowing beyond screen on desktop
+  (zoom from mobile fix incorrectly applied everywhere)
+- Feat(test) add MCP Playwright integration test to fix hover panel initialization issues.
+- Refact(UI) extract duplicate code to reduce duplication from 2.94% → 2.22%:
+  - Extract `populatePanel()` handler construction into shared
+    `populatePanelWithActions()` helper
+  - Drop duplicate `displayStreams*()` wrappers, inline direct calls
+  - Extract hover viewport calculation to `hover-viewport.ts` module
+- Refact(UI) extract version display code into `components-ui::displayVersion()`
+- Refact(log): replace naked `console` calls in shared components by passing a `logger` arg to them.
+- Chore(AI) extract commit summarization and drafting of Release changes
+  as reusable skill for AI agents.
+
+**Sizing:** Bundles stable ~400KB; duplication 2.22% (873 tokens, well below 5%)
 
 ## v0.7.1 - (2026-02-24) Hover stable size, options UI, vars fix & feats, AI
 - FIX(HOVER) page scale (meta) does not affect hover panel size & fonts.
