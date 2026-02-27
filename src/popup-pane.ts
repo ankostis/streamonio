@@ -7,8 +7,7 @@ import {
   displayStreams,
   displayVersion,
   initLogging,
-  populateStreamPanel,
-  type StreamActionHandlers,
+  populatePanelWithActions,
 } from './components-ui';
 import {
   type ApiEndpoint,
@@ -230,14 +229,14 @@ function populatePanel(
   _index: number,
   _allStreams: StreamInfo[],
 ) {
-  const handlers: StreamActionHandlers = {
-    onPreview: (stream, endpointName) => handlePreview(stream, endpointName),
-    onCopy: (stream, endpointName) => handleCopyBtn(stream, endpointName),
-    onCall: (mode, stream, endpointName) =>
-      handleCallEndpoint(mode, stream, endpointName),
-  };
-
-  populateStreamPanel(stream, apiEndpoints, handlers, logger);
+  populatePanelWithActions(
+    stream,
+    apiEndpoints,
+    handlePreview,
+    handleCopyBtn,
+    handleCallEndpoint,
+    logger,
+  );
 }
 
 /**

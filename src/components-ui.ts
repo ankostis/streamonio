@@ -384,3 +384,27 @@ export function populateStreamPanel(
 
   logger.debug('populateStreamPanel complete');
 }
+
+/**
+ * Populate panel with stream and action handlers (wrapper for populateStreamPanel)
+ * Eliminates duplicate populatePanel functions in popup/hover panes
+ */
+export function populatePanelWithActions(
+  stream: StreamInfo,
+  apiEndpoints: ApiEndpoint[],
+  onPreview: (stream: StreamInfo, endpointName?: string) => void,
+  onCopy: (stream: StreamInfo, endpointName?: string) => void,
+  onCall: (
+    mode: 'fetch' | 'tab',
+    stream: StreamInfo,
+    endpointName?: string,
+  ) => void,
+  logger: Logger,
+): void {
+  const handlers: StreamActionHandlers = {
+    onPreview,
+    onCopy,
+    onCall,
+  };
+  populateStreamPanel(stream, apiEndpoints, handlers, logger);
+}
